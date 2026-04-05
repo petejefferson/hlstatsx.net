@@ -1,0 +1,68 @@
+@model ServerDetailViewModel
+@{
+    ViewData["Title"] = Model.Server.Name;
+}
+
+<h1>@Model.Server.Name</h1>
+<p class="server-address">@Model.Server.Address:@Model.Server.Port</p>
+
+<table class="stats-table server-info">
+    <tr><th>Map</th><td>@Model.Server.ActMap</td></tr>
+    <tr><th>Players</th><td>@Model.Server.ActPlayers / @Model.Server.MaxPlayers</td></tr>
+    <tr><th>Status</th><td>@(Model.Server.IsActive ? "Online" : "Offline")</td></tr>
+    @if (!string.IsNullOrEmpty(Model.Server.Country))
+    {
+        <tr><th>Location</th><td>@Model.Server.City, @Model.Server.Country</td></tr>
+    }
+    <tr><th>Total Kills</th><td>@Model.Server.Kills</td></tr>
+</table>
+
+<section>
+    <h2>Live Players (@Model.Livestats.Count)</h2>
+    @if (Model.Livestats.Any())
+    {
+        <table class="stats-table">
+            <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>Team</th>
+                    <th>Kills</th>
+                    <th>Deaths</th>
+                    <th>Skill</th>
+                    <th>Ping</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ls in Model.Livestats.OrderByDescending(l => l.Skill))
+                {
+                    <tr>
+                        <td>
+                            @if (!string.IsNullOrEmpty(ls.CliFlag))
+                            {
+                                <img src="/hlstatsimg/flags/@(ls.CliFlag.ToLowerInvariant()).gif" alt="@ls.CliCountry" title="@ls.CliCountry" />
+                            }
+                            @if (ls.PlayerId > 0)
+                            {
+                                <a asp-controller="Players" asp-action="Profile" asp-route-id="@ls.PlayerId">@ls.Name</a>
+                            }
+                            else
+                            {
+                                @ls.Name
+                            }
+                            @if (ls.IsDead) { <small>(dead)</small> }
+                        </td>
+                        <td>@ls.Team</td>
+                        <td>@ls.Kills</td>
+                        <td>@ls.Deaths</td>
+                        <td>@ls.Skill</td>
+                        <td>@ls.Ping</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>No players currently online.</p>
+    }
+</section>

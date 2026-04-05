@@ -1,0 +1,70 @@
+@model AwardListViewModel
+@{
+    ViewData["Title"] = "Awards";
+}
+
+<h1>Awards &mdash; @Model.Game</h1>
+
+@if (Model.DailyAwards.Any())
+{
+    <section>
+        <h2>Today's Award Winners</h2>
+        <table class="stats-table">
+            <thead>
+                <tr><th>Award</th><th>Winner</th><th>Count</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var a in Model.DailyAwards)
+                {
+                    <tr>
+                        <td>@a.Name</td>
+                        <td>
+                            @if (a.DailyWinner is not null)
+                            {
+                                <a asp-controller="Players" asp-action="Profile" asp-route-id="@a.DailyWinner.PlayerId">@a.DailyWinner.LastName</a>
+                            }
+                            else
+                            {
+                                <span>-</span>
+                            }
+                        </td>
+                        <td>@(a.DailyWinnerCount?.ToString() ?? "-")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </section>
+}
+
+<section>
+    <h2>All-Time Award Leaders</h2>
+    <table class="stats-table">
+        <thead>
+            <tr><th>Award</th><th>Type</th><th>All-Time Leader</th><th>Count</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var a in Model.Awards)
+            {
+                <tr>
+                    <td>@a.Name</td>
+                    <td>@a.AwardType</td>
+                    <td>
+                        @if (a.GlobalWinner is not null)
+                        {
+                            <a asp-controller="Players" asp-action="Profile" asp-route-id="@a.GlobalWinner.PlayerId">@a.GlobalWinner.LastName</a>
+                        }
+                        else
+                        {
+                            <span>-</span>
+                        }
+                    </td>
+                    <td>@(a.GlobalWinnerCount?.ToString() ?? "-")</td>
+                </tr>
+            }
+            @if (!Model.Awards.Any())
+            {
+                <tr><td colspan="4">No awards configured.</td></tr>
+            }
+        </tbody>
+    </table>
+</section>

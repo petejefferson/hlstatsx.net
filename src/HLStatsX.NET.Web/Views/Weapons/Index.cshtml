@@ -1,0 +1,40 @@
+@model WeaponListViewModel
+@{
+    ViewData["Title"] = "Weapons";
+}
+
+<h1>Weapons &mdash; @Model.Game</h1>
+
+<div class="sort-bar">
+    Sort by:
+    <a asp-action="Index" asp-route-game="@Model.Game" asp-route-sortBy="kills" class="@(Model.SortBy == "kills" ? "active" : "")">Kills</a>
+    <a asp-action="Index" asp-route-game="@Model.Game" asp-route-sortBy="headshots" class="@(Model.SortBy == "headshots" ? "active" : "")">Headshots</a>
+</div>
+
+<table class="stats-table">
+    <thead>
+        <tr>
+            <th>Rank</th>
+            <th>Weapon</th>
+            <th>Kills</th>
+            <th>Headshots</th>
+            <th>HS%</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{ int rank = (Model.Weapons.Page - 1) * Model.Weapons.PageSize + 1; }
+        @foreach (var w in Model.Weapons.Items)
+        {
+            <tr>
+                <td>@rank</td>
+                <td><a asp-action="Detail" asp-route-id="@w.WeaponId">@w.Name</a></td>
+                <td>@w.Kills</td>
+                <td>@w.Headshots</td>
+                <td>@w.HeadshotPercent%</td>
+            </tr>
+            rank++;
+        }
+    </tbody>
+</table>
+
+<partial name="_Pagination" model="@PaginationModel.From(Model.Weapons, p => Url.Action("Index", new { game = Model.Game, sortBy = Model.SortBy, page = p })!)" />

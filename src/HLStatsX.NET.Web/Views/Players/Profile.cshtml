@@ -1,0 +1,102 @@
+@model PlayerProfileViewModel
+@{
+    ViewData["Title"] = Model.Player.LastName;
+}
+
+<h1>@Model.Player.LastName</h1>
+<p>
+    Rank: <strong>#@Model.Rank</strong>
+    @if (Model.CurrentRank is not null)
+    {
+        <span>&mdash; @Model.CurrentRank.RankName</span>
+    }
+</p>
+
+<div class="profile-grid">
+    <section class="profile-stats">
+        <h2>Statistics</h2>
+        <table class="stats-table">
+            <tr><th>Skill</th><td>@Model.Player.Skill</td></tr>
+            <tr><th>Kills</th><td>@Model.Player.Kills</td></tr>
+            <tr><th>Deaths</th><td>@Model.Player.Deaths</td></tr>
+            <tr><th>K/D Ratio</th><td>@Model.Player.KillDeathRatio</td></tr>
+            <tr><th>Headshots</th><td>@Model.Player.Headshots (@Model.Player.HeadshotPercent%)</td></tr>
+            <tr><th>Suicides</th><td>@Model.Player.Suicides</td></tr>
+            <tr><th>Team Kills</th><td>@Model.Player.Teamkills</td></tr>
+            <tr><th>Accuracy</th><td>@Model.Player.Accuracy%</td></tr>
+            <tr><th>Connection Time</th><td>@TimeSpan.FromSeconds(Model.Player.ConnectionTime)</td></tr>
+            @if (Model.Player.Clan is not null)
+            {
+                <tr>
+                    <th>Clan</th>
+                    <td><a asp-controller="Clans" asp-action="Profile" asp-route-id="@Model.Player.Clan.ClanId">@Model.Player.Clan.Name</a></td>
+                </tr>
+            }
+            <tr><th>Country</th><td>@Model.Player.Country</td></tr>
+            @if (!string.IsNullOrEmpty(Model.Player.Homepage))
+            {
+                <tr><th>Homepage</th><td><a href="@Model.Player.Homepage" rel="nofollow noopener">@Model.Player.Homepage</a></td></tr>
+            }
+        </table>
+        <p>
+            <a asp-action="History" asp-route-id="@Model.Player.PlayerId">View History</a>
+        </p>
+    </section>
+
+    <section class="profile-aliases">
+        <h2>Known Aliases</h2>
+        <ul>
+            @foreach (var alias in Model.Aliases)
+            {
+                <li>@alias.Name <small>(@alias.Numuses uses)</small></li>
+            }
+        </ul>
+    </section>
+
+    <section class="profile-ribbons">
+        <h2>Ribbons</h2>
+        @if (Model.Ribbons.Any())
+        {
+            <ul class="ribbons-list">
+                @foreach (var r in Model.Ribbons)
+                {
+                    <li>
+                        @if (!string.IsNullOrEmpty(r.Ribbon?.Image))
+                        {
+                            <img src="/hlstatsimg/ribbons/@r.Ribbon.Image" alt="@r.Ribbon.RibbonName" />
+                        }
+                        @r.Ribbon?.RibbonName
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>No ribbons earned yet.</p>
+        }
+    </section>
+
+    <section class="profile-awards">
+        <h2>Awards</h2>
+        @if (Model.Awards.Any())
+        {
+            <table class="stats-table">
+                <thead><tr><th>Award</th><th>Count</th><th>Last Won</th></tr></thead>
+                <tbody>
+                    @foreach (var a in Model.Awards)
+                    {
+                        <tr>
+                            <td>@a.Award?.Name</td>
+                            <td>@a.Count</td>
+                            <td>@a.AwardTime.ToString("yyyy-MM-dd")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>No awards yet.</p>
+        }
+    </section>
+</div>

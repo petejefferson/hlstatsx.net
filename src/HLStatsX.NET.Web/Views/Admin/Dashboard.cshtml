@@ -1,0 +1,38 @@
+@model AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<h1>Admin Dashboard</h1>
+
+<div class="stats-overview">
+    <div class="stat-card"><h3>Total Players</h3><p>@Model.TotalPlayers</p></div>
+    <div class="stat-card"><h3>Total Clans</h3><p>@Model.TotalClans</p></div>
+    <div class="stat-card"><h3>Active Servers</h3><p>@Model.ActiveServers</p></div>
+</div>
+
+<section>
+    <h2>Servers <a asp-action="Servers" class="btn-sm">Manage</a></h2>
+    <table class="stats-table">
+        <thead><tr><th>Name</th><th>Address</th><th>Status</th><th>Players</th></tr></thead>
+        <tbody>
+            @foreach (var s in Model.Servers)
+            {
+                <tr>
+                    <td>@s.Name</td>
+                    <td>@s.Address:@s.Port</td>
+                    <td>@(s.IsActive ? "Active" : "Inactive")</td>
+                    <td>@s.ActPlayers</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</section>
+
+<section>
+    <h2>Quick Links</h2>
+    <ul>
+        <li><a asp-action="Users">Manage Admin Users</a></li>
+        <li><a asp-action="Servers">Manage Servers</a></li>
+    </ul>
+</section>

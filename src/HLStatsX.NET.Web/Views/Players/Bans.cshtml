@@ -1,0 +1,39 @@
+@model BanListViewModel
+@{
+    ViewData["Title"] = "Banned Players";
+}
+
+<h1>Banned Players &mdash; @Model.Game</h1>
+
+@if (Model.BannedPlayers.Any())
+{
+    <table class="stats-table">
+        <thead>
+            <tr>
+                <th>Player</th>
+                <th>Skill</th>
+                <th>Country</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in Model.BannedPlayers)
+            {
+                <tr>
+                    <td>
+                        @if (!string.IsNullOrEmpty(p.Flag))
+                        {
+                            <img src="/hlstatsimg/flags/@(p.Flag.ToLowerInvariant()).gif" alt="@p.Country" title="@p.Country" />
+                        }
+                        <a asp-action="Profile" asp-route-id="@p.PlayerId">@p.LastName</a>
+                    </td>
+                    <td>@p.Skill</td>
+                    <td>@p.Country</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No banned players.</p>
+}

@@ -1,0 +1,61 @@
+@model PlayerLeaderboardViewModel
+@{
+    ViewData["Title"] = "Player Rankings";
+}
+
+<h1>Player Rankings &mdash; @Model.Game</h1>
+
+<div class="sort-bar">
+    Sort by:
+    <a asp-action="Index" asp-route-game="@Model.Game" asp-route-sortBy="skill" asp-route-desc="true" class="@(Model.SortBy == "skill" ? "active" : "")">Points</a>
+    <a asp-action="Index" asp-route-game="@Model.Game" asp-route-sortBy="kills" asp-route-desc="true" class="@(Model.SortBy == "kills" ? "active" : "")">Kills</a>
+    <a asp-action="Index" asp-route-game="@Model.Game" asp-route-sortBy="headshots" asp-route-desc="true" class="@(Model.SortBy == "headshots" ? "active" : "")">Headshots</a>
+    <a asp-action="Index" asp-route-game="@Model.Game" asp-route-sortBy="connectiontime" asp-route-desc="true" class="@(Model.SortBy == "connectiontime" ? "active" : "")">Play Time</a>
+</div>
+
+<table class="data-table">
+    <thead>
+        <tr class="data-table-head">
+            <th style="width:4%;text-align:center;">Rank</th>
+            <th style="text-align:left;">Player</th>
+            <th style="text-align:left;">Clan</th>
+            <th style="text-align:right;">Points</th>
+            <th style="text-align:right;">Kills</th>
+            <th style="text-align:right;">Deaths</th>
+            <th style="text-align:right;">K/D</th>
+            <th style="text-align:right;">Headshots</th>
+            <th style="text-align:right;">HS%</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{ int startRank = (Model.Players.Page - 1) * Model.Players.PageSize + 1; int row = 0; }
+        @foreach (var player in Model.Players.Items)
+        {
+            var flagFile = string.IsNullOrEmpty(player.Flag) ? "0" : player.Flag.ToLowerInvariant();
+            var flagAlt  = string.IsNullOrEmpty(player.Country) ? "" : player.Country;
+            <tr class="@(row % 2 == 0 ? "bg1" : "bg2")">
+                <td style="text-align:center;">@startRank</td>
+                <td style="text-align:left;">
+                    <img src="/hlstatsimg/flags/@(flagFile).gif" alt="@flagAlt" title="@flagAlt" />&nbsp;
+                    <a asp-action="Profile" asp-route-id="@player.PlayerId">@player.LastName</a>
+                </td>
+                <td style="text-align:left;">
+                    @if (player.Clan is not null)
+                    {
+                        <a asp-controller="Clans" asp-action="Profile" asp-route-id="@player.Clan.ClanId">@player.Clan.Tag</a>
+                    }
+                </td>
+                <td style="text-align:right;">@player.Skill.ToString("N0")</td>
+                <td style="text-align:right;">@player.Kills.ToString("N0")</td>
+                <td style="text-align:right;">@player.Deaths.ToString("N0")</td>
+                <td style="text-align:right;">@player.KillDeathRatio.ToString("F2")</td>
+                <td style="text-align:right;">@player.Headshots.ToString("N0")</td>
+                <td style="text-align:right;">@player.HeadshotPercent.ToString("F2")%</td>
+            </tr>
+            startRank++;
+            row++;
+        }
+    </tbody>
+</table>
+
+<partial name="_Pagination" model="@PaginationModel.From(Model.Players, p => Url.Action("Index", new { game = Model.Game, sortBy = Model.SortBy, desc = Model.Descending, page = p })!)" />

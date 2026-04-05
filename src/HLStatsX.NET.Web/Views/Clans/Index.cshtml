@@ -1,0 +1,32 @@
+@model ClanLeaderboardViewModel
+@{
+    ViewData["Title"] = "Clan Rankings";
+}
+
+<h1>Clan Rankings &mdash; @Model.Game</h1>
+
+<table class="stats-table">
+    <thead>
+        <tr>
+            <th>Rank</th>
+            <th>Clan</th>
+            <th>Tag</th>
+            <th>Members</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{ int rank = (Model.Clans.Page - 1) * Model.Clans.PageSize + 1; }
+        @foreach (var clan in Model.Clans.Items)
+        {
+            <tr>
+                <td>@rank</td>
+                <td><a asp-action="Profile" asp-route-id="@clan.ClanId">@clan.Name</a></td>
+                <td>@clan.Tag</td>
+                <td>@clan.Players.Count</td>
+            </tr>
+            rank++;
+        }
+    </tbody>
+</table>
+
+<partial name="_Pagination" model="@PaginationModel.From(Model.Clans, p => Url.Action("Index", new { game = Model.Game, page = p })!)" />

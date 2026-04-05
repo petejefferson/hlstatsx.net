@@ -1,0 +1,314 @@
+/* ============================================================
+   THEME VARIABLES — edit these to change the site colours
+   ============================================================ */
+:root {
+    /* Page background (outer) */
+    --bg:            #D4D0C8;
+    /* Card / table surface */
+    --surface:       #FFFFFF;
+    /* Alternate table row */
+    --surface-alt:   #FAFAFA;
+    /* Header / accent band (nav, table heads) */
+    --accent:        #ABCCD6;
+    /* Highlight colour (headings, active links, hover) */
+    --highlight:     #336699;
+    /* Body text */
+    --text:          #000000;
+    /* Subdued text */
+    --muted:         #666666;
+    /* Border colour */
+    --border:        #99AAAA;
+    /* Nav bar background */
+    --nav-bg:        #4a6741;
+    /* Nav bar text */
+    --nav-text:      #FFFFFF;
+    /* Nav bar hover */
+    --nav-hover:     #3a5233;
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: Verdana, Arial, sans-serif;
+    font-size: 13px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+a             { color: var(--highlight); }
+a:hover       { color: var(--highlight); text-decoration: underline; }
+a:visited     { color: var(--highlight); }
+
+img { vertical-align: middle; border: none; }
+
+h1 { font-size: 1.3rem; color: var(--highlight); margin-bottom: 0.75rem; }
+h2 { font-size: 1.1rem; color: var(--highlight); margin: 1rem 0 0.5rem; }
+h3 { font-size: 0.95rem; margin: 0.75rem 0 0.25rem; }
+
+section { margin-bottom: 1.5rem; }
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+.navbar {
+    background: var(--nav-bg);
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.navbar-brand {
+    color: var(--nav-text);
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
+.nav-links a {
+    color: var(--nav-text);
+    text-decoration: none;
+    padding: 0.25rem 0.6rem;
+    border-radius: 3px;
+}
+.nav-links a:hover { background: var(--nav-hover); text-decoration: none; }
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.container {
+    flex: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+    width: 100%;
+}
+
+footer {
+    background: var(--accent);
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 0.5rem;
+    color: var(--text);
+    font-size: 0.8rem;
+}
+
+/* ============================================================
+   SUMMARY STATS BAR (homepage)
+   ============================================================ */
+.site-summary {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 0.6rem 0.75rem;
+    margin-bottom: 1rem;
+}
+.tracking-line {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text);
+}
+
+/* ============================================================
+   CHART
+   ============================================================ */
+.chart-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+}
+.chart-map-label {
+    font-size: 0.8rem;
+    font-weight: normal;
+    color: var(--muted);
+    margin-left: 0.75rem;
+}
+.chart-hint {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-align: right;
+    margin: 0.25rem 0 0;
+}
+
+/* ============================================================
+   GENERIC DATA TABLE (player lists, awards, etc.)
+   ============================================================ */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    font-size: 0.8rem;
+}
+.data-table th,
+.data-table td {
+    border: 1px solid var(--border);
+    padding: 3px 6px;
+    text-align: left;
+}
+.data-table-head th,
+.data-table-head td {
+    background: var(--accent);
+    color: var(--text);
+    font-weight: bold;
+}
+.bg1 { background: var(--surface); }
+.bg2 { background: var(--surface-alt); }
+.data-table tbody tr:hover { background: #e8f4f8; }
+
+/* Alias for views that use .stats-table */
+.stats-table { width: 100%; border-collapse: collapse; background: var(--surface); font-size: 0.8rem; }
+.stats-table th, .stats-table td { border: 1px solid var(--border); padding: 3px 6px; text-align: left; }
+.stats-table thead th { background: var(--accent); color: var(--text); font-weight: bold; }
+.stats-table tbody tr:nth-child(odd)  { background: var(--surface); }
+.stats-table tbody tr:nth-child(even) { background: var(--surface-alt); }
+.stats-table tbody tr:hover { background: #e8f4f8; }
+
+/* ============================================================
+   LIVE STATS TABLE
+   ============================================================ */
+.livestats-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+    background: var(--surface);
+}
+.livestats-table th,
+.livestats-table td {
+    border: 0;
+    padding: 2px 4px;
+    text-align: center;
+}
+.livestats-head th {
+    background: var(--accent);
+    color: var(--text);
+    font-weight: bold;
+    border: 1px solid var(--border);
+}
+
+/* ============================================================
+   SORT / FILTER BARS
+   ============================================================ */
+.sort-bar { display: flex; gap: 0.4rem; align-items: center; margin: 0.4rem 0; }
+.sort-bar a {
+    color: var(--highlight);
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    text-decoration: none;
+    font-size: 0.8rem;
+    background: var(--surface);
+}
+.sort-bar a.active,
+.sort-bar a:hover { background: var(--highlight); color: #fff; border-color: var(--highlight); text-decoration: none; }
+
+/* ============================================================
+   PAGINATION
+   ============================================================ */
+.pagination { display: flex; gap: 0.3rem; align-items: center; margin: 0.75rem 0; flex-wrap: wrap; }
+.pagination a, .pagination .current-page {
+    padding: 0.2rem 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    font-size: 0.8rem;
+    background: var(--surface);
+}
+.pagination a { color: var(--highlight); text-decoration: none; }
+.pagination a:hover { background: var(--accent); }
+.pagination .current-page { background: var(--highlight); color: #fff; border-color: var(--highlight); }
+.page-info { color: var(--muted); font-size: 0.8rem; }
+
+/* ============================================================
+   PLAYER PROFILE
+   ============================================================ */
+.profile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-top: 0.75rem; }
+.profile-stats, .profile-aliases, .profile-ribbons, .profile-awards {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 0.75rem;
+}
+
+.ribbons-list { list-style: none; display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.ribbons-list li { background: var(--accent); border-radius: 3px; padding: 0.2rem 0.4rem; font-size: 0.75rem; }
+
+/* ============================================================
+   ADMIN / FORMS
+   ============================================================ */
+.form-group { margin-bottom: 0.75rem; }
+.form-group label { display: block; margin-bottom: 0.2rem; color: var(--muted); font-size: 0.85rem; }
+.form-control {
+    width: 100%;
+    padding: 0.4rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 3px;
+    font-size: 0.9rem;
+}
+.form-control:focus { outline: none; border-color: var(--highlight); }
+
+.btn-primary {
+    background: var(--highlight);
+    color: #fff;
+    border: none;
+    padding: 0.4rem 1rem;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    text-decoration: none;
+    display: inline-block;
+}
+.btn-primary:hover { opacity: 0.85; text-decoration: none; color: #fff; }
+.btn-sm { font-size: 0.75rem; padding: 0.15rem 0.4rem; }
+
+.login-page { display: flex; justify-content: center; }
+.login-box  { background: var(--surface); border: 1px solid var(--border); padding: 1.5rem; width: 100%; max-width: 380px; margin-top: 3rem; }
+
+.error-list { color: #cc0000; margin-bottom: 0.75rem; font-size: 0.85rem; }
+
+/* ============================================================
+   HISTORY / SKILL CHANGE COLOURS
+   ============================================================ */
+.positive { color: #2a7a2a; font-weight: bold; }
+.negative { color: #cc0000; font-weight: bold; }
+.muted    { color: var(--muted); }
+
+/* ============================================================
+   SERVER / HISTORY MISC
+   ============================================================ */
+.server-address { color: var(--muted); font-family: monospace; margin-bottom: 0.75rem; }
+.server-info    { max-width: 480px; margin-bottom: 1rem; }
+
+.history-filters { display: flex; gap: 0.4rem; margin-bottom: 0.75rem; }
+.history-filters a {
+    color: var(--highlight);
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    text-decoration: none;
+    font-size: 0.8rem;
+    background: var(--surface);
+}
+.history-filters a.active,
+.history-filters a:hover { background: var(--highlight); color: #fff; border-color: var(--highlight); }
+
+/* ============================================================
+   STATS OVERVIEW CARDS (admin dashboard)
+   ============================================================ */
+.stats-overview { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1rem; }
+.stats-overview .stat-card { background: var(--surface); border: 1px solid var(--border); padding: 0.75rem; text-align: center; }
+.stats-overview .stat-card h3 { font-size: 0.8rem; color: var(--muted); }
+.stats-overview .stat-card p  { font-size: 1.6rem; font-weight: 700; color: var(--highlight); }

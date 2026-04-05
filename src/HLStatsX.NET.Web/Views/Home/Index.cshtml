@@ -1,0 +1,298 @@
+@model HomeViewModel
+@{
+    ViewData["Title"] = "Home";
+    var chartLabels = System.Text.Json.JsonSerializer.Serialize(
+        Model.ServerLoad.Select(x => x.DateTime.ToString("HH:mm")));
+    var chartData = System.Text.Json.JsonSerializer.Serialize(
+        Model.ServerLoad.Select(x => x.ActPlayers));
+    var chartMaps = System.Text.Json.JsonSerializer.Serialize(
+        Model.ServerLoad.Select(x => x.Map ?? ""));
+    var chartMax = Model.ServerLoad.Any() ? Model.ServerLoad.Max(x => x.MaxPlayers) : 32;
+}
+
+<div class="site-summary">
+    <p class="tracking-line">
+        Tracking <strong>@Model.TotalPlayers.ToString("N0")</strong> players
+        @if (Model.NewPlayersLast24h >= 0)
+        {
+            <text>(<strong>+@Model.NewPlayersLast24h.ToString("N0")</strong> new players last 24h) </text>
+        }
+        with <strong>@Model.Stats.TotalKills.ToString("N0")</strong> kills
+        @if (Model.Stats.NewKillsLast24h >= 0)
+        {
+            <text>(<strong>+@Model.Stats.NewKillsLast24h.ToString("N0")</strong> last 24h) </text>
+        }
+        and <strong>@Model.Stats.TotalHeadshots.ToString("N0")</strong> headshots
+        (<strong>@Model.Stats.HeadshotPercent.ToString("F2")%</strong>)
+        on <strong>@Model.Stats.TotalServers.ToString("N0")</strong> server@(Model.Stats.TotalServers == 1 ? "" : "s")
+    </p>
+</div>
+
+@if (Model.ServerLoad.Any())
+{
+    <section class="chart-section">
+        <h2>Server Activity &mdash; Last 24 Hours
+            @{ var currentMap = Model.ServerLoad.LastOrDefault()?.Map; }
+            @if (!string.IsNullOrEmpty(currentMap))
+            {
+                <span class="chart-map-label">Current map: @currentMap</span>
+            }
+        </h2>
+        <canvas id="activityChart" height="80"></canvas>
+    </section>
+}
+
+@if (Model.Livestats.Any())
+{
+    <section>
+        <h2>Players Currently Online</h2>
+        <table class="livestats-table">
+            <thead>
+                <tr class="livestats-head">
+                    <th style="width:3%;">#</th>
+                    <th style="width:35%;text-align:left;">Player</th>
+                    <th colspan="3" style="width:8%;">Kills</th>
+                    <th style="width:5%;">Hs</th>
+                    <th style="width:7%;">HS:K</th>
+                    <th style="width:6%;">Acc</th>
+                    <th style="width:10%;">Time</th>
+                    <th style="width:6%;">+/-</th>
+                    <th style="width:7%;">Skill</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var teamGroup in Model.PlayersByTeam)
+            {
+                var team = Model.GetTeam(teamGroup.Key);
+                var bgColor  = team?.PlayerlistBgcolor ?? "#D5D5D5";
+                var txtColor = team?.PlayerlistColor   ?? "#050505";
+                var teamName = string.IsNullOrEmpty(team?.Name) ? teamGroup.Key : team.Name;
+                var rowStyle  = $"background:{bgColor};color:{txtColor};";
+                var footStyle = $"background:{bgColor};color:{txtColor};border-top:1px {txtColor} solid;";
+
+                int j = 1;
+                @foreach (var ls in teamGroup)
+                {
+                    <tr style="@rowStyle">
+                        <td>@j</td>
+                        <td style="text-align:left;">
+                            @{
+                                var flagFile = string.IsNullOrEmpty(ls.CliFlag) ? "0" : ls.CliFlag.ToLowerInvariant();
+                                var flagAlt  = string.IsNullOrEmpty(ls.CliCountry) ? "" : ls.CliCountry;
+                            }
+                            <img src="/hlstatsimg/flags/@(flagFile).gif" alt="@flagAlt" title="@flagAlt" />&nbsp;
+                            @if (ls.PlayerId > 0)
+                            {
+                                <a style="color:@txtColor"
+                                   asp-controller="Players" asp-action="Profile" asp-route-id="@ls.PlayerId">@ls.Name</a>
+                            }
+                            else { @ls.Name }
+                        </td>
+                        <td style="text-align:right;">@ls.Kills</td>
+                        <td>:</td>
+                        <td style="text-align:left;">@ls.Deaths</td>
+                        <td>@ls.Headshots</td>
+                        <td>@ls.HeadshotPercent.ToString("F2")</td>
+                        <td>@ls.Accuracy.ToString("F0")%</td>
+                        <td>@ls.ConnectedFormatted</td>
+                        <td>@ls.SkillChange</td>
+                        <td>@ls.Skill.ToString("N0")</td>
+                    </tr>
+                    j++;
+                }
+
+                @* Team footer row *@
+                var teamKills  = teamGroup.Sum(p => p.Kills);
+                var teamDeaths = teamGroup.Sum(p => p.Deaths);
+                var teamHs     = teamGroup.Sum(p => p.Headshots);
+                var teamShots  = teamGroup.Sum(p => p.Shots);
+                var teamHits   = teamGroup.Sum(p => p.Hits);
+                var teamHsk    = teamKills > 0 ? ((double)teamHs / teamKills).ToString("F2") : "0.00";
+                var teamAcc    = teamShots > 0 ? ((double)teamHits / teamShots * 100).ToString("F0") + "%" : "0%";
+                var teamSkill  = teamGroup.Any() ? ((int)teamGroup.Average(p => p.Skill)).ToString("N0") : "-";
+                <tr style="@footStyle">
+                    <td>&nbsp;</td>
+                    <td style="text-align:left;"><strong>@teamName</strong></td>
+                    <td style="text-align:right;">@teamKills</td>
+                    <td>:</td>
+                    <td style="text-align:left;">@teamDeaths</td>
+                    <td>@teamHs</td>
+                    <td>@teamHsk</td>
+                    <td>@teamAcc</td>
+                    <td>&nbsp;</td>
+                    <td>-</td>
+                    <td>@teamSkill</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </section>
+}
+else
+{
+    <section>
+        <h2>Players Currently Online</h2>
+        <p>No players online right now.</p>
+    </section>
+}
+
+@if (Model.DailyAwards.Any())
+{
+    <section>
+        <h2>Daily Awards &mdash; @DateTime.Now.ToString("dddd, MMMM d")</h2>
+        <table class="data-table">
+            <thead>
+                <tr class="data-table-head">
+                    <th style="text-align:left;">Award</th>
+                    <th style="text-align:left;">Winner</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ int awardRow = 0; }
+                @foreach (var a in Model.DailyAwards)
+                {
+                    <tr class="@(awardRow % 2 == 0 ? "bg1" : "bg2")">
+                        <td>@a.Name</td>
+                        <td>
+                            @if (a.DailyWinner is not null)
+                            {
+                                @if (!string.IsNullOrEmpty(a.DailyWinner.Flag))
+                                {
+                                    <img src="/hlstatsimg/flags/@(a.DailyWinner.Flag.ToLowerInvariant()).gif"
+                                         alt="@a.DailyWinner.Country" title="@a.DailyWinner.Country" />
+                                }
+                                <a asp-controller="Players" asp-action="Profile"
+                                   asp-route-id="@a.DailyWinner.PlayerId"><strong>@a.DailyWinner.LastName</strong></a>
+                                @($" ({a.DailyWinnerCount} {a.Verb})")
+                            }
+                            else
+                            {
+                                <text>&nbsp;&nbsp; <em>No Award Winner</em></text>
+                            }
+                        </td>
+                    </tr>
+                    awardRow++;
+                }
+            </tbody>
+        </table>
+    </section>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+    @if (Model.ServerLoad.Any())
+    {
+        <script>
+        (function () {
+            const labels = @Html.Raw(chartLabels);
+            const data   = @Html.Raw(chartData);
+            const maps   = @Html.Raw(chartMaps);
+            const maxY   = @chartMax;
+
+            // Build map-change segments: [{startIndex, map}]
+            const mapSegments = [];
+            let lastMap = null;
+            for (let i = 0; i < maps.length; i++) {
+                const m = maps[i] && maps[i] !== '+' ? maps[i] : null;
+                if (m && m !== lastMap) {
+                    mapSegments.push({ startIndex: i, map: m });
+                    lastMap = m;
+                }
+            }
+
+            // Custom plugin: draw vertical dashed lines and rotated map name at each map change
+            const mapOverlayPlugin = {
+                id: 'mapOverlay',
+                afterDraw(chart) {
+                    if (!mapSegments.length) return;
+                    const { ctx, chartArea: { top, bottom, left, right }, scales: { x } } = chart;
+                    ctx.save();
+                    for (let s = 0; s < mapSegments.length; s++) {
+                        const seg = mapSegments[s];
+                        const nextStart = s + 1 < mapSegments.length ? mapSegments[s + 1].startIndex : maps.length - 1;
+                        const midIndex = Math.round((seg.startIndex + nextStart) / 2);
+
+                        // Clamp pixel positions
+                        const xStart = seg.startIndex > 0
+                            ? x.getPixelForValue(seg.startIndex)
+                            : left;
+                        const xMid = x.getPixelForValue(midIndex);
+
+                        // Vertical dashed line at map-change boundary (skip for first segment)
+                        if (seg.startIndex > 0) {
+                            ctx.setLineDash([4, 3]);
+                            ctx.strokeStyle = 'rgba(80,80,80,0.45)';
+                            ctx.lineWidth = 1;
+                            ctx.beginPath();
+                            ctx.moveTo(xStart, top);
+                            ctx.lineTo(xStart, bottom);
+                            ctx.stroke();
+                            ctx.setLineDash([]);
+                        }
+
+                        // Rotated map name: translate to top edge, rotate -90° so text
+                        // runs downward into the chart area with label anchored at top
+                        ctx.save();
+                        ctx.font = '11px sans-serif';
+                        ctx.fillStyle = 'rgba(50,50,50,0.65)';
+                        ctx.textAlign = 'right';
+                        ctx.textBaseline = 'middle';
+                        ctx.translate(xMid, top);
+                        ctx.rotate(-Math.PI / 2);
+                        ctx.fillText(seg.map, -6, 0);
+                        ctx.restore();
+                    }
+                    ctx.restore();
+                }
+            };
+
+            new Chart(document.getElementById('activityChart'), {
+                type: 'line',
+                plugins: [mapOverlayPlugin],
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Players',
+                        data,
+                        backgroundColor: 'rgba(171,204,214,0.4)',
+                        borderColor: '#5b9aad',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    const map = maps[ctx.dataIndex];
+                                    const mapLabel = map && map !== '+' ? ` — ${map}` : '';
+                                    return `${ctx.parsed.y} players${mapLabel}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#333', maxTicksLimit: 12 },
+                            grid: { color: '#ddd' },
+                            title: { display: true, text: 'Time', color: '#555', font: { size: 11 } }
+                        },
+                        y: {
+                            ticks: { color: '#333', stepSize: 4 },
+                            grid: { color: '#ddd' },
+                            beginAtZero: true,
+                            max: maxY,
+                            title: { display: true, text: 'Player Count', color: '#555', font: { size: 11 } }
+                        }
+                    }
+                }
+            });
+        })();
+        </script>
+    }
+}

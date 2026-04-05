@@ -1,0 +1,32 @@
+@model RibbonListViewModel
+@{
+    ViewData["Title"] = "Ribbons";
+}
+
+<h1>Ribbons &mdash; @Model.Game</h1>
+
+<table class="stats-table">
+    <thead>
+        <tr><th>Ribbon</th><th>Name</th><th>Award Code</th><th>Count Required</th></tr>
+    </thead>
+    <tbody>
+        @foreach (var r in Model.Ribbons)
+        {
+            <tr>
+                <td>
+                    @if (!string.IsNullOrEmpty(r.Image))
+                    {
+                        <img src="/hlstatsimg/ribbons/@r.Image" alt="@r.RibbonName" />
+                    }
+                </td>
+                <td>@r.RibbonName</td>
+                <td>@r.AwardCode</td>
+                <td>@r.AwardCount</td>
+            </tr>
+        }
+        @if (!Model.Ribbons.Any())
+        {
+            <tr><td colspan="4">No ribbons configured.</td></tr>
+        }
+    </tbody>
+</table>

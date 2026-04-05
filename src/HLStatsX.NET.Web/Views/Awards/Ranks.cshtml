@@ -1,0 +1,32 @@
+@model RankListViewModel
+@{
+    ViewData["Title"] = "Ranks";
+}
+
+<h1>Ranks &mdash; @Model.Game</h1>
+
+<table class="stats-table">
+    <thead>
+        <tr><th>Rank</th><th>Name</th><th>Min Kills</th><th>Max Kills</th></tr>
+    </thead>
+    <tbody>
+        @foreach (var r in Model.Ranks)
+        {
+            <tr>
+                <td>
+                    @if (!string.IsNullOrEmpty(r.Image))
+                    {
+                        <img src="/hlstatsimg/ranks/@r.Image" alt="@r.RankName" />
+                    }
+                </td>
+                <td>@r.RankName</td>
+                <td>@r.MinKills</td>
+                <td>@(r.MaxKills == 0 ? "∞" : r.MaxKills.ToString())</td>
+            </tr>
+        }
+        @if (!Model.Ranks.Any())
+        {
+            <tr><td colspan="4">No ranks configured.</td></tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,20 @@
+@model Ribbon
+@{
+    ViewData["Title"] = Model.RibbonName;
+}
+
+<h1>
+    @if (!string.IsNullOrEmpty(Model.Image))
+    {
+        <img src="/hlstatsimg/ribbons/@Model.Image" alt="@Model.RibbonName" />
+    }
+    @Model.RibbonName
+</h1>
+
+<table class="stats-table">
+    <tr><th>Award Code</th><td>@Model.AwardCode</td></tr>
+    <tr><th>Count Required</th><td>@Model.AwardCount</td></tr>
+    <tr><th>Game</th><td>@Model.Game</td></tr>
+</table>
+
+<p><a asp-action="Ribbons" asp-route-game="@Model.Game">&larr; Back to Ribbons</a></p>

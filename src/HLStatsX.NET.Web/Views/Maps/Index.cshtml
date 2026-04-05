@@ -1,0 +1,40 @@
+@model HLStatsX.NET.Core.Models.PagedResult<HLStatsX.NET.Core.Entities.MapCount>
+@{
+    ViewData["Title"] = "Maps";
+    var game = ViewBag.Game as string ?? "";
+    var sortBy = ViewBag.SortBy as string ?? "kills";
+}
+
+<h1>Maps &mdash; @game</h1>
+
+<div class="sort-bar">
+    Sort by:
+    <a asp-action="Index" asp-route-game="@game" asp-route-sortBy="kills" class="@(sortBy == "kills" ? "active" : "")">Kills</a>
+    <a asp-action="Index" asp-route-game="@game" asp-route-sortBy="headshots" class="@(sortBy == "headshots" ? "active" : "")">Headshots</a>
+</div>
+
+<table class="stats-table">
+    <thead>
+        <tr>
+            <th>Rank</th>
+            <th>Map</th>
+            <th>Kills</th>
+            <th>Headshots</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{ int rank = (Model.Page - 1) * Model.PageSize + 1; }
+        @foreach (var m in Model.Items)
+        {
+            <tr>
+                <td>@rank</td>
+                <td>@m.Map</td>
+                <td>@m.Kills</td>
+                <td>@m.Headshots</td>
+            </tr>
+            rank++;
+        }
+    </tbody>
+</table>
+
+<partial name="_Pagination" model="@PaginationModel.From(Model, p => Url.Action("Index", new { game = game, sortBy = sortBy, page = p })!)" />

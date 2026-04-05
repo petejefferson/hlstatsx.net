@@ -1,0 +1,40 @@
+@model AdminUserListViewModel
+@{
+    ViewData["Title"] = "Admin Users";
+}
+
+<h1>Admin Users</h1>
+
+<p><a asp-action="CreateUser" class="btn-primary" style="display:inline-block;text-decoration:none;">Add User</a></p>
+
+<table class="stats-table">
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Access Level</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model.Users)
+        {
+            <tr>
+                <td>@user.Username</td>
+                <td>@user.AccLevel</td>
+                <td>
+                    <form asp-action="DeleteUser" asp-route-username="@user.Username" method="post" style="display:inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn-primary" style="font-size:0.8rem;padding:0.2rem 0.6rem;"
+                                onclick="return confirm('Delete user @user.Username?')">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        @if (!Model.Users.Any())
+        {
+            <tr><td colspan="3">No admin users found.</td></tr>
+        }
+    </tbody>
+</table>
+
+<p><a asp-action="Dashboard">&larr; Dashboard</a></p>
