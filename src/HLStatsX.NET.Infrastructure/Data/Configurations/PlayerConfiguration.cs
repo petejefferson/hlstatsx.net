@@ -36,6 +36,10 @@ public class PlayerConfiguration : IEntityTypeConfiguration<Player>
         builder.Property(p => p.GameRank).HasColumnName("game_rank");
         builder.Property(p => p.Lat).HasColumnName("lat");
         builder.Property(p => p.Lng).HasColumnName("lng");
+        builder.Property(p => p.KillStreak).HasColumnName("kill_streak");
+        builder.Property(p => p.DeathStreak).HasColumnName("death_streak");
+        builder.Property(p => p.MmRank).HasColumnName("mmrank");
+        builder.Ignore(p => p.KillsPerMinute);
 
         builder.HasOne(p => p.Clan)
             .WithMany(c => c.Players)
@@ -70,6 +74,13 @@ public class PlayerNameConfiguration : IEntityTypeConfiguration<PlayerName>
         builder.Property(n => n.Kills).HasColumnName("kills");
         builder.Property(n => n.Deaths).HasColumnName("deaths");
         builder.Property(n => n.ConnectionTime).HasColumnName("connection_time");
+        builder.Property(n => n.Headshots).HasColumnName("headshots");
+        builder.Property(n => n.Suicides).HasColumnName("suicides");
+        builder.Property(n => n.Shots).HasColumnName("shots");
+        builder.Property(n => n.Hits).HasColumnName("hits");
+        builder.Ignore(n => n.KdRatio);
+        builder.Ignore(n => n.HsKRatio);
+        builder.Ignore(n => n.Accuracy);
 
         builder.HasOne(n => n.Player).WithMany(p => p.Names).HasForeignKey(n => n.PlayerId);
     }

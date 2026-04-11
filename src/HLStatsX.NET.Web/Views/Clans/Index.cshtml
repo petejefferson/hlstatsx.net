@@ -1,6 +1,13 @@
 @model ClanLeaderboardViewModel
 @{
     ViewData["Title"] = "Clan Rankings";
+
+    string SortUrl(string field)
+    {
+        bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
+        return Url.Action("Index", new { game = Model.Game, sortBy = field, desc = nextDesc })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
 }
 
 <h1>Clan Rankings &mdash; @Model.Game</h1>
@@ -9,9 +16,10 @@
     <thead>
         <tr>
             <th>Rank</th>
-            <th>Clan</th>
+            <th><a href="@(SortUrl("name"))">Clan@(Mark("name"))</a></th>
             <th>Tag</th>
-            <th>Members</th>
+            <th><a href="@(SortUrl("members"))">Members@(Mark("members"))</a></th>
+            <th><a href="@(SortUrl("skill"))">Points@(Mark("skill"))</a></th>
         </tr>
     </thead>
     <tbody>
@@ -23,10 +31,11 @@
                 <td><a asp-action="Profile" asp-route-id="@clan.ClanId">@clan.Name</a></td>
                 <td>@clan.Tag</td>
                 <td>@clan.Players.Count</td>
+                <td>@clan.Players.Where(p => p.HideRanking == 0).Sum(p => p.Skill).ToString("N0")</td>
             </tr>
             rank++;
         }
     </tbody>
 </table>
 
-<partial name="_Pagination" model="@PaginationModel.From(Model.Clans, p => Url.Action("Index", new { game = Model.Game, page = p })!)" />
+<partial name="_Pagination" model="@PaginationModel.From(Model.Clans, p => Url.Action("Index", new { game = Model.Game, sortBy = Model.SortBy, desc = Model.Descending, page = p })!)" />

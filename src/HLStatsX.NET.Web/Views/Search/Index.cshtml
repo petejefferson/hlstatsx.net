@@ -1,35 +1,73 @@
 @model HLStatsX.NET.Core.Models.SearchResults?
 @{
     ViewData["Title"] = "Search";
-    var query = Model?.Query ?? "";
+    var query = Model?.Query ?? ViewData["query"] as string ?? "";
+    var game  = ViewData["game"] as string ?? "";
+
+    // Pre-compute player pagination so it's available in code context
+    var playerTotalPages  = Model is null ? 0 : (int)Math.Ceiling(Model.TotalPlayers / (double)Model.PageSize);
+    var playerPagination  = Model is null ? null : new PaginationModel
+    {
+        CurrentPage = Model.Page,
+        TotalPages  = playerTotalPages,
+        BuildUrl    = pg => Url.Action("Index", new { q = query, game, page = pg })!
+    };
 }
 
-<h1>Search</h1>
+<h1>Find a Player or Clan</h1>
 
-<form method="get" asp-action="Index">
-    <input type="text" name="q" value="@query" placeholder="Search players and clans..." />
-    <button type="submit">Search</button>
+<form method="get" asp-action="Index" style="margin-bottom:1rem;">
+    <input type="hidden" name="game" value="@game" />
+    <table class="data-table" style="width:auto;">
+        <tr class="bg1">
+            <td style="padding:0.3rem 0.6rem; white-space:nowrap;">Search for:</td>
+            <td style="padding:0.3rem 0.6rem;">
+                <input type="text" name="q" size="30" maxlength="128" value="@query" class="form-text" />
+            </td>
+        </tr>
+        <tr class="bg1">
+            <td colspan="2" style="padding:0.3rem 0.6rem; text-align:center;">
+                <button type="submit" class="btn-small">Find Now</button>
+            </td>
+        </tr>
+    </table>
 </form>
 
 @if (Model is not null)
 {
-    <section>
-        <h2>Players (@Model.TotalPlayers found)</h2>
+    <h2>Search Results</h2>
+
+    <section style="margin-bottom:1.5rem;">
+        <h3>Players &mdash; @Model.TotalPlayers found</h3>
         @if (Model.Players.Any())
         {
-            <table class="stats-table">
-                <thead><tr><th>Player</th><th>Skill</th><th>Kills</th></tr></thead>
+            <table class="data-table">
+                <thead>
+                    <tr class="data-table-head">
+                        <th style="width:4%; text-align:center;">#</th>
+                        <th style="text-align:left;">Player</th>
+                        <th style="text-align:left;">Game</th>
+                    </tr>
+                </thead>
                 <tbody>
+                    @{ int row = 0; }
                     @foreach (var p in Model.Players)
                     {
-                        <tr>
-                            <td><a asp-controller="Players" asp-action="Profile" asp-route-id="@p.PlayerId">@p.LastName</a></td>
-                            <td>@p.Skill</td>
-                            <td>@p.Kills</td>
+                        var flagFile = string.IsNullOrEmpty(p.Flag)    ? "0" : p.Flag.ToLowerInvariant();
+                        var flagAlt  = string.IsNullOrEmpty(p.Country) ? ""  : p.Country;
+                        <tr class="@(row % 2 == 0 ? "bg1" : "bg2")">
+                            <td style="text-align:center;">@(Model.PageSize * (Model.Page - 1) + row + 1)</td>
+                            <td>
+                                <img src="/hlstatsimg/flags/@(flagFile).gif" alt="@flagAlt" title="@flagAlt" />&nbsp;
+                                <a asp-controller="Players" asp-action="Profile" asp-route-id="@p.PlayerId">@p.MatchedName</a>
+                            </td>
+                            <td>@p.Game</td>
                         </tr>
+                        row++;
                     }
                 </tbody>
             </table>
+            <partial name="_Pagination" model="@playerPagination" />
         }
         else
         {
@@ -38,18 +76,29 @@
     </section>
 
     <section>
-        <h2>Clans (@Model.TotalClans found)</h2>
+        <h3>Clans &mdash; @Model.TotalClans found</h3>
         @if (Model.Clans.Any())
         {
-            <table class="stats-table">
-                <thead><tr><th>Clan</th><th>Tag</th></tr></thead>
+            <table class="data-table">
+                <thead>
+                    <tr class="data-table-head">
+                        <th style="width:4%; text-align:center;">#</th>
+                        <th style="text-align:left;">Tag</th>
+                        <th style="text-align:left;">Clan Name</th>
+                        <th style="text-align:left;">Game</th>
+                    </tr>
+                </thead>
                 <tbody>
+                    @{ int clanRow = 0; }
                     @foreach (var c in Model.Clans)
                     {
-                        <tr>
-                            <td><a asp-controller="Clans" asp-action="Profile" asp-route-id="@c.ClanId">@c.Name</a></td>
+                        <tr class="@(clanRow % 2 == 0 ? "bg1" : "bg2")">
+                            <td style="text-align:center;">@(clanRow + 1)</td>
                             <td>@c.Tag</td>
+                            <td><a asp-controller="Clans" asp-action="Profile" asp-route-id="@c.ClanId">@c.Name</a></td>
+                            <td>@c.Game</td>
                         </tr>
+                        clanRow++;
                     }
                 </tbody>
             </table>

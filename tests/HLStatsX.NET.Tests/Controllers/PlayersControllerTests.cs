@@ -45,6 +45,12 @@ public class PlayersControllerTests
         _playerServiceMock
             .Setup(s => s.GetLeaderboardAsync("cstrike", 1, 50, "skill", true, default))
             .ReturnsAsync(paged);
+        _playerServiceMock
+            .Setup(s => s.GetHistoryDatesAsync("cstrike", default))
+            .ReturnsAsync(Array.Empty<DateTime>());
+        _awardServiceMock
+            .Setup(s => s.GetRanksAsync("cstrike", default))
+            .ReturnsAsync(Array.Empty<Rank>());
 
         var result = await _controller.Index(null, 1, "skill", true);
 
@@ -71,10 +77,27 @@ public class PlayersControllerTests
 
         _playerServiceMock.Setup(s => s.GetPlayerAsync(1, default)).ReturnsAsync(player);
         _playerServiceMock.Setup(s => s.GetPlayerRankAsync(1, "cstrike", default)).ReturnsAsync(1);
+        _playerServiceMock.Setup(s => s.GetNextRankAsync("cstrike", 500, default)).ReturnsAsync((Rank?)null);
         _playerServiceMock.Setup(s => s.GetPlayerAliasesAsync(1, default)).ReturnsAsync(Array.Empty<PlayerName>());
         _playerServiceMock.Setup(s => s.GetPlayerAwardsAsync(1, default)).ReturnsAsync(Array.Empty<PlayerAward>());
         _playerServiceMock.Setup(s => s.GetPlayerRibbonsAsync(1, default)).ReturnsAsync(Array.Empty<PlayerRibbon>());
+        _playerServiceMock.Setup(s => s.GetRibbonsWithStatusAsync(1, "cstrike", default)).ReturnsAsync(Array.Empty<RibbonDisplay>());
+        _playerServiceMock.Setup(s => s.GetRealStatsAsync(1, default)).ReturnsAsync(new RealStats(0, 0, 0, 0, 0, 0));
+        _playerServiceMock.Setup(s => s.GetAveragePingAsync(1, default)).ReturnsAsync((PingStats?)null);
+        _playerServiceMock.Setup(s => s.GetLastConnectAsync(1, default)).ReturnsAsync((DateTime?)null);
+        _playerServiceMock.Setup(s => s.GetFavoriteServerAsync(1, default)).ReturnsAsync((FavoriteServer?)null);
+        _playerServiceMock.Setup(s => s.GetFavoriteMapAsync(1, default)).ReturnsAsync((string?)null);
+        _playerServiceMock.Setup(s => s.GetFavoriteWeaponAsync(1, default)).ReturnsAsync((FavoriteWeapon?)null);
+        _playerServiceMock.Setup(s => s.GetKillStatsAsync(1, default)).ReturnsAsync(Array.Empty<KillStatRow>());
+        _playerServiceMock.Setup(s => s.GetMapPerformanceAsync(1, default)).ReturnsAsync(Array.Empty<MapStatRow>());
+        _playerServiceMock.Setup(s => s.GetServerPerformanceAsync(1, default)).ReturnsAsync(Array.Empty<ServerStatRow>());
+        _playerServiceMock.Setup(s => s.GetWeaponStatsAsync(1, "cstrike", default)).ReturnsAsync(Array.Empty<WeaponStatRow>());
+        _playerServiceMock.Setup(s => s.GetTeamSelectionAsync(1, "cstrike", default)).ReturnsAsync(Array.Empty<TeamStatRow>());
+        _playerServiceMock.Setup(s => s.GetRoleSelectionAsync(1, "cstrike", default)).ReturnsAsync(Array.Empty<RoleStatRow>());
+        _playerServiceMock.Setup(s => s.GetPlayerActionsAsync(1, default)).ReturnsAsync(Array.Empty<ActionStatRow>());
+        _playerServiceMock.Setup(s => s.GetPlayerActionVictimsAsync(1, default)).ReturnsAsync(Array.Empty<ActionStatRow>());
         _awardServiceMock.Setup(s => s.GetRankForPlayerAsync(1, "cstrike", default)).ReturnsAsync((Rank?)null);
+        _awardServiceMock.Setup(s => s.GetRanksAsync("cstrike", default)).ReturnsAsync(Array.Empty<Rank>());
 
         var result = await _controller.Profile(1, default);
 

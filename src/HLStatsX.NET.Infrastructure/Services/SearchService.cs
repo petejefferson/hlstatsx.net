@@ -15,19 +15,19 @@ public class SearchService : ISearchService
         _clans = clans;
     }
 
-    public async Task<SearchResults> SearchAsync(string query, string game, int page = 1, int pageSize = 20, CancellationToken ct = default)
+    public async Task<SearchResults> SearchAsync(string query, string? game, int page = 1, int pageSize = 20, CancellationToken ct = default)
     {
         var players = await _players.SearchAsync(query, game, page, pageSize, ct);
         var clans = await _clans.SearchAsync(query, game, page, pageSize, ct);
 
         return new SearchResults
         {
-            Query = query,
-            Players = players.Items,
-            Clans = clans.Items,
+            Query    = query,
+            Players  = players.Items,
+            Clans    = clans.Items,
             TotalPlayers = players.TotalCount,
-            TotalClans = clans.TotalCount,
-            Page = page,
+            TotalClans   = clans.TotalCount,
+            Page     = page,
             PageSize = pageSize
         };
     }

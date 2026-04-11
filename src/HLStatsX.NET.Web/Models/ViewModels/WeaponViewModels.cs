@@ -6,7 +6,8 @@ namespace HLStatsX.NET.Web.Models.ViewModels;
 public record WeaponListViewModel(
     PagedResult<Weapon> Weapons,
     string Game,
-    string SortBy
+    string SortBy,
+    bool Descending
 );
 
 public record WeaponDetailViewModel(

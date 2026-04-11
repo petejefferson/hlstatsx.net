@@ -10,7 +10,7 @@ public class GameActionConfiguration : IEntityTypeConfiguration<GameAction>
     {
         builder.ToTable("hlstats_Actions");
         builder.HasKey(a => a.ActionId);
-        builder.Property(a => a.ActionId).HasColumnName("actionId");
+        builder.Property(a => a.ActionId).HasColumnName("id");
         builder.Property(a => a.Game).HasColumnName("game").HasMaxLength(32).IsRequired();
         builder.Property(a => a.Code).HasColumnName("code").HasMaxLength(64).IsRequired();
         builder.Property(a => a.Description).HasColumnName("description").HasMaxLength(128);

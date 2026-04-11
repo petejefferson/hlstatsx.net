@@ -18,6 +18,12 @@ public class PlayerService : IPlayerService
         string sortBy = "skill", bool descending = true, CancellationToken ct = default) =>
         _players.GetRankingsAsync(game, page, pageSize, sortBy, descending, ct);
 
+    public Task<IReadOnlyList<DateTime>> GetHistoryDatesAsync(string game, CancellationToken ct = default) =>
+        _players.GetHistoryDatesAsync(game, 50, ct);
+
+    public Task<PagedResult<PlayerLeaderboardRow>> GetPeriodLeaderboardAsync(string game, DateTime from, DateTime to, int page, int pageSize, string sortBy, bool descending, CancellationToken ct = default) =>
+        _players.GetHistoryRankingsAsync(game, from, to, page, pageSize, sortBy, descending, ct);
+
     public Task<int> GetPlayerRankAsync(int playerId, string game, CancellationToken ct = default) =>
         _players.GetRankAsync(playerId, game, ct);
 
@@ -33,7 +39,7 @@ public class PlayerService : IPlayerService
     public Task<IReadOnlyList<PlayerName>> GetPlayerAliasesAsync(int playerId, CancellationToken ct = default) =>
         _players.GetAliasesAsync(playerId, ct);
 
-    public Task<PagedResult<Player>> SearchPlayersAsync(string query, string game, int page, int pageSize, CancellationToken ct = default) =>
+    public Task<PagedResult<PlayerSearchResult>> SearchPlayersAsync(string query, string? game, int page, int pageSize, CancellationToken ct = default) =>
         _players.SearchAsync(query, game, page, pageSize, ct);
 
     public Task<IReadOnlyList<Player>> GetBannedPlayersAsync(string game, CancellationToken ct = default) =>
@@ -61,4 +67,52 @@ public class PlayerService : IPlayerService
         player.HideRanking = 0;
         await _players.UpdateAsync(player, ct);
     }
+
+    public Task<RealStats> GetRealStatsAsync(int playerId, CancellationToken ct = default) =>
+        _players.GetRealStatsAsync(playerId, ct);
+
+    public Task<PingStats?> GetAveragePingAsync(int playerId, CancellationToken ct = default) =>
+        _players.GetAveragePingAsync(playerId, ct);
+
+    public Task<DateTime?> GetLastConnectAsync(int playerId, CancellationToken ct = default) =>
+        _players.GetLastConnectAsync(playerId, ct);
+
+    public Task<FavoriteServer?> GetFavoriteServerAsync(int playerId, CancellationToken ct = default) =>
+        _players.GetFavoriteServerAsync(playerId, ct);
+
+    public Task<string?> GetFavoriteMapAsync(int playerId, CancellationToken ct = default) =>
+        _players.GetFavoriteMapAsync(playerId, ct);
+
+    public Task<FavoriteWeapon?> GetFavoriteWeaponAsync(int playerId, CancellationToken ct = default) =>
+        _players.GetFavoriteWeaponAsync(playerId, ct);
+
+    public Task<Rank?> GetNextRankAsync(string game, int kills, CancellationToken ct = default) =>
+        _players.GetNextRankAsync(game, kills, ct);
+
+    public Task<IReadOnlyList<RibbonDisplay>> GetRibbonsWithStatusAsync(int playerId, string game, CancellationToken ct = default) =>
+        _players.GetRibbonsWithStatusAsync(playerId, game, ct);
+
+    public Task<IReadOnlyList<KillStatRow>> GetKillStatsAsync(int playerId, CancellationToken ct = default) =>
+        _players.GetKillStatsAsync(playerId, ct);
+
+    public Task<IReadOnlyList<MapStatRow>> GetMapPerformanceAsync(int playerId, CancellationToken ct = default) =>
+        _players.GetMapPerformanceAsync(playerId, ct);
+
+    public Task<IReadOnlyList<ServerStatRow>> GetServerPerformanceAsync(int playerId, CancellationToken ct = default) =>
+        _players.GetServerPerformanceAsync(playerId, ct);
+
+    public Task<IReadOnlyList<WeaponStatRow>> GetWeaponStatsAsync(int playerId, string game, CancellationToken ct = default) =>
+        _players.GetWeaponStatsAsync(playerId, game, ct);
+
+    public Task<IReadOnlyList<TeamStatRow>> GetTeamSelectionAsync(int playerId, string game, CancellationToken ct = default) =>
+        _players.GetTeamSelectionAsync(playerId, game, ct);
+
+    public Task<IReadOnlyList<RoleStatRow>> GetRoleSelectionAsync(int playerId, string game, CancellationToken ct = default) =>
+        _players.GetRoleSelectionAsync(playerId, game, ct);
+
+    public Task<IReadOnlyList<ActionStatRow>> GetPlayerActionsAsync(int playerId, CancellationToken ct = default) =>
+        _players.GetPlayerActionsAsync(playerId, ct);
+
+    public Task<IReadOnlyList<ActionStatRow>> GetPlayerActionVictimsAsync(int playerId, CancellationToken ct = default) =>
+        _players.GetPlayerActionVictimsAsync(playerId, ct);
 }

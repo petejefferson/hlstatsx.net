@@ -28,6 +28,9 @@ public class Player
     public int HideRanking { get; set; }
     public int ActivityScore { get; set; }
     public int? GameRank { get; set; }
+    public int KillStreak { get; set; }
+    public int DeathStreak { get; set; }
+    public int? MmRank { get; set; }
     public float? Lat { get; set; }
     public float? Lng { get; set; }
 
@@ -48,4 +51,5 @@ public class Player
     public double KillDeathRatio => Deaths == 0 ? Kills : Math.Round((double)Kills / Deaths, 2);
     public double HeadshotPercent => Kills == 0 ? 0 : Math.Round((double)Headshots / Kills * 100, 1);
     public double Accuracy => Shots == 0 ? 0 : Math.Round((double)Hits / Shots * 100, 1);
+    public double KillsPerMinute => ConnectionTime == 0 ? 0 : Math.Round((double)Kills / (ConnectionTime / 60.0), 2);
 }

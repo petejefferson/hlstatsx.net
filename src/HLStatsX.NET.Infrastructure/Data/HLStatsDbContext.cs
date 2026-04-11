@@ -40,6 +40,12 @@ public class HLStatsDbContext : DbContext
     public DbSet<EventDisconnect> EventDisconnects => Set<EventDisconnect>();
     public DbSet<EventSuicide> EventSuicides => Set<EventSuicide>();
     public DbSet<EventTeamkill> EventTeamkills => Set<EventTeamkill>();
+    public DbSet<EventEntry> EventEntries => Set<EventEntry>();
+    public DbSet<EventLatency> EventLatencies => Set<EventLatency>();
+    public DbSet<EventChangeTeam> EventChangeTeams => Set<EventChangeTeam>();
+    public DbSet<EventChangeRole> EventChangeRoles => Set<EventChangeRole>();
+    public DbSet<EventPlayerAction> EventPlayerActions => Set<EventPlayerAction>();
+    public DbSet<EventPlayerPlayerAction> EventPlayerPlayerActions => Set<EventPlayerPlayerAction>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

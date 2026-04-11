@@ -15,14 +15,16 @@ public class MapRepository : IMapRepository
     public async Task<MapCount?> GetByNameAsync(string mapName, string game, CancellationToken ct = default) =>
         await _db.MapCounts.FirstOrDefaultAsync(m => m.Map == mapName && m.Game == game, ct);
 
-    public async Task<PagedResult<MapCount>> GetAllAsync(string game, int page, int pageSize, string sortBy = "kills", CancellationToken ct = default)
+    public async Task<PagedResult<MapCount>> GetAllAsync(string game, int page, int pageSize, string sortBy = "kills", bool desc = true, CancellationToken ct = default)
     {
         var query = _db.MapCounts.Where(m => m.Game == game);
 
-        query = sortBy.ToLowerInvariant() switch
+        query = (sortBy.ToLowerInvariant(), desc) switch
         {
-            "headshots" => query.OrderByDescending(m => m.Headshots),
-            _ => query.OrderByDescending(m => m.Kills)
+            ("headshots", true)  => query.OrderByDescending(m => m.Headshots),
+            ("headshots", false) => query.OrderBy(m => m.Headshots),
+            (_, true)            => query.OrderByDescending(m => m.Kills),
+            (_, false)           => query.OrderBy(m => m.Kills)
         };
 
         var total = await query.CountAsync(ct);

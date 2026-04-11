@@ -39,7 +39,29 @@
       "WebFetch(domain:tft.nervaware.co.uk)",
       "Bash(dir \"D:\\\\HLStatsX.NET\\\\web\\\\src\\\\HLStatsX.Web\\\\wwwroot\")",
       "Bash(grep -n \"background\\\\|color\\\\|#[A-Fa-f0-9]\\\\{3,6\\\\}\\\\|font-family\\\\|body\\\\|\\\\.header\\\\|\\\\.fSmall\" \"D:\\\\HLStatsX.NET\\\\web\\\\OriginalPHP\\\\hlstats.php\")",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(xargs grep:*)",
+      "Bash(cp:*)",
+      "Bash(grep -v \"^$\")",
+      "Bash(curl -sk https://localhost:18017/Players/Profile/5017)",
+      "Bash(cmd /c \"taskkill /F /IM HLStatsX.NET.Web.exe\")",
+      "Bash(dotnet publish:*)",
+      "Bash(ASPNETCORE_URLS=https://localhost:18017 dotnet HLStatsX.NET.Web.dll)",
+      "Bash(ASPNETCORE_URLS=https://localhost:18099 dotnet HLStatsX.NET.Web.dll)",
+      "Bash(curl -sk https://localhost:18099/Players/Profile/5017)",
+      "Bash(curl -sk \"https://localhost:18017/Players/Profile/5017\" -o /tmp/profile_test.html)",
+      "Bash(echo \"Exit: $?\")",
+      "Bash(netstat -ano)",
+      "Bash(curl -sk \"https://localhost:18099/Players/Profile/5017\" -o /tmp/profile_test.html)",
+      "Bash(curl -v \"https://localhost:18099/Players/Profile/5017\")",
+      "Bash(curl -sk \"https://localhost:18099/Players/Profile/5017\")",
+      "Bash(curl -k \"https://localhost:18099/Players/Profile/5017\")",
+      "Bash(tasklist:*)",
+      "Bash(cmd:*)",
+      "Bash(netstat -tlnp)",
+      "Bash(ASPNETCORE_ENVIRONMENT=Development dotnet run --project src/HLStatsX.NET.Web/HLStatsX.NET.Web.csproj --no-build --urls \"https://localhost:18099\")",
+      "Bash(echo \"Started PID: $!\")",
+      "Bash(grep -n 'find.*player\\\\|search\\\\|playerSearch\\\\|mode.*search\\\\|doPlayerSearch\\\\|$_GET\\\\['\\\\''q'\\\\''\\\\]\\\\|$q\\\\b' D:/source/hlstatsx.net/OriginalPHP/hlstats.php -i)"
     ]
   }
 }

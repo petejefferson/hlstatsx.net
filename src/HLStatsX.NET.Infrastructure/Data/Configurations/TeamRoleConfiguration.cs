@@ -33,9 +33,8 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
         builder.HasKey(r => r.RoleId);
         builder.Property(r => r.RoleId).HasColumnName("roleId");
         builder.Property(r => r.Game).HasColumnName("game").HasMaxLength(32).IsRequired();
+        builder.Property(r => r.Code).HasColumnName("code").HasMaxLength(64).IsRequired();
         builder.Property(r => r.Name).HasColumnName("name").HasMaxLength(64).IsRequired();
-        builder.Property(r => r.Team).HasColumnName("team").HasMaxLength(32);
-        builder.Property(r => r.Image).HasColumnName("image").HasMaxLength(64);
 
         builder.HasOne(r => r.GameNavigation)
             .WithMany(g => g.Roles)

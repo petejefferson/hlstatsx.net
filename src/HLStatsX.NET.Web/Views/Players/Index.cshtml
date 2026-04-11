@@ -1,38 +1,79 @@
 @model PlayerLeaderboardViewModel
 @{
     ViewData["Title"] = "Player Rankings";
+
+    string FormatTime(int seconds)
+    {
+        var ts = TimeSpan.FromSeconds(seconds);
+        var parts = new List<string>();
+        if (ts.Days > 0)    parts.Add($"{ts.Days}d");
+        if (ts.Hours > 0)   parts.Add($"{ts.Hours}h");
+        if (ts.Minutes > 0) parts.Add($"{ts.Minutes}m");
+        return parts.Count > 0 ? string.Join(" ", parts) : "0m";
+    }
+
+    string SortUrl(string field)
+    {
+        bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
+        return Url.Action("Index", new { game = Model.Game, sortBy = field, desc = nextDesc, rankType = Model.RankType })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
 }
 
 <h1>Player Rankings &mdash; @Model.Game</h1>
 
-<div class="sort-bar">
-    Sort by:
-    <a asp-action="Index" asp-route-game="@Model.Game" asp-route-sortBy="skill" asp-route-desc="true" class="@(Model.SortBy == "skill" ? "active" : "")">Points</a>
-    <a asp-action="Index" asp-route-game="@Model.Game" asp-route-sortBy="kills" asp-route-desc="true" class="@(Model.SortBy == "kills" ? "active" : "")">Kills</a>
-    <a asp-action="Index" asp-route-game="@Model.Game" asp-route-sortBy="headshots" asp-route-desc="true" class="@(Model.SortBy == "headshots" ? "active" : "")">Headshots</a>
-    <a asp-action="Index" asp-route-game="@Model.Game" asp-route-sortBy="connectiontime" asp-route-desc="true" class="@(Model.SortBy == "connectiontime" ? "active" : "")">Play Time</a>
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap; gap:0.5rem;">
+    <form method="get" asp-controller="Search" asp-action="Index" style="display:flex; align-items:center; gap:0.4rem;">
+        <input type="hidden" name="game" value="@Model.Game" />
+        <strong>&bull;</strong> Find a player:
+        <input type="text" name="q" size="20" maxlength="64" class="form-text" placeholder="Player name&hellip;" />
+        <button type="submit" class="btn-small">Search</button>
+    </form>
+
+    <form method="get" asp-action="Index" style="display:flex; align-items:center; gap:0.4rem;">
+        <input type="hidden" name="game"   value="@Model.Game" />
+        <input type="hidden" name="sortBy" value="@Model.SortBy" />
+        <input type="hidden" name="desc"   value="@Model.Descending.ToString().ToLower()" />
+        <strong>&bull;</strong> Ranking view:
+        <select name="rankType">
+            <option value="total" selected="@(Model.RankType == "total" ? "selected" : null)">Total Ranking</option>
+            <option value="week"  selected="@(Model.RankType == "week"  ? "selected" : null)">Last Week</option>
+            <option value="month" selected="@(Model.RankType == "month" ? "selected" : null)">Last Month</option>
+            @foreach (var d in Model.AvailableDates)
+            {
+                var ds = d.ToString("yyyy-MM-dd");
+                <option value="@ds" selected="@(Model.RankType == ds ? "selected" : null)">@ds</option>
+            }
+        </select>
+        <button type="submit" class="btn-small">View</button>
+    </form>
 </div>
 
 <table class="data-table">
     <thead>
         <tr class="data-table-head">
             <th style="width:4%;text-align:center;">Rank</th>
-            <th style="text-align:left;">Player</th>
-            <th style="text-align:left;">Clan</th>
-            <th style="text-align:right;">Points</th>
-            <th style="text-align:right;">Kills</th>
-            <th style="text-align:right;">Deaths</th>
-            <th style="text-align:right;">K/D</th>
-            <th style="text-align:right;">Headshots</th>
-            <th style="text-align:right;">HS%</th>
+            <th style="text-align:left;"><a href="@(SortUrl("name"))">Player@(Mark("name"))</a></th>
+            <th style="text-align:left;"><a href="@(SortUrl("clan"))">Clan@(Mark("clan"))</a></th>
+            <th style="text-align:center;"><a href="@(SortUrl("armyrank"))">Army Rank@(Mark("armyrank"))</a></th>
+            <th style="text-align:right;"><a href="@(SortUrl("skill"))">Points@(Mark("skill"))</a></th>
+            <th style="text-align:center;"><a href="@(SortUrl("activity"))">Activity@(Mark("activity"))</a></th>
+            <th style="text-align:right;"><a href="@(SortUrl("connectiontime"))">Connection Time@(Mark("connectiontime"))</a></th>
+            <th style="text-align:right;"><a href="@(SortUrl("kills"))">Kills@(Mark("kills"))</a></th>
+            <th style="text-align:right;"><a href="@(SortUrl("deaths"))">Deaths@(Mark("deaths"))</a></th>
+            <th style="text-align:right;"><a href="@(SortUrl("kd"))">K/D@(Mark("kd"))</a></th>
+            <th style="text-align:right;"><a href="@(SortUrl("headshots"))">Headshots@(Mark("headshots"))</a></th>
+            <th style="text-align:right;"><a href="@(SortUrl("hsk"))">HS:K@(Mark("hsk"))</a></th>
+            <th style="text-align:right;"><a href="@(SortUrl("accuracy"))">Accuracy@(Mark("accuracy"))</a></th>
         </tr>
     </thead>
     <tbody>
         @{ int startRank = (Model.Players.Page - 1) * Model.Players.PageSize + 1; int row = 0; }
         @foreach (var player in Model.Players.Items)
         {
-            var flagFile = string.IsNullOrEmpty(player.Flag) ? "0" : player.Flag.ToLowerInvariant();
-            var flagAlt  = string.IsNullOrEmpty(player.Country) ? "" : player.Country;
+            var flagFile = string.IsNullOrEmpty(player.Flag)    ? "0" : player.Flag.ToLowerInvariant();
+            var flagAlt  = string.IsNullOrEmpty(player.Country) ? ""  : player.Country;
+            var armyRank = Model.GetArmyRank(player.AllTimeKills);
             <tr class="@(row % 2 == 0 ? "bg1" : "bg2")">
                 <td style="text-align:center;">@startRank</td>
                 <td style="text-align:left;">
@@ -45,12 +86,27 @@
                         <a asp-controller="Clans" asp-action="Profile" asp-route-id="@player.Clan.ClanId">@player.Clan.Tag</a>
                     }
                 </td>
-                <td style="text-align:right;">@player.Skill.ToString("N0")</td>
+                <td style="text-align:center;">
+                    @if (armyRank?.Image != null)
+                    {
+                        <img src="/hlstatsimg/ranks/@(armyRank.Image)_small.png" alt="@armyRank.RankName" title="@armyRank.RankName" />
+                    }
+                    else if (armyRank != null)
+                    {
+                        <text>@armyRank.RankName</text>
+                    }
+                </td>
+                <td style="text-align:right;">@player.Points.ToString("N0")</td>
+                <td style="text-align:center;">
+                    <meter min="0" max="100" low="25" high="50" optimum="75" value="@player.ActivityScore" title="@player.ActivityScore%"></meter>
+                </td>
+                <td style="text-align:right;">@FormatTime(player.ConnectionTime)</td>
                 <td style="text-align:right;">@player.Kills.ToString("N0")</td>
                 <td style="text-align:right;">@player.Deaths.ToString("N0")</td>
                 <td style="text-align:right;">@player.KillDeathRatio.ToString("F2")</td>
                 <td style="text-align:right;">@player.Headshots.ToString("N0")</td>
-                <td style="text-align:right;">@player.HeadshotPercent.ToString("F2")%</td>
+                <td style="text-align:right;">@player.HsPerKill.ToString("F2")</td>
+                <td style="text-align:right;">@(Model.IsHistorical ? "N/A" : player.Accuracy.ToString("F1") + "%")</td>
             </tr>
             startRank++;
             row++;
@@ -58,4 +114,4 @@
     </tbody>
 </table>
 
-<partial name="_Pagination" model="@PaginationModel.From(Model.Players, p => Url.Action("Index", new { game = Model.Game, sortBy = Model.SortBy, desc = Model.Descending, page = p })!)" />
+<partial name="_Pagination" model="@PaginationModel.From(Model.Players, p => Url.Action("Index", new { game = Model.Game, sortBy = Model.SortBy, desc = Model.Descending, rankType = Model.RankType, page = p })!)" />

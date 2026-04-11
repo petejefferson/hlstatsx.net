@@ -49,7 +49,7 @@ public class ClanServiceTests
             new() { ClanId = 2, Name = "SecondClan", Tag = "[SC]", Game = "cstrike" }
         };
         var paged = PagedResult<Clan>.Create(clans, 2, 1, 50);
-        _repoMock.Setup(r => r.GetRankingsAsync("cstrike", 1, 50, default)).ReturnsAsync(paged);
+        _repoMock.Setup(r => r.GetRankingsAsync("cstrike", 1, 50, "skill", true, default)).ReturnsAsync(paged);
 
         var result = await _service.GetLeaderboardAsync("cstrike", 1, 50);
 

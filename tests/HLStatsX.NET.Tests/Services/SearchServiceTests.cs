@@ -23,12 +23,15 @@ public class SearchServiceTests
     [Fact]
     public async Task SearchAsync_ReturnsCombinedResults()
     {
-        var players = new List<Player> { new() { PlayerId = 1, LastName = "FragMaster" } };
+        var players = new List<PlayerSearchResult>
+        {
+            new(1, "FragMaster", null, null, "cstrike")
+        };
         var clans = new List<Clan> { new() { ClanId = 1, Name = "FragClan" } };
 
         _playerRepoMock
             .Setup(r => r.SearchAsync("Frag", "cstrike", 1, 20, default))
-            .ReturnsAsync(PagedResult<Player>.Create(players, 1, 1, 20));
+            .ReturnsAsync(PagedResult<PlayerSearchResult>.Create(players, 1, 1, 20));
 
         _clanRepoMock
             .Setup(r => r.SearchAsync("Frag", "cstrike", 1, 20, default))
@@ -48,7 +51,7 @@ public class SearchServiceTests
     {
         _playerRepoMock
             .Setup(r => r.SearchAsync("xyz", "cstrike", 1, 20, default))
-            .ReturnsAsync(PagedResult<Player>.Create(Array.Empty<Player>(), 0, 1, 20));
+            .ReturnsAsync(PagedResult<PlayerSearchResult>.Create(Array.Empty<PlayerSearchResult>(), 0, 1, 20));
 
         _clanRepoMock
             .Setup(r => r.SearchAsync("xyz", "cstrike", 1, 20, default))

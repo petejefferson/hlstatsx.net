@@ -18,14 +18,18 @@ public class WeaponRepository : IWeaponRepository
     public async Task<Weapon?> GetByCodeAsync(string code, string game, CancellationToken ct = default) =>
         await _db.Weapons.FirstOrDefaultAsync(w => w.Code == code && w.Game == game, ct);
 
-    public async Task<PagedResult<Weapon>> GetAllAsync(string game, int page, int pageSize, string sortBy = "kills", CancellationToken ct = default)
+    public async Task<PagedResult<Weapon>> GetAllAsync(string game, int page, int pageSize, string sortBy = "kills", bool desc = true, CancellationToken ct = default)
     {
         var query = _db.Weapons.Where(w => w.Game == game && w.Kills > 0);
 
-        query = sortBy.ToLowerInvariant() switch
+        query = (sortBy.ToLowerInvariant(), desc) switch
         {
-            "headshots" => query.OrderByDescending(w => w.Headshots),
-            _ => query.OrderByDescending(w => w.Kills)
+            ("headshots", true)  => query.OrderByDescending(w => w.Headshots),
+            ("headshots", false) => query.OrderBy(w => w.Headshots),
+            ("hspct",     true)  => query.OrderByDescending(w => w.Kills == 0 ? 0.0 : (double)w.Headshots / w.Kills),
+            ("hspct",     false) => query.OrderBy(w => w.Kills == 0 ? 0.0 : (double)w.Headshots / w.Kills),
+            (_,           true)  => query.OrderByDescending(w => w.Kills),
+            (_,           false) => query.OrderBy(w => w.Kills)
         };
 
         var total = await query.CountAsync(ct);

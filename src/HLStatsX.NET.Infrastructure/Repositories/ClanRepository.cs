@@ -16,7 +16,7 @@ public class ClanRepository : IClanRepository
         await _db.Clans
             .FirstOrDefaultAsync(c => c.ClanId == clanId, ct);
 
-    public async Task<PagedResult<Clan>> GetRankingsAsync(string game, int page, int pageSize, CancellationToken ct = default)
+    public async Task<PagedResult<Clan>> GetRankingsAsync(string game, int page, int pageSize, string sortBy = "skill", bool desc = true, CancellationToken ct = default)
     {
         var query = _db.Clans
             .Where(c => c.Game == game && !c.IsHidden)
@@ -25,8 +25,17 @@ public class ClanRepository : IClanRepository
                 Clan = c,
                 MemberCount = c.Players.Count(p => p.HideRanking == 0 && p.Kills > 0),
                 TotalSkill = c.Players.Where(p => p.HideRanking == 0).Sum(p => (int?)p.Skill) ?? 0
-            })
-            .OrderByDescending(x => x.TotalSkill);
+            });
+
+        query = (sortBy.ToLowerInvariant(), desc) switch
+        {
+            ("members", true)  => query.OrderByDescending(x => x.MemberCount),
+            ("members", false) => query.OrderBy(x => x.MemberCount),
+            ("name",    true)  => query.OrderByDescending(x => x.Clan.Name),
+            ("name",    false) => query.OrderBy(x => x.Clan.Name),
+            ("skill",   false) => query.OrderBy(x => x.TotalSkill),
+            _                  => query.OrderByDescending(x => x.TotalSkill)
+        };
 
         var total = await query.CountAsync(ct);
         var items = await query.Skip((page - 1) * pageSize).Take(pageSize).Select(x => x.Clan).ToListAsync(ct);
@@ -39,10 +48,11 @@ public class ClanRepository : IClanRepository
             .OrderByDescending(p => p.Skill)
             .ToListAsync(ct);
 
-    public async Task<PagedResult<Clan>> SearchAsync(string query, string game, int page, int pageSize, CancellationToken ct = default)
+    public async Task<PagedResult<Clan>> SearchAsync(string query, string? game, int page, int pageSize, CancellationToken ct = default)
     {
         var q = _db.Clans
-            .Where(c => c.Game == game && (EF.Functions.Like(c.Name, $"%{query}%") || EF.Functions.Like(c.Tag, $"%{query}%")));
+            .Where(c => (game == null || c.Game == game)
+                     && (EF.Functions.Like(c.Name, $"%{query}%") || EF.Functions.Like(c.Tag, $"%{query}%")));
 
         var total = await q.CountAsync(ct);
         var items = await q.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);

@@ -1,5 +1,6 @@
 using HLStatsX.NET.Core.Interfaces.Repositories;
 using HLStatsX.NET.Core.Models;
+using HLStatsX.NET.Web.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HLStatsX.NET.Web.Controllers;
@@ -15,14 +16,12 @@ public class MapsController : Controller
         _config = config;
     }
 
-    public async Task<IActionResult> Index(string? game, int page = 1, string sortBy = "kills", CancellationToken ct = default)
+    public async Task<IActionResult> Index(string? game, int page = 1, string sortBy = "kills", bool desc = true, CancellationToken ct = default)
     {
         game ??= _config["HLStatsX:DefaultGame"] ?? "cstrike";
         int pageSize = _config.GetValue<int>("HLStatsX:DefaultPageSize", 50);
-        var result = await _maps.GetAllAsync(game, page, pageSize, sortBy, ct);
-        ViewBag.Game = game;
-        ViewBag.SortBy = sortBy;
-        return View(result);
+        var result = await _maps.GetAllAsync(game, page, pageSize, sortBy, desc, ct);
+        return View(new MapListViewModel(result, game, sortBy, desc));
     }
 
     public async Task<IActionResult> Detail(string name, string? game, CancellationToken ct)

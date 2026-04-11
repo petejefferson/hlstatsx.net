@@ -1,24 +1,25 @@
 @model WeaponListViewModel
 @{
     ViewData["Title"] = "Weapons";
+
+    string SortUrl(string field)
+    {
+        bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
+        return Url.Action("Index", new { game = Model.Game, sortBy = field, desc = nextDesc })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
 }
 
 <h1>Weapons &mdash; @Model.Game</h1>
-
-<div class="sort-bar">
-    Sort by:
-    <a asp-action="Index" asp-route-game="@Model.Game" asp-route-sortBy="kills" class="@(Model.SortBy == "kills" ? "active" : "")">Kills</a>
-    <a asp-action="Index" asp-route-game="@Model.Game" asp-route-sortBy="headshots" class="@(Model.SortBy == "headshots" ? "active" : "")">Headshots</a>
-</div>
 
 <table class="stats-table">
     <thead>
         <tr>
             <th>Rank</th>
             <th>Weapon</th>
-            <th>Kills</th>
-            <th>Headshots</th>
-            <th>HS%</th>
+            <th><a href="@(SortUrl("kills"))">Kills@(Mark("kills"))</a></th>
+            <th><a href="@(SortUrl("headshots"))">Headshots@(Mark("headshots"))</a></th>
+            <th><a href="@(SortUrl("hspct"))">HS%@(Mark("hspct"))</a></th>
         </tr>
     </thead>
     <tbody>
@@ -37,4 +38,4 @@
     </tbody>
 </table>
 
-<partial name="_Pagination" model="@PaginationModel.From(Model.Weapons, p => Url.Action("Index", new { game = Model.Game, sortBy = Model.SortBy, page = p })!)" />
+<partial name="_Pagination" model="@PaginationModel.From(Model.Weapons, p => Url.Action("Index", new { game = Model.Game, sortBy = Model.SortBy, desc = Model.Descending, page = p })!)" />

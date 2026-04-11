@@ -1,30 +1,29 @@
-@model HLStatsX.NET.Core.Models.PagedResult<HLStatsX.NET.Core.Entities.MapCount>
+@model MapListViewModel
 @{
     ViewData["Title"] = "Maps";
-    var game = ViewBag.Game as string ?? "";
-    var sortBy = ViewBag.SortBy as string ?? "kills";
+
+    string SortUrl(string field)
+    {
+        bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
+        return Url.Action("Index", new { game = Model.Game, sortBy = field, desc = nextDesc })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
 }
 
-<h1>Maps &mdash; @game</h1>
-
-<div class="sort-bar">
-    Sort by:
-    <a asp-action="Index" asp-route-game="@game" asp-route-sortBy="kills" class="@(sortBy == "kills" ? "active" : "")">Kills</a>
-    <a asp-action="Index" asp-route-game="@game" asp-route-sortBy="headshots" class="@(sortBy == "headshots" ? "active" : "")">Headshots</a>
-</div>
+<h1>Maps &mdash; @Model.Game</h1>
 
 <table class="stats-table">
     <thead>
         <tr>
             <th>Rank</th>
             <th>Map</th>
-            <th>Kills</th>
-            <th>Headshots</th>
+            <th><a href="@(SortUrl("kills"))">Kills@(Mark("kills"))</a></th>
+            <th><a href="@(SortUrl("headshots"))">Headshots@(Mark("headshots"))</a></th>
         </tr>
     </thead>
     <tbody>
-        @{ int rank = (Model.Page - 1) * Model.PageSize + 1; }
-        @foreach (var m in Model.Items)
+        @{ int rank = (Model.Maps.Page - 1) * Model.Maps.PageSize + 1; }
+        @foreach (var m in Model.Maps.Items)
         {
             <tr>
                 <td>@rank</td>
@@ -37,4 +36,4 @@
     </tbody>
 </table>
 
-<partial name="_Pagination" model="@PaginationModel.From(Model, p => Url.Action("Index", new { game = game, sortBy = sortBy, page = p })!)" />
+<partial name="_Pagination" model="@PaginationModel.From(Model.Maps, p => Url.Action("Index", new { game = Model.Game, sortBy = Model.SortBy, desc = Model.Descending, page = p })!)" />

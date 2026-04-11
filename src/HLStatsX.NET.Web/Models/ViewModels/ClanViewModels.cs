@@ -5,7 +5,9 @@ namespace HLStatsX.NET.Web.Models.ViewModels;
 
 public record ClanLeaderboardViewModel(
     PagedResult<Clan> Clans,
-    string Game
+    string Game,
+    string SortBy,
+    bool Descending
 );
 
 public record ClanProfileViewModel(
