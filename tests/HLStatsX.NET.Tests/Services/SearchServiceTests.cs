@@ -37,7 +37,7 @@ public class SearchServiceTests
             .Setup(r => r.SearchAsync("Frag", "cstrike", 1, 20, default))
             .ReturnsAsync(PagedResult<Clan>.Create(clans, 1, 1, 20));
 
-        var result = await _service.SearchAsync("Frag", "cstrike", 1, 20);
+        var result = await _service.SearchAsync("Frag", "cstrike", null, 1, 20);
 
         result.Players.Should().HaveCount(1);
         result.Clans.Should().HaveCount(1);
@@ -57,7 +57,7 @@ public class SearchServiceTests
             .Setup(r => r.SearchAsync("xyz", "cstrike", 1, 20, default))
             .ReturnsAsync(PagedResult<Clan>.Create(Array.Empty<Clan>(), 0, 1, 20));
 
-        var result = await _service.SearchAsync("xyz", "cstrike");
+        var result = await _service.SearchAsync("xyz", "cstrike", null);
 
         result.Players.Should().BeEmpty();
         result.Clans.Should().BeEmpty();

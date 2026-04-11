@@ -25,6 +25,7 @@
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap; gap:0.5rem;">
     <form method="get" asp-controller="Search" asp-action="Index" style="display:flex; align-items:center; gap:0.4rem;">
         <input type="hidden" name="game" value="@Model.Game" />
+        <input type="hidden" name="st" value="player" />
         <strong>&bull;</strong> Find a player:
         <input type="text" name="q" size="20" maxlength="64" class="form-text" placeholder="Player name&hellip;" />
         <button type="submit" class="btn-small">Search</button>

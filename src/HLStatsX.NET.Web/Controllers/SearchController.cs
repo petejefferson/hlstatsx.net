@@ -14,16 +14,17 @@ public class SearchController : Controller
         _config = config;
     }
 
-    public async Task<IActionResult> Index(string? q, string? game, int page = 1, CancellationToken ct = default)
+    public async Task<IActionResult> Index(string? q, string? game, string? st = null, int page = 1, CancellationToken ct = default)
     {
         game ??= _config["HLStatsX:DefaultGame"] ?? "cstrike";
         ViewData["game"]  = game;
         ViewData["query"] = q ?? "";
+        ViewData["st"]    = st ?? "";
 
         if (string.IsNullOrWhiteSpace(q))
             return View("Index", (object?)null);
 
-        var results = await _search.SearchAsync(q, game, page, 50, ct);
+        var results = await _search.SearchAsync(q, game, st, page, 50, ct);
         return View(results);
     }
 }

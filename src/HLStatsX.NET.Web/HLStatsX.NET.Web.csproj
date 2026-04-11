@@ -1,16 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>HLStatsX.NET.Web</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
+    <!-- EF Core kept at 9.x to match Pomelo.EntityFrameworkCore.MySql 9.x -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.*">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="2.2.0" />
+    <!-- Authentication.Cookies ships with ASP.NET Core in .NET 3.0+; no separate package needed -->
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\HLStatsX.NET.Core\HLStatsX.NET.Core.csproj" />

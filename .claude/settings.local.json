@@ -61,7 +61,12 @@
       "Bash(netstat -tlnp)",
       "Bash(ASPNETCORE_ENVIRONMENT=Development dotnet run --project src/HLStatsX.NET.Web/HLStatsX.NET.Web.csproj --no-build --urls \"https://localhost:18099\")",
       "Bash(echo \"Started PID: $!\")",
-      "Bash(grep -n 'find.*player\\\\|search\\\\|playerSearch\\\\|mode.*search\\\\|doPlayerSearch\\\\|$_GET\\\\['\\\\''q'\\\\''\\\\]\\\\|$q\\\\b' D:/source/hlstatsx.net/OriginalPHP/hlstats.php -i)"
+      "Bash(grep -n 'find.*player\\\\|search\\\\|playerSearch\\\\|mode.*search\\\\|doPlayerSearch\\\\|$_GET\\\\['\\\\''q'\\\\''\\\\]\\\\|$q\\\\b' D:/source/hlstatsx.net/OriginalPHP/hlstats.php -i)",
+      "Bash(dotnet --version)",
+      "Bash(dotnet sdk:*)",
+      "Bash(dotnet package:*)",
+      "Bash(python -c \"import json,sys; v=json.load\\(sys.stdin\\)['versions']; print\\('\\\\n'.join\\([x for x in v if x.startswith\\('9.'\\)]\\)[-5:]\\)\")",
+      "Bash(dotnet add:*)"
     ]
   }
 }

@@ -1,16 +1,19 @@
 @model HLStatsX.NET.Core.Models.SearchResults?
 @{
     ViewData["Title"] = "Search";
-    var query = Model?.Query ?? ViewData["query"] as string ?? "";
-    var game  = ViewData["game"] as string ?? "";
+    var query      = Model?.Query ?? ViewData["query"] as string ?? "";
+    var game       = ViewData["game"] as string ?? "";
+    var st         = ViewData["st"]   as string ?? "";
+    var showPlayers = string.IsNullOrEmpty(st) || st == "player";
+    var showClans   = string.IsNullOrEmpty(st) || st == "clan";
 
     // Pre-compute player pagination so it's available in code context
-    var playerTotalPages  = Model is null ? 0 : (int)Math.Ceiling(Model.TotalPlayers / (double)Model.PageSize);
-    var playerPagination  = Model is null ? null : new PaginationModel
+    var playerTotalPages = Model is null ? 0 : (int)Math.Ceiling(Model.TotalPlayers / (double)Model.PageSize);
+    var playerPagination = Model is null ? null : new PaginationModel
     {
         CurrentPage = Model.Page,
         TotalPages  = playerTotalPages,
-        BuildUrl    = pg => Url.Action("Index", new { q = query, game, page = pg })!
+        BuildUrl    = pg => Url.Action("Index", new { q = query, game, st, page = pg })!
     };
 }
 
@@ -18,6 +21,10 @@
 
 <form method="get" asp-action="Index" style="margin-bottom:1rem;">
     <input type="hidden" name="game" value="@game" />
+    @if (!string.IsNullOrEmpty(st))
+    {
+        <input type="hidden" name="st" value="@st" />
+    }
     <table class="data-table" style="width:auto;">
         <tr class="bg1">
             <td style="padding:0.3rem 0.6rem; white-space:nowrap;">Search for:</td>
@@ -37,6 +44,8 @@
 {
     <h2>Search Results</h2>
 
+    @if (showPlayers)
+    {
     <section style="margin-bottom:1.5rem;">
         <h3>Players &mdash; @Model.TotalPlayers found</h3>
         @if (Model.Players.Any())
@@ -74,7 +83,10 @@
             <p>No players found.</p>
         }
     </section>
+    }
 
+    @if (showClans)
+    {
     <section>
         <h3>Clans &mdash; @Model.TotalClans found</h3>
         @if (Model.Clans.Any())
@@ -108,4 +120,5 @@
             <p>No clans found.</p>
         }
     </section>
+    }
 }

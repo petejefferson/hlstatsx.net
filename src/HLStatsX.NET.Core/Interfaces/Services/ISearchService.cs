@@ -4,5 +4,6 @@ namespace HLStatsX.NET.Core.Interfaces.Services;
 
 public interface ISearchService
 {
-    Task<SearchResults> SearchAsync(string query, string? game, int page = 1, int pageSize = 20, CancellationToken ct = default);
+    /// <param name="searchType">null/"" = both, "player" = players only, "clan" = clans only</param>
+    Task<SearchResults> SearchAsync(string query, string? game, string? searchType = null, int page = 1, int pageSize = 20, CancellationToken ct = default);
 }
