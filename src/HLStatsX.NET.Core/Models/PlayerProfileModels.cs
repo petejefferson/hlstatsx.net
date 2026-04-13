@@ -34,3 +34,5 @@ public record RibbonDisplay(
 
 public record ActionStatRow(
     string Description, long Count, double AccumulatedPoints);
+
+public record TrendPoint(DateTime EventTime, int Skill, int SkillChange);

@@ -11,6 +11,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="SkiaSharp" Version="3.116.1" />
     <!-- Authentication.Cookies ships with ASP.NET Core in .NET 3.0+; no separate package needed -->
   </ItemGroup>
   <ItemGroup>

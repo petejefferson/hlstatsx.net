@@ -122,4 +122,7 @@ public class PlayerService : IPlayerService
 
     public Task<IReadOnlyList<ActionStatRow>> GetPlayerActionVictimsAsync(int playerId, CancellationToken ct = default) =>
         _stats.GetPlayerActionVictimsAsync(playerId, ct);
+
+    public Task<IReadOnlyList<TrendPoint>> GetTrendDataAsync(int playerId, int limit = 30, CancellationToken ct = default) =>
+        _players.GetTrendAsync(playerId, limit, ct);
 }

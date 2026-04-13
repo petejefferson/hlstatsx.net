@@ -31,7 +31,10 @@ public class PlayersControllerTests
             .AddInMemoryCollection(inMemorySettings)
             .Build();
 
-        _controller = new PlayersController(_playerServiceMock.Object, _awardServiceMock.Object, _config);
+        var envMock = new Mock<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>();
+        envMock.Setup(e => e.WebRootPath).Returns(string.Empty);
+
+        _controller = new PlayersController(_playerServiceMock.Object, _awardServiceMock.Object, _config, envMock.Object);
     }
 
     [Fact]
@@ -96,6 +99,7 @@ public class PlayersControllerTests
         _playerServiceMock.Setup(s => s.GetRoleSelectionAsync(1, "cstrike", default)).ReturnsAsync(Array.Empty<RoleStatRow>());
         _playerServiceMock.Setup(s => s.GetPlayerActionsAsync(1, default)).ReturnsAsync(Array.Empty<ActionStatRow>());
         _playerServiceMock.Setup(s => s.GetPlayerActionVictimsAsync(1, default)).ReturnsAsync(Array.Empty<ActionStatRow>());
+        _playerServiceMock.Setup(s => s.GetTrendDataAsync(1, 30, default)).ReturnsAsync(Array.Empty<TrendPoint>());
         _awardServiceMock.Setup(s => s.GetRankForPlayerAsync(1, "cstrike", 500, default)).ReturnsAsync((Rank?)null);
         _awardServiceMock.Setup(s => s.GetRanksAsync("cstrike", default)).ReturnsAsync(Array.Empty<Rank>());
 

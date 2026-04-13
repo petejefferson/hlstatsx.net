@@ -24,4 +24,5 @@ public interface IPlayerRepository
     Task UpdateAsync(Player player, CancellationToken ct = default);
     Task<int> GetTotalCountAsync(string game, CancellationToken ct = default);
     Task<long> GetTotalKillsAsync(string game, CancellationToken ct = default);
+    Task<IReadOnlyList<TrendPoint>> GetTrendAsync(int playerId, int limit = 30, CancellationToken ct = default);
 }

@@ -12,6 +12,11 @@
         if (ts.Minutes > 0) parts.Add($"{ts.Minutes} minute{(ts.Minutes != 1 ? "s" : "")}");
         return parts.Count > 0 ? string.Join(", ", parts) : "0 minutes";
     }
+
+    var scheme       = Context.Request.Scheme;
+    var sigAbsUrl    = Url.Action("Sig",     "Players", new { id = Model.Player.PlayerId }, scheme)!;
+    var profileAbsUrl = Url.Action("Profile", "Players", new { id = Model.Player.PlayerId }, scheme)!;
+    var defaultSigText = $"[url={profileAbsUrl}][img]{sigAbsUrl}[/img][/url]";
 }
 
 <h1>
@@ -196,6 +201,53 @@
              alt="@r.RibbonName" title="@r.RibbonName"
              style="opacity:@(r.Earned ? "1" : "0.3"); margin:2px;" />
       }
+    </div>
+  </div>
+
+  <div class="profile-section">
+    <h2>Miscellaneous Statistics</h2>
+    <div class="profile-two-col">
+      <section>
+        <table class="data-table">
+          <thead><tr class="data-table-head"><td>Player Trend</td></tr></thead>
+          <tbody>
+            <tr class="bg1">
+              <td style="text-align:center;padding:8px;">
+                @if (Model.TrendData.Count < 2)
+                {
+                  <em>Not enough session data to display a trend.</em>
+                }
+                else
+                {
+                  <canvas id="trendChart" width="380" height="200"></canvas>
+                }
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section>
+        <table class="data-table">
+          <thead><tr class="data-table-head"><td colspan="2">Forum Signature</td></tr></thead>
+          <tbody>
+            <tr class="bg1">
+              <td style="text-align:center;padding:12px;">
+                <img src="@(Url.Action("Sig", "Players", new { id = Model.Player.PlayerId }))"
+                     alt="Forum signature" title="Copy &amp; paste the URL below into your forum signature" />
+                <br /><br />
+                <a href="#" onclick="setSigText(1);return false;">bbCode 1 (phpBB, SMF)</a>
+                &nbsp;|&nbsp;
+                <a href="#" onclick="setSigText(2);return false;">bbCode 2 (IPB)</a>
+                &nbsp;|&nbsp;
+                <a href="#" onclick="setSigText(0);return false;">Direct Image</a>
+                <br />
+                <textarea id="siglink" rows="2" style="width:95%;margin-top:6px;" readonly
+                          onclick="this.select()">@defaultSigText</textarea>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
     </div>
   </div>
 </div>
@@ -485,6 +537,7 @@
 </div>
 
 @section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <script>
 document.querySelectorAll('.tab-link').forEach(function(link) {
     link.addEventListener('click', function(e) {
@@ -495,5 +548,64 @@ document.querySelectorAll('.tab-link').forEach(function(link) {
         document.querySelector(this.getAttribute('href')).style.display = 'block';
     });
 });
+
+@if (Model.TrendData.Count >= 2)
+{
+    var labels   = Model.TrendData.Select(t => t.EventTime.ToString("MMM d")).ToArray();
+    var skills   = Model.TrendData.Select(t => (double)t.Skill / 1000.0).ToArray();
+    var sessions = Model.TrendData.Select(t => (double)t.SkillChange).ToArray();
+
+    <text>
+(function() {
+    var ctx = document.getElementById('trendChart');
+    if (!ctx) return;
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(labels)),
+            datasets: [
+                {
+                    label: 'Skill (K)',
+                    data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(skills)),
+                    borderColor: 'rgb(255, 255, 0)',
+                    backgroundColor: 'rgba(255, 255, 0, 0.1)',
+                    tension: 0.4,
+                    yAxisID: 'ySkill'
+                },
+                {
+                    label: 'Session',
+                    data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(sessions)),
+                    borderColor: 'rgb(255, 80, 80)',
+                    backgroundColor: 'rgba(255, 80, 80, 0.1)',
+                    tension: 0.4,
+                    yAxisID: 'ySession'
+                }
+            ]
+        },
+        options: {
+            responsive: false,
+            plugins: { legend: { labels: { color: '#ddd' } } },
+            scales: {
+                ySkill:   { type: 'linear', position: 'right', ticks: { color: '#ddd' }, grid: { color: '#444' } },
+                ySession: { type: 'linear', position: 'left',  ticks: { color: '#ddd' }, grid: { color: '#333' } },
+                x: { ticks: { color: '#ddd' }, grid: { color: '#333' } }
+            }
+        }
+    });
+})();
+    </text>
+}
+
+// Forum signature text switcher
+var sigImgUrl  = '@sigAbsUrl';
+var profileUrl = '@profileAbsUrl';
+function setSigText(mode) {
+    var ta = document.getElementById('siglink');
+    if (!ta) return;
+    if (mode === 0) { ta.value = sigImgUrl; }
+    else if (mode === 1) { ta.value = '[url=' + profileUrl + '][img]' + sigImgUrl + '[/img][/url]'; }
+    else if (mode === 2) { ta.value = '[url="' + profileUrl + '"][img]' + sigImgUrl + '[/img][/url]'; }
+    ta.select();
+}
 </script>
 }

@@ -277,4 +277,17 @@ public class PlayerRepository : IPlayerRepository
         await using var db = _factory.CreateDbContext();
         return await db.Players.Where(p => p.Game == game).SumAsync(p => (long)p.Kills, ct);
     }
+
+    public async Task<IReadOnlyList<TrendPoint>> GetTrendAsync(int playerId, int limit = 30, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        // Take the most recent `limit` entries then reorder ascending for chart display
+        return await db.PlayerHistories
+            .Where(h => h.PlayerId == playerId)
+            .OrderByDescending(h => h.EventTime)
+            .Take(limit)
+            .OrderBy(h => h.EventTime)
+            .Select(h => new TrendPoint(h.EventTime, h.Skill, h.SkillChange))
+            .ToListAsync(ct);
+    }
 }
