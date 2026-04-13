@@ -43,13 +43,13 @@ public class ClanServiceTests
     [Fact]
     public async Task GetLeaderboardAsync_ReturnsRankedClans()
     {
-        var clans = new List<Clan>
+        var rows = new List<ClanLeaderboardRow>
         {
-            new() { ClanId = 1, Name = "TopClan", Tag = "[TC]", Game = "cstrike" },
-            new() { ClanId = 2, Name = "SecondClan", Tag = "[SC]", Game = "cstrike" }
+            new() { ClanId = 1, Name = "TopClan",    Tag = "[TC]", MemberCount = 5, AvgSkill = 1200 },
+            new() { ClanId = 2, Name = "SecondClan", Tag = "[SC]", MemberCount = 3, AvgSkill = 1000 }
         };
-        var paged = PagedResult<Clan>.Create(clans, 2, 1, 50);
-        _repoMock.Setup(r => r.GetRankingsAsync("cstrike", 1, 50, "skill", true, default)).ReturnsAsync(paged);
+        var paged = PagedResult<ClanLeaderboardRow>.Create(rows, 2, 1, 50);
+        _repoMock.Setup(r => r.GetRankingsAsync("cstrike", 1, 50, "skill", true, 3, default)).ReturnsAsync(paged);
 
         var result = await _service.GetLeaderboardAsync("cstrike", 1, 50);
 

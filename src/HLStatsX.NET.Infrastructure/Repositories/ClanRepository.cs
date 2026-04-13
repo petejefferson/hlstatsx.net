@@ -18,32 +18,56 @@ public class ClanRepository : IClanRepository
         return await db.Clans.FirstOrDefaultAsync(c => c.ClanId == clanId, ct);
     }
 
-    public async Task<PagedResult<Clan>> GetRankingsAsync(string game, int page, int pageSize, string sortBy = "skill", bool desc = true, CancellationToken ct = default)
+    public async Task<PagedResult<ClanLeaderboardRow>> GetRankingsAsync(string game, int page, int pageSize, string sortBy = "skill", bool desc = true, int minMembers = 3, CancellationToken ct = default)
     {
         await using var db = _factory.CreateDbContext();
 
-        var query = db.Clans
+        var projected = db.Clans
             .Where(c => c.Game == game && !c.IsHidden)
             .Select(c => new
             {
-                Clan = c,
-                MemberCount = c.Players.Count(p => p.HideRanking == 0 && p.Kills > 0),
-                TotalSkill = c.Players.Where(p => p.HideRanking == 0).Sum(p => (int?)p.Skill) ?? 0
-            });
+                c.ClanId,
+                c.Name,
+                c.Tag,
+                MemberCount   = c.Players.Count(p => p.HideRanking == 0),
+                TotalKills    = c.Players.Where(p => p.HideRanking == 0).Sum(p => (int?)p.Kills) ?? 0,
+                TotalDeaths   = c.Players.Where(p => p.HideRanking == 0).Sum(p => (int?)p.Deaths) ?? 0,
+                TotalConnTime = c.Players.Where(p => p.HideRanking == 0).Sum(p => (int?)p.ConnectionTime) ?? 0,
+                AvgSkill      = c.Players.Where(p => p.HideRanking == 0).Average(p => (double?)p.Skill) ?? 0.0,
+                AvgActivity   = c.Players.Where(p => p.HideRanking == 0).Average(p => (double?)p.ActivityScore) ?? 0.0,
+            })
+            .Where(x => x.MemberCount >= minMembers && x.AvgActivity >= 0);
 
-        query = (sortBy.ToLowerInvariant(), desc) switch
+        var sorted = (sortBy.ToLowerInvariant(), desc) switch
         {
-            ("members", true)  => query.OrderByDescending(x => x.MemberCount),
-            ("members", false) => query.OrderBy(x => x.MemberCount),
-            ("name",    true)  => query.OrderByDescending(x => x.Clan.Name),
-            ("name",    false) => query.OrderBy(x => x.Clan.Name),
-            ("skill",   false) => query.OrderBy(x => x.TotalSkill),
-            _                  => query.OrderByDescending(x => x.TotalSkill)
+            ("members",    true)  => projected.OrderByDescending(x => x.MemberCount).ThenBy(x => x.Name),
+            ("members",    false) => projected.OrderBy(x => x.MemberCount).ThenBy(x => x.Name),
+            ("name",       true)  => projected.OrderByDescending(x => x.Name),
+            ("name",       false) => projected.OrderBy(x => x.Name),
+            ("kills",      true)  => projected.OrderByDescending(x => x.TotalKills).ThenBy(x => x.Name),
+            ("kills",      false) => projected.OrderBy(x => x.TotalKills).ThenBy(x => x.Name),
+            ("deaths",     true)  => projected.OrderByDescending(x => x.TotalDeaths).ThenBy(x => x.Name),
+            ("deaths",     false) => projected.OrderBy(x => x.TotalDeaths).ThenBy(x => x.Name),
+            ("skill",      false) => projected.OrderBy(x => x.AvgSkill).ThenBy(x => x.Name),
+            _                     => projected.OrderByDescending(x => x.AvgSkill).ThenBy(x => x.Name),
         };
 
-        var total = await query.CountAsync(ct);
-        var items = await query.Skip((page - 1) * pageSize).Take(pageSize).Select(x => x.Clan).ToListAsync(ct);
-        return PagedResult<Clan>.Create(items, total, page, pageSize);
+        var total = await sorted.CountAsync(ct);
+        var rawItems = await sorted.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+        var items = rawItems.Select(x => new ClanLeaderboardRow
+        {
+            ClanId              = x.ClanId,
+            Name                = x.Name,
+            Tag                 = x.Tag,
+            MemberCount         = x.MemberCount,
+            TotalKills          = x.TotalKills,
+            TotalDeaths         = x.TotalDeaths,
+            TotalConnectionTime = x.TotalConnTime,
+            AvgSkill            = (int)Math.Round(x.AvgSkill),
+            AvgActivity         = Math.Round(x.AvgActivity, 2),
+        }).ToList();
+
+        return PagedResult<ClanLeaderboardRow>.Create(items, total, page, pageSize);
     }
 
     public async Task<IReadOnlyList<Player>> GetMembersAsync(int clanId, CancellationToken ct = default)

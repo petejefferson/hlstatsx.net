@@ -6,7 +6,7 @@ namespace HLStatsX.NET.Core.Interfaces.Repositories;
 public interface IClanRepository
 {
     Task<Clan?> GetByIdAsync(int clanId, CancellationToken ct = default);
-    Task<PagedResult<Clan>> GetRankingsAsync(string game, int page, int pageSize, string sortBy = "skill", bool desc = true, CancellationToken ct = default);
+    Task<PagedResult<ClanLeaderboardRow>> GetRankingsAsync(string game, int page, int pageSize, string sortBy = "skill", bool desc = true, int minMembers = 3, CancellationToken ct = default);
     Task<IReadOnlyList<Player>> GetMembersAsync(int clanId, CancellationToken ct = default);
     Task<PagedResult<Clan>> SearchAsync(string query, string? game, int page, int pageSize, CancellationToken ct = default);
     Task<IReadOnlyList<Clan>> GetByCountryAsync(string countryCode, string game, CancellationToken ct = default);

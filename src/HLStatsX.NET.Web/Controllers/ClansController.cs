@@ -15,12 +15,12 @@ public class ClansController : Controller
         _config = config;
     }
 
-    public async Task<IActionResult> Index(string? game, int page = 1, string sortBy = "skill", bool desc = true, CancellationToken ct = default)
+    public async Task<IActionResult> Index(string? game, int page = 1, string sortBy = "skill", bool desc = true, int minMembers = 3, CancellationToken ct = default)
     {
         game ??= _config["HLStatsX:DefaultGame"] ?? "cstrike";
         int pageSize = _config.GetValue<int>("HLStatsX:DefaultPageSize", 50);
-        var result = await _clans.GetLeaderboardAsync(game, page, pageSize, sortBy, desc, ct);
-        return View(new ClanLeaderboardViewModel(result, game, sortBy, desc));
+        var result = await _clans.GetLeaderboardAsync(game, page, pageSize, sortBy, desc, minMembers, ct);
+        return View(new ClanLeaderboardViewModel(result, game, sortBy, desc, minMembers));
     }
 
     public async Task<IActionResult> Profile(int id, CancellationToken ct)

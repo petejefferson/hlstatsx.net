@@ -2,40 +2,79 @@
 @{
     ViewData["Title"] = "Clan Rankings";
 
+    string FormatTime(int seconds)
+    {
+        var ts = TimeSpan.FromSeconds(seconds);
+        var parts = new List<string>();
+        if (ts.Days  > 0) parts.Add($"{ts.Days}d");
+        if (ts.Hours > 0) parts.Add($"{ts.Hours}h");
+        if (ts.Minutes > 0) parts.Add($"{ts.Minutes}m");
+        return parts.Count > 0 ? string.Join(" ", parts) : "0m";
+    }
+
     string SortUrl(string field)
     {
         bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
-        return Url.Action("Index", new { game = Model.Game, sortBy = field, desc = nextDesc })!;
+        return Url.Action("Index", new { game = Model.Game, sortBy = field, desc = nextDesc, minMembers = Model.MinMembers })!;
     }
     string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
 }
 
 <h1>Clan Rankings &mdash; @Model.Game</h1>
 
-<table class="stats-table">
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap; gap:0.5rem;">
+    <form method="get" asp-controller="Search" asp-action="Index" style="display:flex; align-items:center; gap:0.4rem;">
+        <input type="hidden" name="game" value="@Model.Game" />
+        <input type="hidden" name="st" value="clan" />
+        <strong>&bull;</strong> Find a clan:
+        <input type="text" name="q" size="20" maxlength="64" class="form-text" placeholder="Clan name&hellip;" />
+        <button type="submit" class="btn-small">Search</button>
+    </form>
+
+    <form method="get" asp-action="Index" style="display:flex; align-items:center; gap:0.4rem;">
+        <input type="hidden" name="game"    value="@Model.Game" />
+        <input type="hidden" name="sortBy"  value="@Model.SortBy" />
+        <input type="hidden" name="desc"    value="@Model.Descending.ToString().ToLower()" />
+        <strong>&bull;</strong> Show clans with at least
+        <input type="number" name="minMembers" min="1" size="4" value="@Model.MinMembers" class="form-text" style="width:4rem;" />
+        members
+        <button type="submit" class="btn-small">Apply</button>
+    </form>
+</div>
+
+<table class="data-table">
     <thead>
-        <tr>
-            <th>Rank</th>
-            <th><a href="@(SortUrl("name"))">Clan@(Mark("name"))</a></th>
-            <th>Tag</th>
-            <th><a href="@(SortUrl("members"))">Members@(Mark("members"))</a></th>
-            <th><a href="@(SortUrl("skill"))">Points@(Mark("skill"))</a></th>
+        <tr class="data-table-head">
+            <th style="width:4%;text-align:center;">Rank</th>
+            <th style="text-align:left;"><a href="@(SortUrl("name"))">Clan@(Mark("name"))</a></th>
+            <th style="text-align:left;">Tag</th>
+            <th style="text-align:right;"><a href="@(SortUrl("skill"))">Avg. Points@(Mark("skill"))</a></th>
+            <th style="text-align:right;"><a href="@(SortUrl("members"))">Members@(Mark("members"))</a></th>
+            <th style="text-align:right;"><a href="@(SortUrl("kills"))">Kills@(Mark("kills"))</a></th>
+            <th style="text-align:right;"><a href="@(SortUrl("deaths"))">Deaths@(Mark("deaths"))</a></th>
+            <th style="text-align:right;">K:D</th>
+            <th style="text-align:right;">Connection Time</th>
         </tr>
     </thead>
     <tbody>
         @{ int rank = (Model.Clans.Page - 1) * Model.Clans.PageSize + 1; }
         @foreach (var clan in Model.Clans.Items)
         {
-            <tr>
-                <td>@rank</td>
-                <td><a asp-action="Profile" asp-route-id="@clan.ClanId">@clan.Name</a></td>
+            string rowClass = rank % 2 == 0 ? "bg2" : "bg1";
+            <tr class="@rowClass">
+                <td style="text-align:center;">@rank</td>
+                <td><a asp-action="Profile" asp-route-id="@clan.ClanId" asp-route-game="@Model.Game">@clan.Name</a></td>
                 <td>@clan.Tag</td>
-                <td>@clan.Players.Count</td>
-                <td>@clan.Players.Where(p => p.HideRanking == 0).Sum(p => p.Skill).ToString("N0")</td>
+                <td style="text-align:right;">@clan.AvgSkill.ToString("N0")</td>
+                <td style="text-align:right;">@clan.MemberCount</td>
+                <td style="text-align:right;">@clan.TotalKills.ToString("N0")</td>
+                <td style="text-align:right;">@clan.TotalDeaths.ToString("N0")</td>
+                <td style="text-align:right;">@clan.KillDeathRatio</td>
+                <td style="text-align:right;">@FormatTime(clan.TotalConnectionTime)</td>
             </tr>
             rank++;
         }
     </tbody>
 </table>
 
-<partial name="_Pagination" model="@PaginationModel.From(Model.Clans, p => Url.Action("Index", new { game = Model.Game, sortBy = Model.SortBy, desc = Model.Descending, page = p })!)" />
+<partial name="_Pagination" model="@PaginationModel.From(Model.Clans, p => Url.Action("Index", new { game = Model.Game, sortBy = Model.SortBy, desc = Model.Descending, minMembers = Model.MinMembers, page = p })!)" />

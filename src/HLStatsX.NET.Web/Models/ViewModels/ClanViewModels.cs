@@ -4,10 +4,11 @@ using HLStatsX.NET.Core.Models;
 namespace HLStatsX.NET.Web.Models.ViewModels;
 
 public record ClanLeaderboardViewModel(
-    PagedResult<Clan> Clans,
+    PagedResult<ClanLeaderboardRow> Clans,
     string Game,
     string SortBy,
-    bool Descending
+    bool Descending,
+    int MinMembers
 );
 
 public record ClanProfileViewModel(
