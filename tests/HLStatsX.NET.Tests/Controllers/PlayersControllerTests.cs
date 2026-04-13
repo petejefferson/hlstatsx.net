@@ -36,7 +36,7 @@ public class PlayersControllerTests
         envMock.Setup(e => e.WebRootPath).Returns(string.Empty);
 
         var steamMock = new Mock<ISteamService>();
-        steamMock.Setup(s => s.GetAvatarUrlAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+        steamMock.Setup(s => s.GetAvatarUrlAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
                  .ReturnsAsync((string?)null);
 
         _controller = new PlayersController(_playerServiceMock.Object, _awardServiceMock.Object, _config, envMock.Object, steamMock.Object);

@@ -2,7 +2,7 @@ namespace HLStatsX.NET.Web.Services;
 
 public interface ISteamService
 {
-    Task<string?> GetAvatarUrlAsync(string? uniqueId, CancellationToken ct = default);
+    Task<string?> GetAvatarUrlAsync(long steam64, CancellationToken ct = default);
 
     static long? ToSteam64(string? uniqueId)
     {
