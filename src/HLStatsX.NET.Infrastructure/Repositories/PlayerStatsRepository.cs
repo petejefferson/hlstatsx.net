@@ -19,25 +19,25 @@ public class PlayerStatsRepository : IPlayerStatsRepository
 
     public async Task<RealStats> GetRealStatsAsync(int playerId, CancellationToken ct = default)
     {
-        await using var db = _factory.CreateDbContext();
+        // Use four parallel single-column queries instead of one OR query.
+        // WHERE killerId=X OR victimId=X prevents efficient index use on large tables.
+        // Each individual query can do a targeted index seek.
+        await using var db1 = _factory.CreateDbContext();
+        await using var db2 = _factory.CreateDbContext();
+        await using var db3 = _factory.CreateDbContext();
+        await using var db4 = _factory.CreateDbContext();
 
-        // Single grouped projection collapses kills + deaths + headshots into one DB round-trip.
-        // Returns null when the player has no frag events at all.
-        var fragStats = await db.EventFrags
-            .Where(f => f.KillerId == playerId || f.VictimId == playerId)
-            .GroupBy(_ => 0)
-            .Select(g => new
-            {
-                Kills     = g.Count(f => f.KillerId == playerId),
-                Deaths    = g.Count(f => f.VictimId == playerId),
-                Headshots = g.Count(f => f.KillerId == playerId && f.Headshot)
-            })
-            .FirstOrDefaultAsync(ct);
+        var killsTask     = db1.EventFrags.LongCountAsync(f => f.KillerId == playerId, ct);
+        var deathsTask    = db2.EventFrags.LongCountAsync(f => f.VictimId == playerId, ct);
+        var headshotsTask = db3.EventFrags.LongCountAsync(f => f.KillerId == playerId && f.Headshot, ct);
+        var teamkillsTask = db4.EventTeamkills.LongCountAsync(f => f.KillerId == playerId, ct);
 
-        var realKills     = fragStats?.Kills     ?? 0;
-        var realDeaths    = fragStats?.Deaths    ?? 0;
-        var realHeadshots = fragStats?.Headshots ?? 0;
-        var realTeamkills = await db.EventTeamkills.CountAsync(f => f.KillerId == playerId, ct);
+        await Task.WhenAll(killsTask, deathsTask, headshotsTask, teamkillsTask);
+
+        var realKills     = killsTask.Result;
+        var realDeaths    = deathsTask.Result;
+        var realHeadshots = headshotsTask.Result;
+        var realTeamkills = teamkillsTask.Result;
 
         double realKpd = realDeaths == 0 ? realKills : Math.Round((double)realKills / realDeaths, 2);
         double realHpk = realKills  == 0 ? 0         : Math.Round((double)realHeadshots / realKills, 2);
@@ -186,34 +186,36 @@ public class PlayerStatsRepository : IPlayerStatsRepository
     {
         await using var db = _factory.CreateDbContext();
 
+        // Apply HAVING in SQL so we only materialise opponents with 5+ kills, not the full grouped set.
         var killsList = await db.EventFrags
             .Where(f => f.KillerId == playerId)
             .GroupBy(f => f.VictimId)
             .Select(g => new { VictimId = g.Key, Kills = g.LongCount(), Headshots = g.LongCount(f => f.Headshot) })
+            .Where(x => x.Kills >= 5)
             .ToListAsync(ct);
 
+        if (killsList.Count == 0) return Array.Empty<KillStatRow>();
+
+        var opponentIds = killsList.Select(k => k.VictimId).ToList();
+
+        // Scope deaths to just the relevant opponents — avoids loading every killer who ever hit this player.
         var deathsDict = await db.EventFrags
-            .Where(f => f.VictimId == playerId)
+            .Where(f => f.VictimId == playerId && opponentIds.Contains(f.KillerId))
             .GroupBy(f => f.KillerId)
             .Select(g => new { KillerId = g.Key, Deaths = g.LongCount() })
             .ToDictionaryAsync(x => x.KillerId, x => x.Deaths, ct);
 
-        // Only fetch names for opponents with at least 5 kills to avoid loading the whole player table
-        var opponentIds = killsList.Where(k => k.Kills >= 5).Select(k => k.VictimId).ToList();
         var names = await db.Players
             .Where(p => opponentIds.Contains(p.PlayerId))
             .Select(p => new { p.PlayerId, p.LastName })
             .ToDictionaryAsync(p => p.PlayerId, p => p.LastName, ct);
 
-        var botIds = opponentIds.Count > 0
-            ? await db.PlayerUniqueIds
-                .Where(u => opponentIds.Contains(u.PlayerId) && EF.Functions.Like(u.UniqueId, "BOT%"))
-                .Select(u => u.PlayerId)
-                .ToHashSetAsync(ct)
-            : new HashSet<int>();
+        var botIds = await db.PlayerUniqueIds
+            .Where(u => opponentIds.Contains(u.PlayerId) && EF.Functions.Like(u.UniqueId, "BOT%"))
+            .Select(u => u.PlayerId)
+            .ToHashSetAsync(ct);
 
         return killsList
-            .Where(k => k.Kills >= 5)
             .Select(k => new KillStatRow(
                 k.VictimId,
                 names.GetValueOrDefault(k.VictimId, "Unknown"),
