@@ -361,21 +361,23 @@
       }
       else
       {
-        <table class="stats-table">
-          <thead><tr><th>Role</th><th>Joined</th><th>%</th><th>Kills</th><th>Deaths</th><th>K:D</th></tr></thead>
+        <table class="stats-table sortable">
+          <thead><tr><th>Role</th><th>Joined</th><th>%</th><th>Ratio</th><th>Kills</th><th>Deaths</th><th>K:D</th></tr></thead>
           <tbody>
             @foreach (var r in Model.RoleSelection)
             {
+              double rolePct = r.TotalJoins > 0 ? (double)r.JoinCount / r.TotalJoins * 100 : 0;
               <tr>
                 <td>
                   @if (!string.IsNullOrEmpty(r.RoleImage))
                   {
-                    <img src="/hlstatsimg/games/@Model.Player.Game/roles/@r.RoleImage" alt="@r.RoleCode" style="height:16px;" />
+                    <img src="/hlstatsimg/games/@(Model.Player.Game)/roles/@(Uri.EscapeDataString(r.RoleImage)).png" alt="@r.RoleCode" />
                   }
-                  @r.RoleCode
+                  @r.RoleName
                 </td>
                 <td>@r.JoinCount times</td>
-                <td>@(r.TotalJoins > 0 ? $"{(double)r.JoinCount / r.TotalJoins * 100:F1}%" : "-")</td>
+                <td>@(rolePct > 0 ? $"{rolePct:F1}%" : "-")</td>
+                <td><meter min="0" max="100" value="@rolePct.ToString("F0")" style="width:80px;"></meter></td>
                 <td>@r.Kills</td>
                 <td>@r.Deaths</td>
                 <td>@(r.Deaths == 0 ? r.Kills.ToString() : $"{(double)r.Kills / r.Deaths:F2}")</td>

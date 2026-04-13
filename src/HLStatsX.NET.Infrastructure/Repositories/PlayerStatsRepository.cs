@@ -350,7 +350,7 @@ public class PlayerStatsRepository : IPlayerStatsRepository
             {
                 roles.TryGetValue(r.Role, out var role);
                 return new RoleStatRow(
-                    r.Role, r.Role.ToLower(), r.Count, total,
+                    r.Role, role?.Name ?? r.Role, r.Role.ToLower(), r.Count, total,
                     killsByRole.GetValueOrDefault(r.Role, 0),
                     deathsByRole.GetValueOrDefault(r.Role, 0));
             })

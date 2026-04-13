@@ -27,7 +27,7 @@ public record TeamStatRow(
     string TeamCode, string TeamName, int JoinCount, int TotalJoins);
 
 public record RoleStatRow(
-    string RoleCode, string? RoleImage, int JoinCount, int TotalJoins, long Kills, long Deaths);
+    string RoleCode, string RoleName, string? RoleImage, int JoinCount, int TotalJoins, long Kills, long Deaths);
 
 public record RibbonDisplay(
     int RibbonId, string RibbonName, string? Image, bool Earned);
