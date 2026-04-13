@@ -1,0 +1,82 @@
+@model CountryLeaderboardViewModel
+@{
+    ViewData["Title"] = "Country Rankings";
+
+    string FormatTime(long seconds)
+    {
+        var ts = TimeSpan.FromSeconds(seconds);
+        var parts = new List<string>();
+        if (ts.Days > 0)    parts.Add($"{ts.Days}d");
+        if (ts.Hours > 0)   parts.Add($"{ts.Hours}h");
+        if (ts.Minutes > 0) parts.Add($"{ts.Minutes}m");
+        return parts.Count > 0 ? string.Join(" ", parts) : "0m";
+    }
+
+    string SortUrl(string field)
+    {
+        bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
+        return Url.Action("Index", new { game = Model.Game, sortBy = field, desc = nextDesc, minMembers = Model.MinMembers })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
+}
+
+<h1>Country Rankings &mdash; @Model.Game</h1>
+
+<div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap; gap:0.5rem;">
+    <form method="get" asp-action="Index" style="display:flex; align-items:center; gap:0.4rem;">
+        <input type="hidden" name="game"    value="@Model.Game" />
+        <input type="hidden" name="sortBy"  value="@Model.SortBy" />
+        <input type="hidden" name="desc"    value="@Model.Descending.ToString().ToLower()" />
+        <strong>&bull;</strong> Show countries with at least
+        <input type="number" name="minMembers" min="1" size="4" value="@Model.MinMembers" class="form-text" style="width:4rem;" />
+        members from a total of <strong>@Model.TotalCountries.ToString("N0")</strong> countries
+        <button type="submit" class="btn-small">Apply</button>
+    </form>
+</div>
+
+<table class="data-table">
+    <thead>
+        <tr class="data-table-head">
+            <th style="width:4%;text-align:center;">Rank</th>
+            <th style="text-align:left;"><a href="@(SortUrl("name"))">Country@(Mark("name"))</a></th>
+            <th style="text-align:right;"><a href="@(SortUrl("skill"))">Avg. Points@(Mark("skill"))</a></th>
+            <th style="text-align:right;"><a href="@(SortUrl("members"))">Members@(Mark("members"))</a></th>
+            <th style="text-align:center;">Activity</th>
+            <th style="text-align:right;"><a href="@(SortUrl("connection_time"))">Connection Time@(Mark("connection_time"))</a></th>
+            <th style="text-align:right;"><a href="@(SortUrl("kills"))">Kills@(Mark("kills"))</a></th>
+            <th style="text-align:right;"><a href="@(SortUrl("deaths"))">Deaths@(Mark("deaths"))</a></th>
+            <th style="text-align:right;"><a href="@(SortUrl("kpd"))">K:D@(Mark("kpd"))</a></th>
+        </tr>
+    </thead>
+    <tbody>
+        @{ int rank = (Model.Countries.Page - 1) * Model.Countries.PageSize + 1; }
+        @foreach (var country in Model.Countries.Items)
+        {
+            string rowClass = rank % 2 == 0 ? "bg2" : "bg1";
+            var flagFile = country.Flag.ToLowerInvariant();
+            <tr class="@rowClass">
+                <td style="text-align:center;">@rank</td>
+                <td>
+                    <img src="/hlstatsimg/flags/@(flagFile).gif" alt="@country.Name" title="@country.Name" />
+                    &nbsp;<a asp-action="Profile" asp-route-flag="@country.Flag" asp-route-game="@Model.Game">@country.Name</a>
+                </td>
+                <td style="text-align:right;">@country.AvgSkill.ToString("N0")</td>
+                <td style="text-align:right;">@country.MemberCount</td>
+                <td style="text-align:center;">
+                    <meter min="0" max="100" low="25" high="50" optimum="75" value="@country.AvgActivity" title="@country.AvgActivity.ToString("F2")%"></meter>
+                </td>
+                <td style="text-align:right;">@FormatTime(country.TotalConnectionTime)</td>
+                <td style="text-align:right;">@country.TotalKills.ToString("N0")</td>
+                <td style="text-align:right;">@country.TotalDeaths.ToString("N0")</td>
+                <td style="text-align:right;">@country.KillDeathRatio.ToString("F2")</td>
+            </tr>
+            rank++;
+        }
+        @if (!Model.Countries.Items.Any())
+        {
+            <tr><td colspan="9" style="text-align:center;">No countries found.</td></tr>
+        }
+    </tbody>
+</table>
+
+<partial name="_Pagination" model="@PaginationModel.From(Model.Countries, p => Url.Action("Index", new { game = Model.Game, sortBy = Model.SortBy, desc = Model.Descending, minMembers = Model.MinMembers, page = p })!)" />

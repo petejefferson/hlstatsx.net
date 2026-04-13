@@ -1,0 +1,169 @@
+@model CountryProfileViewModel
+@{
+    ViewData["Title"] = Model.Profile.Name + " — Country";
+
+    string FormatTime(long seconds)
+    {
+        var ts = TimeSpan.FromSeconds(seconds);
+        var parts = new List<string>();
+        if (ts.Days > 0)    parts.Add($"{ts.Days}d");
+        if (ts.Hours > 0)   parts.Add($"{ts.Hours}h");
+        if (ts.Minutes > 0) parts.Add($"{ts.Minutes}m");
+        return parts.Count > 0 ? string.Join(" ", parts) : "0m";
+    }
+
+    string SortUrl(string field)
+    {
+        bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
+        return Url.Action("Profile", new { flag = Model.Profile.Flag, game = Model.Game, sortBy = field, desc = nextDesc })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
+
+    var flagLower = Model.Profile.Flag.ToLowerInvariant();
+}
+
+<h1>
+    <img src="/hlstatsimg/flags/@(flagLower).gif" alt="@Model.Profile.Name" title="@Model.Profile.Name" style="vertical-align:middle;" />
+    @Model.Profile.Name
+</h1>
+
+<div style="display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1rem;">
+    <div style="flex:1; min-width:280px;">
+        <table class="data-table">
+            <tr class="data-table-head">
+                <td colspan="2">Statistics Summary</td>
+            </tr>
+            <tr class="bg1">
+                <td style="width:45%;">Country:</td>
+                <td><strong>@Model.Profile.Name</strong></td>
+            </tr>
+            <tr class="bg2">
+                <td>Activity:</td>
+                <td>
+                    <meter min="0" max="100" low="25" high="50" optimum="75" value="@Model.Profile.AvgActivity"></meter>
+                    @Model.Profile.AvgActivity.ToString("F2")%
+                </td>
+            </tr>
+            <tr class="bg1">
+                <td>Members:</td>
+                <td><strong>@Model.Profile.MemberCount</strong> active members</td>
+            </tr>
+            <tr class="bg2">
+                <td>Total Kills:</td>
+                <td>@Model.Profile.TotalKills.ToString("N0")</td>
+            </tr>
+            <tr class="bg1">
+                <td>Total Deaths:</td>
+                <td>@Model.Profile.TotalDeaths.ToString("N0")</td>
+            </tr>
+            <tr class="bg2">
+                <td>Avg. Kills:</td>
+                <td>@Model.Profile.AvgKills.ToString("N0")</td>
+            </tr>
+            <tr class="bg1">
+                <td>Kills per Death:</td>
+                <td>
+                    @if (Model.Profile.TotalDeaths != 0)
+                    {
+                        <strong>@Model.Profile.KillDeathRatio.ToString("F2")</strong>
+                    }
+                    else
+                    {
+                        <text>-</text>
+                    }
+                </td>
+            </tr>
+            <tr class="bg2">
+                <td>Kills per Minute:</td>
+                <td>
+                    @if (Model.Profile.TotalConnectionTime > 0)
+                    {
+                        @Model.Profile.KillsPerMinute.ToString("F2")
+                    }
+                    else
+                    {
+                        <text>-</text>
+                    }
+                </td>
+            </tr>
+            <tr class="bg1">
+                <td>Avg. Member Points:</td>
+                <td><strong>@Model.Profile.AvgSkill.ToString("N0")</strong></td>
+            </tr>
+            <tr class="bg2">
+                <td>Avg. Connection Time:</td>
+                <td>
+                    @if (Model.Profile.TotalConnectionTime > 0)
+                    {
+                        @FormatTime(Model.Profile.AvgConnectionTime)
+                    }
+                    else
+                    {
+                        <text>-</text>
+                    }
+                </td>
+            </tr>
+            <tr class="bg1">
+                <td>Total Connection Time:</td>
+                <td>@FormatTime(Model.Profile.TotalConnectionTime)</td>
+            </tr>
+        </table>
+    </div>
+    <div style="flex:0 0 auto; text-align:center; padding-top:2rem;">
+        <img src="/hlstatsimg/flags/@(flagLower)_large.png"
+             alt="@Model.Profile.Name"
+             onerror="this.src='/hlstatsimg/flags/@(flagLower).gif'; this.onerror=null;"
+             style="border:0;" />
+    </div>
+</div>
+
+<h2>Members (@Model.Members.TotalCount)</h2>
+
+<table class="data-table">
+    <thead>
+        <tr class="data-table-head">
+            <th style="text-align:left;"><a href="@(SortUrl("name"))">Name@(Mark("name"))</a></th>
+            <th style="text-align:right;"><a href="@(SortUrl("skill"))">Points@(Mark("skill"))</a></th>
+            <th style="text-align:center;">Activity</th>
+            <th style="text-align:right;"><a href="@(SortUrl("connection_time"))">Time@(Mark("connection_time"))</a></th>
+            <th style="text-align:right;"><a href="@(SortUrl("kills"))">Kills@(Mark("kills"))</a></th>
+            <th style="text-align:center;">Country Kills %</th>
+            <th style="text-align:right;">%</th>
+            <th style="text-align:right;"><a href="@(SortUrl("deaths"))">Deaths@(Mark("deaths"))</a></th>
+            <th style="text-align:right;"><a href="@(SortUrl("kpd"))">K:D@(Mark("kpd"))</a></th>
+        </tr>
+    </thead>
+    <tbody>
+        @{ int row = 0; }
+        @foreach (var m in Model.Members.Items)
+        {
+            string rowClass = row % 2 == 0 ? "bg1" : "bg2";
+            var memberFlag = string.IsNullOrEmpty(m.Flag) ? "0" : m.Flag.ToLowerInvariant();
+            <tr class="@rowClass">
+                <td>
+                    <img src="/hlstatsimg/flags/@(memberFlag).gif" alt="@m.Country" title="@m.Country" />
+                    &nbsp;<a asp-controller="Players" asp-action="Profile" asp-route-id="@m.PlayerId">@m.Name</a>
+                </td>
+                <td style="text-align:right;">@m.Skill.ToString("N0")</td>
+                <td style="text-align:center;">
+                    <meter min="0" max="100" low="25" high="50" optimum="75" value="@m.Activity" title="@m.Activity.ToString("F2")%"></meter>
+                </td>
+                <td style="text-align:right;">@FormatTime(m.ConnectionTime)</td>
+                <td style="text-align:right;">@m.Kills.ToString("N0")</td>
+                <td style="text-align:center;">
+                    <meter min="0" max="100" value="@m.KillPercent" title="@m.KillPercent.ToString("F2")%"></meter>
+                </td>
+                <td style="text-align:right;">@m.KillPercent.ToString("F2")%</td>
+                <td style="text-align:right;">@m.Deaths.ToString("N0")</td>
+                <td style="text-align:right;">@m.KillDeathRatio.ToString("F2")</td>
+            </tr>
+            row++;
+        }
+        @if (!Model.Members.Items.Any())
+        {
+            <tr><td colspan="9" style="text-align:center;">No members found.</td></tr>
+        }
+    </tbody>
+</table>
+
+<partial name="_Pagination" model="@PaginationModel.From(Model.Members, p => Url.Action("Profile", new { flag = Model.Profile.Flag, game = Model.Game, sortBy = Model.SortBy, desc = Model.Descending, page = p })!)" />

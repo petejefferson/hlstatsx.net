@@ -43,7 +43,7 @@ builder.Services.AddScoped<IWeaponRepository, WeaponRepository>();
 builder.Services.AddScoped<IMapRepository, MapRepository>();
 builder.Services.AddScoped<IAwardRepository, AwardRepository>();
 builder.Services.AddScoped<IEventRepository, EventRepository>();
-builder.Services.AddScoped<IAdminRepository, AdminRepository>();
+builder.Services.AddScoped<ICountryRepository, CountryRepository>();
 builder.Services.AddScoped<IGameRepository, GameRepository>();
 
 // Services
@@ -52,7 +52,7 @@ builder.Services.AddScoped<IClanService, ClanService>();
 builder.Services.AddScoped<IServerService, ServerService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<IAwardService, AwardService>();
-builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<ICountryService, CountryService>();
 
 // Cookie auth for admin panel
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
