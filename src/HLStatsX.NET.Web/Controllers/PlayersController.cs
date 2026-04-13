@@ -111,6 +111,7 @@ public class PlayersController : Controller
         var playerActionsTask = _players.GetPlayerActionsAsync(id, ct);
         var actionVictimsTask = _players.GetPlayerActionVictimsAsync(id, ct);
         var trendTask         = _players.GetTrendDataAsync(id, 30, ct);
+        var globalAwardsTask  = _players.GetGlobalAwardsAsync(id, game, ct);
 
         await Task.WhenAll(
             rankTask, rankEntityTask, nextRankTask, allRanksTask,
@@ -118,7 +119,7 @@ public class PlayersController : Controller
             pingTask, lastConnectTask, favServerTask, favMapTask,
             favWeaponTask, killStatsTask, mapPerfTask, serverPerfTask,
             weaponStatsTask, teamSelTask, roleSelTask,
-            playerActionsTask, actionVictimsTask, trendTask);
+            playerActionsTask, actionVictimsTask, trendTask, globalAwardsTask);
 
         var rankEntity = rankEntityTask.Result;
         var allRanks   = allRanksTask.Result;
@@ -151,7 +152,8 @@ public class PlayersController : Controller
             RoleSelection       = roleSelTask.Result,
             PlayerActions       = playerActionsTask.Result,
             PlayerActionVictims = actionVictimsTask.Result,
-            TrendData           = trendTask.Result
+            TrendData           = trendTask.Result,
+            GlobalAwards        = globalAwardsTask.Result
         });
     }
 

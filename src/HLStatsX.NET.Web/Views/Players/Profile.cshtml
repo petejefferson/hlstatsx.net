@@ -192,17 +192,54 @@
       </section>
     </div>
   </div>
+  @if (Model.AllRibbons.Any() || Model.GlobalAwards.Any())
+  {
   <div class="profile-section">
-    <h2>Ribbons &amp; Awards</h2>
-    <div class="ribbons-list">
-      @foreach (var r in Model.AllRibbons)
+    <h2>Awards <small style="font-size:0.7em;font-weight:normal;">(hover for name)</small></h2>
+    <div style="display:flex;gap:16px;align-items:flex-start;">
+      @if (Model.AllRibbons.Any())
       {
-        <img src="@(r.Earned && r.Image != null ? $"/hlstatsimg/games/{Model.Player.Game}/ribbons/{r.Image}" : "/hlstatsimg/noaward.png")"
-             alt="@r.RibbonName" title="@r.RibbonName"
-             style="opacity:@(r.Earned ? "1" : "0.3"); margin:2px;" />
+      <div style="flex:2 1 0;">
+        <table class="data-table">
+          <thead><tr class="data-table-head"><td>Ribbons</td></tr></thead>
+          <tbody>
+            <tr class="bg1">
+              <td style="text-align:center;padding:8px;">
+                @foreach (var r in Model.AllRibbons)
+                {
+                  var ribbonSrc = r.Earned && r.Image != null
+                      ? $"/hlstatsimg/games/{Model.Player.Game}/ribbons/{r.Image}"
+                      : $"/hlstatsimg/games/{Model.Player.Game}/ribbons/noaward.png";
+                  <img src="@ribbonSrc" alt="@r.RibbonName" title="@r.RibbonName" style="border:0;margin:2px;" />
+                }
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      }
+      @if (Model.GlobalAwards.Any())
+      {
+      <div style="flex:1 1 0;">
+        <table class="data-table">
+          <thead><tr class="data-table-head"><td>Global Awards</td></tr></thead>
+          <tbody>
+            <tr class="bg1">
+              <td style="text-align:center;padding:8px;">
+                @foreach (var a in Model.GlobalAwards)
+                {
+                  var gaImg = $"/hlstatsimg/games/{Model.Player.Game}/gawards/{a.AwardType.ToLower()}_{a.Code.ToLower()}.png";
+                  <img src="@gaImg" alt="@a.Name" title="@a.Name" style="border:0;margin:2px;" />
+                }
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       }
     </div>
   </div>
+  }
 
   <div class="profile-section">
     <h2>Miscellaneous Statistics</h2>

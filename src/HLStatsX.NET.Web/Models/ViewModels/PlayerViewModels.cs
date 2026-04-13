@@ -44,6 +44,7 @@ public record PlayerProfileViewModel
     public required IReadOnlyList<ActionStatRow> PlayerActions { get; init; }
     public required IReadOnlyList<ActionStatRow> PlayerActionVictims { get; init; }
     public required IReadOnlyList<TrendPoint> TrendData { get; init; }
+    public required IReadOnlyList<GlobalAwardRow> GlobalAwards { get; init; }
 
     public double RankPercent => CurrentRank is null || NextRank is null ? 0
         : NextRank.MinKills == CurrentRank.MinKills ? 100

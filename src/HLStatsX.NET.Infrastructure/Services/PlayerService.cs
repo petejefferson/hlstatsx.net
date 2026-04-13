@@ -125,4 +125,7 @@ public class PlayerService : IPlayerService
 
     public Task<IReadOnlyList<TrendPoint>> GetTrendDataAsync(int playerId, int limit = 30, CancellationToken ct = default) =>
         _players.GetTrendAsync(playerId, limit, ct);
+
+    public Task<IReadOnlyList<GlobalAwardRow>> GetGlobalAwardsAsync(int playerId, string game, CancellationToken ct = default) =>
+        _stats.GetGlobalAwardsAsync(playerId, game, ct);
 }

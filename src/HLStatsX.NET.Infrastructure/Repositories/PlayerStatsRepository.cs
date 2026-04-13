@@ -126,20 +126,60 @@ public class PlayerStatsRepository : IPlayerStatsRepository
     {
         await using var db = _factory.CreateDbContext();
 
-        // Both queries share the same context — sequential, so no concurrency issue
+        // Fetch all displayable ribbons for the game (special 0 = normal, 2 = also displayable)
         var allRibbons = await db.Ribbons
-            .Where(r => r.Game == game)
-            .OrderBy(r => r.AwardCode).ThenBy(r => r.AwardCount)
+            .Where(r => r.Game == game && (r.Special == 0 || r.Special == 2))
+            .OrderBy(r => r.AwardCode).ThenByDescending(r => r.AwardCount)
             .ToListAsync(ct);
-        var earned = await db.PlayerRibbons
+
+        // Earned ribbon IDs for this player
+        var earnedIds = await db.PlayerRibbons
             .Where(pr => pr.PlayerId == playerId && pr.Game == game)
             .Select(pr => pr.RibbonId)
             .ToListAsync(ct);
 
-        var earnedSet = earned.ToHashSet();
-        return allRibbons
-            .Select(r => new RibbonDisplay(r.RibbonId, r.RibbonName, r.Image, earnedSet.Contains(r.RibbonId)))
-            .ToList();
+        var earnedSet = earnedIds.ToHashSet();
+
+        // Deduplicate by AwardCode — one entry per code, earned takes priority.
+        // allRibbons is already ordered awardCode ASC, awardCount DESC so the first
+        // entry for each code is the highest tier; earned ones bubble up because we
+        // check the earnedSet, not position.
+        var seen = new HashSet<string?>();
+        var result = new List<RibbonDisplay>();
+        foreach (var r in allRibbons)
+        {
+            if (!seen.Add(r.AwardCode)) continue;  // already have an entry for this code
+
+            // If the player has earned ANY ribbon for this awardCode, find the best one
+            bool anyEarned = allRibbons
+                .Where(x => x.AwardCode == r.AwardCode)
+                .Any(x => earnedSet.Contains(x.RibbonId));
+
+            if (anyEarned)
+            {
+                // Pick the highest-count earned ribbon for this code
+                var best = allRibbons
+                    .Where(x => x.AwardCode == r.AwardCode && earnedSet.Contains(x.RibbonId))
+                    .First(); // already sorted by AwardCount DESC
+                result.Add(new RibbonDisplay(best.RibbonId, best.RibbonName, best.Image, Earned: true));
+            }
+            else
+            {
+                result.Add(new RibbonDisplay(r.RibbonId, r.RibbonName, r.Image, Earned: false));
+            }
+        }
+
+        return result;
+    }
+
+    public async Task<IReadOnlyList<GlobalAwardRow>> GetGlobalAwardsAsync(int playerId, string game, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        return await db.Awards
+            .Where(a => a.Game == game && a.GlobalWinnerId == playerId)
+            .OrderBy(a => a.Name)
+            .Select(a => new GlobalAwardRow(a.AwardType, a.Code, a.Name))
+            .ToListAsync(ct);
     }
 
     public async Task<IReadOnlyList<KillStatRow>> GetKillStatsAsync(int playerId, CancellationToken ct = default)
