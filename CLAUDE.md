@@ -180,7 +180,8 @@ The Players/Index leaderboard accepts these URL parameters (all preserved across
 ## Tests
 
 - Controller tests mock all services injected into the controller — the `Players/Index` action requires mocks for `GetRanksAsync`, `GetHistoryDatesAsync`, and `GetLeaderboardAsync`
-- The `Profile` action makes ~20 service calls — see `PlayersControllerTests` for the complete mock list
+- The `Profile` action makes ~22 service calls — see `PlayersControllerTests` for the complete mock list (includes `GetTrendDataAsync` and `GetGlobalAwardsAsync`)
+- `PlayersController` now also injects `IWebHostEnvironment` (used by the `Sig` action) — tests must mock it
 - Repository tests in `Repositories/` folder need a real DB — exclude with `FullyQualifiedName!~RepositoryTests`
 
 ## Slash Commands
@@ -197,7 +198,10 @@ The Players/Index leaderboard accepts these URL parameters (all preserved across
 A live running instance of the original PHP site is available for visual and behaviour reference:
 **https://tft.nervaware.co.uk/stats/hlstats.php**
 
-Use this before implementing any feature to verify expected layout, data format, and edge cases.
+The .NET rewrite also runs live at:
+**https://tft.nervaware.co.uk/stats**
+
+Use both before implementing any feature — the PHP site is the spec, the .NET site shows what is already done.
 
 ## PHP Reference — Feature Map
 
@@ -206,7 +210,7 @@ Pages in `OriginalPHP/pages/` and their .NET status:
 | PHP File(s) | Feature | Status |
 |---|---|---|
 | `players.php` | Player rankings | Done |
-| `playerinfo.php`, `playerinfo_general.php`, `playerinfo_*.php` | Player profile | Done |
+| `playerinfo.php`, `playerinfo_general.php`, `playerinfo_*.php` | Player profile (incl. trend chart, forum sig, ribbons, global awards) | Done |
 | `playerhistory.php` | Player skill history | Done |
 | `bans.php` | Banned players | Done |
 | `clans.php` | Clan rankings | Done |
