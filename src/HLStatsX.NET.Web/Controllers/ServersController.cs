@@ -24,13 +24,14 @@ public class ServersController : Controller
         var serversTask     = _servers.GetServersAsync(game, ct);
         var gameStatsTask   = _servers.GetGameStatsAsync(game, ct);
         var playerCountTask = _players.GetTotalCountAsync(game, ct);
-        await Task.WhenAll(serversTask, gameStatsTask, playerCountTask);
+        var trendTask       = _servers.GetTrendSeriesAsync(game, 24, ct);
+        await Task.WhenAll(serversTask, gameStatsTask, playerCountTask, trendTask);
 
         var gameStats    = gameStatsTask.Result;
         var playerCount  = playerCountTask.Result;
         var newPlayers24h = gameStats.Trend24hPlayers >= 0 ? playerCount - gameStats.Trend24hPlayers : -1;
 
-        return View(new ServerListViewModel(serversTask.Result, game, playerCount, newPlayers24h, gameStats));
+        return View(new ServerListViewModel(serversTask.Result, game, playerCount, newPlayers24h, gameStats, trendTask.Result));
     }
 
     public async Task<IActionResult> Detail(int id, CancellationToken ct)

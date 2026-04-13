@@ -38,6 +38,9 @@ public class ServerService : IServerService
     public Task<IReadOnlyList<ServerLoad>> GetServerLoadAsync(string game, int entries, CancellationToken ct = default) =>
         _servers.GetServerLoadAsync(game, entries, ct);
 
+    public Task<IReadOnlyList<Trend>> GetTrendSeriesAsync(string game, int hours, CancellationToken ct = default) =>
+        _servers.GetTrendSeriesAsync(game, hours, ct);
+
     /// <summary>Teams are static config — served from cache after the first load per game.</summary>
     public async Task<IReadOnlyList<Team>> GetTeamsAsync(string game, CancellationToken ct = default)
     {

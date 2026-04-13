@@ -12,6 +12,7 @@ public interface IServerRepository
     Task<IReadOnlyList<Livestat>> GetLivestatsAsync(int serverId, CancellationToken ct = default);
     Task<IReadOnlyList<Livestat>> GetAllLivestatsAsync(string game, CancellationToken ct = default);
     Task<IReadOnlyList<ServerLoad>> GetServerLoadAsync(string game, int entries, CancellationToken ct = default);
+    Task<IReadOnlyList<Trend>> GetTrendSeriesAsync(string game, int hours, CancellationToken ct = default);
     Task<IReadOnlyList<Team>> GetTeamsAsync(string game, CancellationToken ct = default);
     Task UpdateAsync(Server server, CancellationToken ct = default);
     Task AddAsync(Server server, CancellationToken ct = default);

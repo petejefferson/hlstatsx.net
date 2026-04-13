@@ -1,6 +1,14 @@
 @model ServerListViewModel
+@using System.Text.Json
 @{
     ViewData["Title"] = "Servers";
+
+    var labels  = Model.TrendSeries
+        .Select(t => DateTimeOffset.FromUnixTimeSeconds(t.Timestamp).LocalDateTime.ToString("HH:mm"))
+        .ToArray();
+    var players = Model.TrendSeries.Select(t => t.Players).ToArray();
+    var labelsJson  = JsonSerializer.Serialize(labels);
+    var playersJson = JsonSerializer.Serialize(players);
 }
 
 <h1>Game Servers</h1>
@@ -23,6 +31,14 @@
             on <strong>@Model.Stats.TotalServers.ToString("N0")</strong> server@(Model.Stats.TotalServers == 1 ? "" : "s")
         </td>
     </tr>
+    @if (Model.TrendSeries.Count > 0)
+    {
+        <tr>
+            <td style="padding:0; background:#282828;">
+                <canvas id="serverLoadChart" height="80"></canvas>
+            </td>
+        </tr>
+    }
 </table>
 
 <table class="stats-table">
@@ -52,3 +68,60 @@
         }
     </tbody>
 </table>
+
+@if (Model.TrendSeries.Count > 0)
+{
+    @section Scripts {
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+        <script>
+            (function () {
+                const labels  = @Html.Raw(labelsJson);
+                const players = @Html.Raw(playersJson);
+
+                new Chart(document.getElementById('serverLoadChart'), {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: players,
+                            borderColor: '#ffffff',
+                            borderWidth: 1.5,
+                            pointRadius: 0,
+                            fill: {
+                                target: 'origin',
+                                above: 'rgba(255,255,255,0.08)'
+                            },
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        animation: false,
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => ctx.parsed.y + ' players'
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: { color: '#ffffff', maxTicksLimit: 12, maxRotation: 0 },
+                                grid:  { color: 'rgba(255,255,255,0.1)' }
+                            },
+                            y: {
+                                ticks: { color: '#ffffff' },
+                                grid:  { color: 'rgba(255,255,255,0.1)' },
+                                min: 0
+                            }
+                        },
+                        layout: {
+                            padding: { top: 8, right: 8, bottom: 0, left: 0 }
+                        }
+                    }
+                });
+            })();
+        </script>
+    }
+}

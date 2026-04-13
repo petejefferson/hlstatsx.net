@@ -78,6 +78,16 @@ public class ServerRepository : IServerRepository
         return rows;
     }
 
+    public async Task<IReadOnlyList<Trend>> GetTrendSeriesAsync(string game, int hours, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        var cutoff = (int)DateTimeOffset.UtcNow.AddHours(-hours).ToUnixTimeSeconds();
+        return await db.Trends
+            .Where(t => t.Game == game && t.Timestamp >= cutoff)
+            .OrderBy(t => t.Timestamp)
+            .ToListAsync(ct);
+    }
+
     public async Task<GameStats> GetGameStatsAsync(string game, CancellationToken ct = default)
     {
         await using var db = _factory.CreateDbContext();

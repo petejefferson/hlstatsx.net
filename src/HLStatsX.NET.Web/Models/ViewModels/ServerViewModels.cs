@@ -8,7 +8,8 @@ public record ServerListViewModel(
     string? Game,
     int TotalPlayers,
     int NewPlayersLast24h,   // -1 = no trend data
-    GameStats Stats
+    GameStats Stats,
+    IReadOnlyList<Trend> TrendSeries
 );
 
 public record ServerDetailViewModel(
