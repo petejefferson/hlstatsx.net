@@ -12,8 +12,8 @@ public class ServerConfigConfiguration : IEntityTypeConfiguration<ServerConfig>
         builder.HasKey(s => s.ServerConfigId);
         builder.Property(s => s.ServerConfigId).HasColumnName("serverConfigId");
         builder.Property(s => s.ServerId).HasColumnName("serverId");
-        builder.Property(s => s.ConfigKey).HasColumnName("configkey").HasMaxLength(64).IsRequired();
-        builder.Property(s => s.ConfigValue).HasColumnName("configvalue").HasMaxLength(255);
+        builder.Property(s => s.ConfigKey).HasColumnName("parameter").HasMaxLength(64).IsRequired();
+        builder.Property(s => s.ConfigValue).HasColumnName("value").HasMaxLength(255);
 
         builder.HasOne(s => s.Server).WithOne(sv => sv.Config).HasForeignKey<ServerConfig>(s => s.ServerId).OnDelete(DeleteBehavior.Cascade);
     }

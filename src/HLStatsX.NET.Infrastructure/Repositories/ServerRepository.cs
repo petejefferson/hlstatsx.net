@@ -16,7 +16,6 @@ public class ServerRepository : IServerRepository
     {
         await using var db = _factory.CreateDbContext();
         return await db.Servers
-            .Include(s => s.Config)
             .FirstOrDefaultAsync(s => s.ServerId == serverId, ct);
     }
 
