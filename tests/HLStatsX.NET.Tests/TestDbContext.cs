@@ -107,7 +107,7 @@ public class TestDbContext : HLStatsDbContext
         modelBuilder.Entity<RibbonTrigger>().HasOne(r => r.Ribbon).WithMany().HasForeignKey(r => r.RibbonId);
 
         // Country
-        modelBuilder.Entity<Country>().HasKey(c => c.CountryId);
+        modelBuilder.Entity<Country>().HasKey(c => c.Flag);
 
         // Option — PK is KeyName (string)
         modelBuilder.Entity<Option>().HasKey(o => o.KeyName);
