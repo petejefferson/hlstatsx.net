@@ -12,6 +12,5 @@ public class CountryConfiguration : IEntityTypeConfiguration<Country>
         builder.HasKey(c => c.Flag);
         builder.Property(c => c.Flag).HasColumnName("flag").HasMaxLength(6);
         builder.Property(c => c.Name).HasColumnName("name").HasMaxLength(64).IsRequired();
-        builder.Property(c => c.Code).HasColumnName("code").HasMaxLength(2).IsRequired();
     }
 }
