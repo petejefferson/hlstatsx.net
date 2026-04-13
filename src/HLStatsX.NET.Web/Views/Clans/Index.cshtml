@@ -63,7 +63,7 @@
             string rowClass = rank % 2 == 0 ? "bg2" : "bg1";
             <tr class="@rowClass">
                 <td style="text-align:center;">@rank</td>
-                <td><a asp-action="Profile" asp-route-id="@clan.ClanId" asp-route-game="@Model.Game">@clan.Name</a></td>
+                <td><img src="/hlstatsimg/clan.gif" alt="" style="vertical-align:middle;margin-right:4px;" /><a asp-action="Profile" asp-route-id="@clan.ClanId" asp-route-game="@Model.Game">@clan.Name</a></td>
                 <td>@clan.Tag</td>
                 <td style="text-align:right;">@clan.AvgSkill.ToString("N0")</td>
                 <td style="text-align:right;">@clan.MemberCount</td>

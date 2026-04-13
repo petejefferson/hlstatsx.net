@@ -15,7 +15,7 @@ public class ClansController : Controller
         _config = config;
     }
 
-    public async Task<IActionResult> Index(string? game, int page = 1, string sortBy = "skill", bool desc = true, int minMembers = 3, CancellationToken ct = default)
+    public async Task<IActionResult> Index(string? game, int page = 1, string sortBy = "skill", bool desc = true, int minMembers = 1, CancellationToken ct = default)
     {
         game ??= _config["HLStatsX:DefaultGame"] ?? "cstrike";
         int pageSize = _config.GetValue<int>("HLStatsX:DefaultPageSize", 50);
