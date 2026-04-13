@@ -6,6 +6,20 @@ using Microsoft.EntityFrameworkCore;
 namespace HLStatsX.NET.Tests;
 
 /// <summary>
+/// Factory that creates <see cref="TestDbContext"/> instances sharing the same in-memory
+/// database. Repository tests seed via a direct <see cref="TestDbContext"/> instance, then
+/// exercise the repository through this factory — ensuring both see the same data store.
+/// </summary>
+public class TestDbContextFactory : IDbContextFactory<HLStatsDbContext>
+{
+    private readonly DbContextOptions<HLStatsDbContext> _options;
+
+    public TestDbContextFactory(DbContextOptions<HLStatsDbContext> options) => _options = options;
+
+    public HLStatsDbContext CreateDbContext() => new TestDbContext(_options);
+}
+
+/// <summary>
 /// In-memory test context that skips MySQL-specific Fluent API configurations.
 /// Keys and basic relationships are configured here directly.
 /// </summary>
@@ -104,6 +118,30 @@ public class TestDbContext : HLStatsDbContext
         // Livestat — composite key (PlayerId, ServerId)
         modelBuilder.Entity<Livestat>().HasKey(l => new { l.PlayerId, l.ServerId });
         modelBuilder.Entity<Livestat>().HasOne(l => l.Server).WithMany(s => s.Livestats).HasForeignKey(l => l.ServerId);
+
+        // ServerLoad — composite key (ServerId, Timestamp); read-only in tests
+        modelBuilder.Entity<ServerLoad>().HasKey(s => new { s.ServerId, s.Timestamp });
+        modelBuilder.Entity<ServerLoad>().HasOne(s => s.Server).WithMany().HasForeignKey(s => s.ServerId);
+
+        // Trend — composite key (Timestamp, Game); read-only in tests
+        modelBuilder.Entity<Trend>().HasKey(t => new { t.Timestamp, t.Game });
+
+        // Event entities not already covered above
+        modelBuilder.Entity<EventEntry>().HasKey(e => e.Id);
+        modelBuilder.Entity<EventEntry>().HasOne(e => e.Player).WithMany().HasForeignKey(e => e.PlayerId);
+        modelBuilder.Entity<EventEntry>().HasOne(e => e.Server).WithMany().HasForeignKey(e => e.ServerId);
+
+        modelBuilder.Entity<EventLatency>().HasKey(e => e.Id);
+        modelBuilder.Entity<EventLatency>().HasOne(e => e.Player).WithMany().HasForeignKey(e => e.PlayerId);
+
+        modelBuilder.Entity<EventChangeTeam>().HasKey(e => e.Id);
+        modelBuilder.Entity<EventChangeTeam>().HasOne(e => e.Player).WithMany().HasForeignKey(e => e.PlayerId);
+
+        modelBuilder.Entity<EventChangeRole>().HasKey(e => e.Id);
+        modelBuilder.Entity<EventChangeRole>().HasOne(e => e.Player).WithMany().HasForeignKey(e => e.PlayerId);
+
+        modelBuilder.Entity<EventPlayerAction>().HasKey(e => e.Id);
+        modelBuilder.Entity<EventPlayerPlayerAction>().HasKey(e => e.Id);
 
         // Events
         modelBuilder.Entity<EventFrag>().HasKey(e => e.Id);

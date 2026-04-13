@@ -8,17 +8,21 @@ namespace HLStatsX.NET.Infrastructure.Repositories;
 
 public class ClanRepository : IClanRepository
 {
-    private readonly HLStatsDbContext _db;
+    private readonly IDbContextFactory<HLStatsDbContext> _factory;
 
-    public ClanRepository(HLStatsDbContext db) => _db = db;
+    public ClanRepository(IDbContextFactory<HLStatsDbContext> factory) => _factory = factory;
 
-    public async Task<Clan?> GetByIdAsync(int clanId, CancellationToken ct = default) =>
-        await _db.Clans
-            .FirstOrDefaultAsync(c => c.ClanId == clanId, ct);
+    public async Task<Clan?> GetByIdAsync(int clanId, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        return await db.Clans.FirstOrDefaultAsync(c => c.ClanId == clanId, ct);
+    }
 
     public async Task<PagedResult<Clan>> GetRankingsAsync(string game, int page, int pageSize, string sortBy = "skill", bool desc = true, CancellationToken ct = default)
     {
-        var query = _db.Clans
+        await using var db = _factory.CreateDbContext();
+
+        var query = db.Clans
             .Where(c => c.Game == game && !c.IsHidden)
             .Select(c => new
             {
@@ -42,15 +46,20 @@ public class ClanRepository : IClanRepository
         return PagedResult<Clan>.Create(items, total, page, pageSize);
     }
 
-    public async Task<IReadOnlyList<Player>> GetMembersAsync(int clanId, CancellationToken ct = default) =>
-        await _db.Players
+    public async Task<IReadOnlyList<Player>> GetMembersAsync(int clanId, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        return await db.Players
             .Where(p => p.ClanId == clanId && p.HideRanking == 0)
             .OrderByDescending(p => p.Skill)
             .ToListAsync(ct);
+    }
 
     public async Task<PagedResult<Clan>> SearchAsync(string query, string? game, int page, int pageSize, CancellationToken ct = default)
     {
-        var q = _db.Clans
+        await using var db = _factory.CreateDbContext();
+
+        var q = db.Clans
             .Where(c => (game == null || c.Game == game)
                      && (EF.Functions.Like(c.Name, $"%{query}%") || EF.Functions.Like(c.Tag, $"%{query}%")));
 
@@ -59,18 +68,25 @@ public class ClanRepository : IClanRepository
         return PagedResult<Clan>.Create(items, total, page, pageSize);
     }
 
-    public async Task<IReadOnlyList<Clan>> GetByCountryAsync(string countryCode, string game, CancellationToken ct = default) =>
-        await _db.Clans
+    public async Task<IReadOnlyList<Clan>> GetByCountryAsync(string countryCode, string game, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        return await db.Clans
             .Where(c => c.Game == game && c.MapRegion == countryCode && !c.IsHidden)
             .OrderBy(c => c.Name)
             .ToListAsync(ct);
+    }
 
     public async Task UpdateAsync(Clan clan, CancellationToken ct = default)
     {
-        _db.Clans.Update(clan);
-        await _db.SaveChangesAsync(ct);
+        await using var db = _factory.CreateDbContext();
+        db.Clans.Update(clan);
+        await db.SaveChangesAsync(ct);
     }
 
-    public async Task<int> GetTotalCountAsync(string game, CancellationToken ct = default) =>
-        await _db.Clans.CountAsync(c => c.Game == game && !c.IsHidden, ct);
+    public async Task<int> GetTotalCountAsync(string game, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        return await db.Clans.CountAsync(c => c.Game == game && !c.IsHidden, ct);
+    }
 }

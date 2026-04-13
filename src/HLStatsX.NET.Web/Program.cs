@@ -14,16 +14,23 @@ if (builder.Environment.IsDevelopment())
 }
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddMemoryCache();
 
 // Database
 var connectionString = builder.Configuration.GetConnectionString("HLStats")
     ?? throw new InvalidOperationException("Connection string 'HLStats' not found.");
 
-builder.Services.AddDbContext<HLStatsDbContext>(options =>
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+// AddDbContextFactory registers a singleton IDbContextFactory<HLStatsDbContext>.
+// Repositories call _factory.CreateDbContext() per method, giving each query its own
+// short-lived context — this is required for concurrent Task.WhenAll calls because
+// EF Core DbContext is not thread-safe.
+builder.Services.AddDbContextFactory<HLStatsDbContext>(options =>
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
+           .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
 
 // Repositories
 builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();
+builder.Services.AddScoped<IPlayerStatsRepository, PlayerStatsRepository>();
 builder.Services.AddScoped<IClanRepository, ClanRepository>();
 builder.Services.AddScoped<IServerRepository, ServerRepository>();
 builder.Services.AddScoped<IWeaponRepository, WeaponRepository>();

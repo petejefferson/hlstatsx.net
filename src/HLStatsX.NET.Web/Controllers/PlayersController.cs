@@ -80,37 +80,73 @@ public class PlayersController : Controller
         if (player is null) return NotFound();
 
         var game = player.Game;
-        var rank = await _players.GetPlayerRankAsync(id, game, ct);
-        var rankEntity = await _awards.GetRankForPlayerAsync(id, game, ct);
-        var nextRank = await _players.GetNextRankAsync(game, player.Kills, ct);
-        var allRanks = await _awards.GetRanksAsync(game, ct);
-        var pastRanks = allRanks
+
+        // Fire all independent profile queries concurrently. Each service/repository
+        // method creates its own short-lived DbContext via IDbContextFactory, so
+        // concurrent access is safe.
+        var rankTask          = _players.GetPlayerRankAsync(id, game, ct);
+        // Pass kills directly — avoids a redundant player load inside the service
+        var rankEntityTask    = _awards.GetRankForPlayerAsync(id, game, player.Kills, ct);
+        var nextRankTask      = _players.GetNextRankAsync(game, player.Kills, ct);
+        var allRanksTask      = _awards.GetRanksAsync(game, ct);
+        var aliasesTask       = _players.GetPlayerAliasesAsync(id, ct);
+        var awardsTask        = _players.GetPlayerAwardsAsync(id, ct);
+        var allRibbonsTask    = _players.GetRibbonsWithStatusAsync(id, game, ct);
+        var realStatsTask     = _players.GetRealStatsAsync(id, ct);
+        var pingTask          = _players.GetAveragePingAsync(id, ct);
+        var lastConnectTask   = _players.GetLastConnectAsync(id, ct);
+        var favServerTask     = _players.GetFavoriteServerAsync(id, ct);
+        var favMapTask        = _players.GetFavoriteMapAsync(id, ct);
+        var favWeaponTask     = _players.GetFavoriteWeaponAsync(id, ct);
+        var killStatsTask     = _players.GetKillStatsAsync(id, ct);
+        var mapPerfTask       = _players.GetMapPerformanceAsync(id, ct);
+        var serverPerfTask    = _players.GetServerPerformanceAsync(id, ct);
+        var weaponStatsTask   = _players.GetWeaponStatsAsync(id, game, ct);
+        var teamSelTask       = _players.GetTeamSelectionAsync(id, game, ct);
+        var roleSelTask       = _players.GetRoleSelectionAsync(id, game, ct);
+        var playerActionsTask = _players.GetPlayerActionsAsync(id, ct);
+        var actionVictimsTask = _players.GetPlayerActionVictimsAsync(id, ct);
+
+        await Task.WhenAll(
+            rankTask, rankEntityTask, nextRankTask, allRanksTask,
+            aliasesTask, awardsTask, allRibbonsTask, realStatsTask,
+            pingTask, lastConnectTask, favServerTask, favMapTask,
+            favWeaponTask, killStatsTask, mapPerfTask, serverPerfTask,
+            weaponStatsTask, teamSelTask, roleSelTask,
+            playerActionsTask, actionVictimsTask);
+
+        var rankEntity = rankEntityTask.Result;
+        var allRanks   = allRanksTask.Result;
+        var pastRanks  = allRanks
             .Where(r => r.MinKills < (rankEntity?.MinKills ?? 0))
             .OrderBy(r => r.MinKills)
             .ToList();
-        var aliases = await _players.GetPlayerAliasesAsync(id, ct);
-        var awards = await _players.GetPlayerAwardsAsync(id, ct);
-        var allRibbons = await _players.GetRibbonsWithStatusAsync(id, game, ct);
-        var realStats = await _players.GetRealStatsAsync(id, ct);
-        var ping = await _players.GetAveragePingAsync(id, ct);
-        var lastConnect = await _players.GetLastConnectAsync(id, ct);
-        var favServer = await _players.GetFavoriteServerAsync(id, ct);
-        var favMap = await _players.GetFavoriteMapAsync(id, ct);
-        var favWeapon = await _players.GetFavoriteWeaponAsync(id, ct);
-        var killStats = await _players.GetKillStatsAsync(id, ct);
-        var mapPerf = await _players.GetMapPerformanceAsync(id, ct);
-        var serverPerf = await _players.GetServerPerformanceAsync(id, ct);
-        var weaponStats = await _players.GetWeaponStatsAsync(id, game, ct);
-        var teamSel = await _players.GetTeamSelectionAsync(id, game, ct);
-        var roleSel = await _players.GetRoleSelectionAsync(id, game, ct);
-        var playerActions = await _players.GetPlayerActionsAsync(id, ct);
-        var playerActionVictims = await _players.GetPlayerActionVictimsAsync(id, ct);
 
-        return View(new PlayerProfileViewModel(
-            player, rank, rankEntity, nextRank, pastRanks, aliases, awards, allRibbons,
-            realStats, ping, lastConnect, favServer, favMap, favWeapon,
-            killStats, mapPerf, serverPerf, weaponStats, teamSel, roleSel,
-            playerActions, playerActionVictims));
+        return View(new PlayerProfileViewModel
+        {
+            Player              = player,
+            Rank                = rankTask.Result,
+            CurrentRank         = rankEntity,
+            NextRank            = nextRankTask.Result,
+            PastRanks           = pastRanks,
+            Aliases             = aliasesTask.Result,
+            Awards              = awardsTask.Result,
+            AllRibbons          = allRibbonsTask.Result,
+            RealStats           = realStatsTask.Result,
+            Ping                = pingTask.Result,
+            LastConnect         = lastConnectTask.Result,
+            FavoriteServer      = favServerTask.Result,
+            FavoriteMap         = favMapTask.Result,
+            FavoriteWeapon      = favWeaponTask.Result,
+            KillStats           = killStatsTask.Result,
+            MapPerformance      = mapPerfTask.Result,
+            ServerPerformance   = serverPerfTask.Result,
+            WeaponStats         = weaponStatsTask.Result,
+            TeamSelection       = teamSelTask.Result,
+            RoleSelection       = roleSelTask.Result,
+            PlayerActions       = playerActionsTask.Result,
+            PlayerActionVictims = actionVictimsTask.Result
+        });
     }
 
     public async Task<IActionResult> History(int id, int days = 30, CancellationToken ct = default)

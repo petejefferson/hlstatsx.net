@@ -8,8 +8,13 @@ namespace HLStatsX.NET.Infrastructure.Services;
 public class PlayerService : IPlayerService
 {
     private readonly IPlayerRepository _players;
+    private readonly IPlayerStatsRepository _stats;
 
-    public PlayerService(IPlayerRepository players) => _players = players;
+    public PlayerService(IPlayerRepository players, IPlayerStatsRepository stats)
+    {
+        _players = players;
+        _stats   = stats;
+    }
 
     public Task<Player?> GetPlayerAsync(int playerId, CancellationToken ct = default) =>
         _players.GetByIdAsync(playerId, ct);
@@ -68,51 +73,53 @@ public class PlayerService : IPlayerService
         await _players.UpdateAsync(player, ct);
     }
 
+    // — Profile stats — delegated to PlayerStatsRepository via IPlayerStatsRepository
+
     public Task<RealStats> GetRealStatsAsync(int playerId, CancellationToken ct = default) =>
-        _players.GetRealStatsAsync(playerId, ct);
+        _stats.GetRealStatsAsync(playerId, ct);
 
     public Task<PingStats?> GetAveragePingAsync(int playerId, CancellationToken ct = default) =>
-        _players.GetAveragePingAsync(playerId, ct);
+        _stats.GetAveragePingAsync(playerId, ct);
 
     public Task<DateTime?> GetLastConnectAsync(int playerId, CancellationToken ct = default) =>
-        _players.GetLastConnectAsync(playerId, ct);
+        _stats.GetLastConnectAsync(playerId, ct);
 
     public Task<FavoriteServer?> GetFavoriteServerAsync(int playerId, CancellationToken ct = default) =>
-        _players.GetFavoriteServerAsync(playerId, ct);
+        _stats.GetFavoriteServerAsync(playerId, ct);
 
     public Task<string?> GetFavoriteMapAsync(int playerId, CancellationToken ct = default) =>
-        _players.GetFavoriteMapAsync(playerId, ct);
+        _stats.GetFavoriteMapAsync(playerId, ct);
 
     public Task<FavoriteWeapon?> GetFavoriteWeaponAsync(int playerId, CancellationToken ct = default) =>
-        _players.GetFavoriteWeaponAsync(playerId, ct);
+        _stats.GetFavoriteWeaponAsync(playerId, ct);
 
     public Task<Rank?> GetNextRankAsync(string game, int kills, CancellationToken ct = default) =>
-        _players.GetNextRankAsync(game, kills, ct);
+        _stats.GetNextRankAsync(game, kills, ct);
 
     public Task<IReadOnlyList<RibbonDisplay>> GetRibbonsWithStatusAsync(int playerId, string game, CancellationToken ct = default) =>
-        _players.GetRibbonsWithStatusAsync(playerId, game, ct);
+        _stats.GetRibbonsWithStatusAsync(playerId, game, ct);
 
     public Task<IReadOnlyList<KillStatRow>> GetKillStatsAsync(int playerId, CancellationToken ct = default) =>
-        _players.GetKillStatsAsync(playerId, ct);
+        _stats.GetKillStatsAsync(playerId, ct);
 
     public Task<IReadOnlyList<MapStatRow>> GetMapPerformanceAsync(int playerId, CancellationToken ct = default) =>
-        _players.GetMapPerformanceAsync(playerId, ct);
+        _stats.GetMapPerformanceAsync(playerId, ct);
 
     public Task<IReadOnlyList<ServerStatRow>> GetServerPerformanceAsync(int playerId, CancellationToken ct = default) =>
-        _players.GetServerPerformanceAsync(playerId, ct);
+        _stats.GetServerPerformanceAsync(playerId, ct);
 
     public Task<IReadOnlyList<WeaponStatRow>> GetWeaponStatsAsync(int playerId, string game, CancellationToken ct = default) =>
-        _players.GetWeaponStatsAsync(playerId, game, ct);
+        _stats.GetWeaponStatsAsync(playerId, game, ct);
 
     public Task<IReadOnlyList<TeamStatRow>> GetTeamSelectionAsync(int playerId, string game, CancellationToken ct = default) =>
-        _players.GetTeamSelectionAsync(playerId, game, ct);
+        _stats.GetTeamSelectionAsync(playerId, game, ct);
 
     public Task<IReadOnlyList<RoleStatRow>> GetRoleSelectionAsync(int playerId, string game, CancellationToken ct = default) =>
-        _players.GetRoleSelectionAsync(playerId, game, ct);
+        _stats.GetRoleSelectionAsync(playerId, game, ct);
 
     public Task<IReadOnlyList<ActionStatRow>> GetPlayerActionsAsync(int playerId, CancellationToken ct = default) =>
-        _players.GetPlayerActionsAsync(playerId, ct);
+        _stats.GetPlayerActionsAsync(playerId, ct);
 
     public Task<IReadOnlyList<ActionStatRow>> GetPlayerActionVictimsAsync(int playerId, CancellationToken ct = default) =>
-        _players.GetPlayerActionVictimsAsync(playerId, ct);
+        _stats.GetPlayerActionVictimsAsync(playerId, ct);
 }

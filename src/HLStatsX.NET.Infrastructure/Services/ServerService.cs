@@ -2,14 +2,23 @@ using HLStatsX.NET.Core.Entities;
 using HLStatsX.NET.Core.Interfaces.Repositories;
 using HLStatsX.NET.Core.Interfaces.Services;
 using HLStatsX.NET.Core.Models;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace HLStatsX.NET.Infrastructure.Services;
 
 public class ServerService : IServerService
 {
     private readonly IServerRepository _servers;
+    private readonly IMemoryCache _cache;
 
-    public ServerService(IServerRepository servers) => _servers = servers;
+    // Teams are static game configuration — cache for 1 hour.
+    private static readonly TimeSpan TeamCacheTtl = TimeSpan.FromHours(1);
+
+    public ServerService(IServerRepository servers, IMemoryCache cache)
+    {
+        _servers = servers;
+        _cache   = cache;
+    }
 
     public Task<GameStats> GetGameStatsAsync(string game, CancellationToken ct = default) =>
         _servers.GetGameStatsAsync(game, ct);
@@ -29,8 +38,17 @@ public class ServerService : IServerService
     public Task<IReadOnlyList<ServerLoad>> GetServerLoadAsync(string game, int entries, CancellationToken ct = default) =>
         _servers.GetServerLoadAsync(game, entries, ct);
 
-    public Task<IReadOnlyList<Team>> GetTeamsAsync(string game, CancellationToken ct = default) =>
-        _servers.GetTeamsAsync(game, ct);
+    /// <summary>Teams are static config — served from cache after the first load per game.</summary>
+    public async Task<IReadOnlyList<Team>> GetTeamsAsync(string game, CancellationToken ct = default)
+    {
+        var key = $"teams:{game}";
+        if (_cache.TryGetValue(key, out IReadOnlyList<Team>? cached))
+            return cached!;
+
+        var teams = await _servers.GetTeamsAsync(game, ct);
+        _cache.Set(key, teams, TeamCacheTtl);
+        return teams;
+    }
 
     public async Task<Server> CreateServerAsync(Server server, CancellationToken ct = default)
     {

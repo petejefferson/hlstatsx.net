@@ -8,19 +8,27 @@ namespace HLStatsX.NET.Infrastructure.Repositories;
 
 public class WeaponRepository : IWeaponRepository
 {
-    private readonly HLStatsDbContext _db;
+    private readonly IDbContextFactory<HLStatsDbContext> _factory;
 
-    public WeaponRepository(HLStatsDbContext db) => _db = db;
+    public WeaponRepository(IDbContextFactory<HLStatsDbContext> factory) => _factory = factory;
 
-    public async Task<Weapon?> GetByIdAsync(int weaponId, CancellationToken ct = default) =>
-        await _db.Weapons.FindAsync(new object[] { weaponId }, ct);
+    public async Task<Weapon?> GetByIdAsync(int weaponId, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        return await db.Weapons.FindAsync(new object[] { weaponId }, ct);
+    }
 
-    public async Task<Weapon?> GetByCodeAsync(string code, string game, CancellationToken ct = default) =>
-        await _db.Weapons.FirstOrDefaultAsync(w => w.Code == code && w.Game == game, ct);
+    public async Task<Weapon?> GetByCodeAsync(string code, string game, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        return await db.Weapons.FirstOrDefaultAsync(w => w.Code == code && w.Game == game, ct);
+    }
 
     public async Task<PagedResult<Weapon>> GetAllAsync(string game, int page, int pageSize, string sortBy = "kills", bool desc = true, CancellationToken ct = default)
     {
-        var query = _db.Weapons.Where(w => w.Game == game && w.Kills > 0);
+        await using var db = _factory.CreateDbContext();
+
+        var query = db.Weapons.Where(w => w.Game == game && w.Kills > 0);
 
         query = (sortBy.ToLowerInvariant(), desc) switch
         {
@@ -37,16 +45,20 @@ public class WeaponRepository : IWeaponRepository
         return PagedResult<Weapon>.Create(items, total, page, pageSize);
     }
 
-    public async Task<IReadOnlyList<Weapon>> GetTopWeaponsAsync(string game, int count = 10, CancellationToken ct = default) =>
-        await _db.Weapons
+    public async Task<IReadOnlyList<Weapon>> GetTopWeaponsAsync(string game, int count = 10, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        return await db.Weapons
             .Where(w => w.Game == game && w.Kills > 0)
             .OrderByDescending(w => w.Kills)
             .Take(count)
             .ToListAsync(ct);
+    }
 
     public async Task UpdateAsync(Weapon weapon, CancellationToken ct = default)
     {
-        _db.Weapons.Update(weapon);
-        await _db.SaveChangesAsync(ct);
+        await using var db = _factory.CreateDbContext();
+        db.Weapons.Update(weapon);
+        await db.SaveChangesAsync(ct);
     }
 }

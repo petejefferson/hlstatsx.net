@@ -16,8 +16,8 @@ public class PlayerRepositoryTests : IDisposable
         var options = new DbContextOptionsBuilder<HLStatsDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
-        _db = new TestDbContext(options);
-        _repo = new PlayerRepository(_db);
+        _db   = new TestDbContext(options);
+        _repo = new PlayerRepository(new TestDbContextFactory(options));
     }
 
     [Fact]

@@ -96,7 +96,7 @@ public class PlayersControllerTests
         _playerServiceMock.Setup(s => s.GetRoleSelectionAsync(1, "cstrike", default)).ReturnsAsync(Array.Empty<RoleStatRow>());
         _playerServiceMock.Setup(s => s.GetPlayerActionsAsync(1, default)).ReturnsAsync(Array.Empty<ActionStatRow>());
         _playerServiceMock.Setup(s => s.GetPlayerActionVictimsAsync(1, default)).ReturnsAsync(Array.Empty<ActionStatRow>());
-        _awardServiceMock.Setup(s => s.GetRankForPlayerAsync(1, "cstrike", default)).ReturnsAsync((Rank?)null);
+        _awardServiceMock.Setup(s => s.GetRankForPlayerAsync(1, "cstrike", 500, default)).ReturnsAsync((Rank?)null);
         _awardServiceMock.Setup(s => s.GetRanksAsync("cstrike", default)).ReturnsAsync(Array.Empty<Rank>());
 
         var result = await _controller.Profile(1, default);

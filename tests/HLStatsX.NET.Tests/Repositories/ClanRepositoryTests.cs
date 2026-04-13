@@ -16,8 +16,8 @@ public class ClanRepositoryTests : IDisposable
         var options = new DbContextOptionsBuilder<HLStatsDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
-        _db = new TestDbContext(options);
-        _repo = new ClanRepository(_db);
+        _db   = new TestDbContext(options);
+        _repo = new ClanRepository(new TestDbContextFactory(options));
     }
 
     [Fact]

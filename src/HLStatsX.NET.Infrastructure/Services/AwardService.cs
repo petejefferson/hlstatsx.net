@@ -1,18 +1,23 @@
 using HLStatsX.NET.Core.Entities;
 using HLStatsX.NET.Core.Interfaces.Repositories;
 using HLStatsX.NET.Core.Interfaces.Services;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace HLStatsX.NET.Infrastructure.Services;
 
 public class AwardService : IAwardService
 {
     private readonly IAwardRepository _awards;
-    private readonly IPlayerRepository _players;
+    private readonly IMemoryCache _cache;
 
-    public AwardService(IAwardRepository awards, IPlayerRepository players)
+    // Ranks and ribbons are static reference data — cache aggressively.
+    private static readonly TimeSpan RankCacheTtl   = TimeSpan.FromHours(1);
+    private static readonly TimeSpan RibbonCacheTtl = TimeSpan.FromHours(1);
+
+    public AwardService(IAwardRepository awards, IMemoryCache cache)
     {
         _awards = awards;
-        _players = players;
+        _cache  = cache;
     }
 
     public Task<IReadOnlyList<Award>> GetAwardsAsync(string game, CancellationToken ct = default) =>
@@ -21,18 +26,40 @@ public class AwardService : IAwardService
     public Task<IReadOnlyList<Award>> GetDailyAwardsAsync(string game, CancellationToken ct = default) =>
         _awards.GetDailyAwardsAsync(game, ct);
 
-    public Task<IReadOnlyList<Rank>> GetRanksAsync(string game, CancellationToken ct = default) =>
-        _awards.GetRanksAsync(game, ct);
-
-    public async Task<Rank?> GetRankForPlayerAsync(int playerId, string game, CancellationToken ct = default)
+    /// <summary>Returns all ranks for the game, served from cache after the first load.</summary>
+    public async Task<IReadOnlyList<Rank>> GetRanksAsync(string game, CancellationToken ct = default)
     {
-        var player = await _players.GetByIdAsync(playerId, ct);
-        if (player is null) return null;
-        return await _awards.GetRankForKillsAsync(game, player.Kills, ct);
+        var key = $"ranks:{game}";
+        if (_cache.TryGetValue(key, out IReadOnlyList<Rank>? cached))
+            return cached!;
+
+        var ranks = await _awards.GetRanksAsync(game, ct);
+        _cache.Set(key, ranks, RankCacheTtl);
+        return ranks;
     }
 
-    public Task<IReadOnlyList<Ribbon>> GetRibbonsAsync(string game, CancellationToken ct = default) =>
-        _awards.GetRibbonsAsync(game, ct);
+    /// <summary>
+    /// Resolves the rank for the given kill count.
+    /// Delegates to the cached rank list so no extra DB query is needed.
+    /// </summary>
+    public async Task<Rank?> GetRankForPlayerAsync(int playerId, string game, int kills, CancellationToken ct = default)
+    {
+        var ranks = await GetRanksAsync(game, ct);
+        // Highest rank whose MinKills threshold the player has reached
+        return ranks.Where(r => r.MinKills <= kills).MaxBy(r => r.MinKills);
+    }
+
+    /// <summary>Returns all ribbons for the game, served from cache after the first load.</summary>
+    public async Task<IReadOnlyList<Ribbon>> GetRibbonsAsync(string game, CancellationToken ct = default)
+    {
+        var key = $"ribbons:{game}";
+        if (_cache.TryGetValue(key, out IReadOnlyList<Ribbon>? cached))
+            return cached!;
+
+        var ribbons = await _awards.GetRibbonsAsync(game, ct);
+        _cache.Set(key, ribbons, RibbonCacheTtl);
+        return ribbons;
+    }
 
     public Task<Ribbon?> GetRibbonAsync(int ribbonId, CancellationToken ct = default) =>
         _awards.GetRibbonByIdAsync(ribbonId, ct);

@@ -8,16 +8,21 @@ namespace HLStatsX.NET.Infrastructure.Repositories;
 
 public class MapRepository : IMapRepository
 {
-    private readonly HLStatsDbContext _db;
+    private readonly IDbContextFactory<HLStatsDbContext> _factory;
 
-    public MapRepository(HLStatsDbContext db) => _db = db;
+    public MapRepository(IDbContextFactory<HLStatsDbContext> factory) => _factory = factory;
 
-    public async Task<MapCount?> GetByNameAsync(string mapName, string game, CancellationToken ct = default) =>
-        await _db.MapCounts.FirstOrDefaultAsync(m => m.Map == mapName && m.Game == game, ct);
+    public async Task<MapCount?> GetByNameAsync(string mapName, string game, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        return await db.MapCounts.FirstOrDefaultAsync(m => m.Map == mapName && m.Game == game, ct);
+    }
 
     public async Task<PagedResult<MapCount>> GetAllAsync(string game, int page, int pageSize, string sortBy = "kills", bool desc = true, CancellationToken ct = default)
     {
-        var query = _db.MapCounts.Where(m => m.Game == game);
+        await using var db = _factory.CreateDbContext();
+
+        var query = db.MapCounts.Where(m => m.Game == game);
 
         query = (sortBy.ToLowerInvariant(), desc) switch
         {
@@ -32,10 +37,13 @@ public class MapRepository : IMapRepository
         return PagedResult<MapCount>.Create(items, total, page, pageSize);
     }
 
-    public async Task<IReadOnlyList<MapCount>> GetTopMapsAsync(string game, int count = 10, CancellationToken ct = default) =>
-        await _db.MapCounts
+    public async Task<IReadOnlyList<MapCount>> GetTopMapsAsync(string game, int count = 10, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        return await db.MapCounts
             .Where(m => m.Game == game)
             .OrderByDescending(m => m.Kills)
             .Take(count)
             .ToListAsync(ct);
+    }
 }

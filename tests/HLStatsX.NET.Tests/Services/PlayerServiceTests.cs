@@ -8,12 +8,14 @@ namespace HLStatsX.NET.Tests.Services;
 public class PlayerServiceTests
 {
     private readonly Mock<IPlayerRepository> _repoMock;
+    private readonly Mock<IPlayerStatsRepository> _statsMock;
     private readonly PlayerService _service;
 
     public PlayerServiceTests()
     {
-        _repoMock = new Mock<IPlayerRepository>();
-        _service = new PlayerService(_repoMock.Object);
+        _repoMock  = new Mock<IPlayerRepository>();
+        _statsMock = new Mock<IPlayerStatsRepository>();
+        _service   = new PlayerService(_repoMock.Object, _statsMock.Object);
     }
 
     [Fact]
