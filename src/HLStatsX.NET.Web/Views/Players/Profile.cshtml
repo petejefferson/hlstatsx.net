@@ -204,7 +204,9 @@
                 }
                 else
                 {
-                  <canvas id="trendChart" width="380" height="200" style="background:#1a1a1a;border-radius:4px;"></canvas>
+                  <div style="position:relative;width:100%;height:200px;">
+                    <canvas id="trendChart" style="background:#1a1a1a;border-radius:4px;"></canvas>
+                  </div>
                 }
               </td>
             </tr>
@@ -649,7 +651,7 @@ document.querySelectorAll('.tab-link').forEach(function(link) {
 
 @if (Model.TrendData.Count >= 2)
 {
-    var labels   = Model.TrendData.Select(t => t.EventTime.ToString("MMM d")).ToArray();
+    var labels   = Model.TrendData.Select(t => t.EventTime.ToString("MMM-d")).ToArray();
     var skills   = Model.TrendData.Select(t => (double)t.Skill / 1000.0).ToArray();
     var sessions = Model.TrendData.Select(t => (double)t.SkillChange).ToArray();
 
@@ -663,7 +665,7 @@ document.querySelectorAll('.tab-link').forEach(function(link) {
             labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(labels)),
             datasets: [
                 {
-                    label: 'Skill (K)',
+                    label: 'Skill',
                     data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(skills)),
                     borderColor: 'rgb(255, 255, 0)',
                     backgroundColor: 'rgba(255, 255, 0, 0.1)',
@@ -681,12 +683,13 @@ document.querySelectorAll('.tab-link').forEach(function(link) {
             ]
         },
         options: {
-            responsive: false,
-            plugins: { legend: { labels: { color: '#ddd' } } },
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#ddd', usePointStyle: true, pointStyle: 'line' } } },
             scales: {
                 ySkill: {
                     type: 'linear', position: 'right',
-                    ticks: { color: '#ddd' },
+                    ticks: { color: '#ddd', callback: function(v) { return v + 'K'; } },
                     grid: { color: '#444' },
                     title: { display: true, text: 'Skill', color: '#ddd' }
                 },
@@ -697,7 +700,7 @@ document.querySelectorAll('.tab-link').forEach(function(link) {
                     title: { display: true, text: 'Session', color: '#ddd' }
                 },
                 x: {
-                    ticks: { color: '#ddd' },
+                    ticks: { color: '#ddd', autoSkip: true, maxTicksLimit: 8, maxRotation: 45, minRotation: 0 },
                     grid: { color: '#333' },
                     title: { display: true, text: 'Date', color: '#ddd' }
                 }

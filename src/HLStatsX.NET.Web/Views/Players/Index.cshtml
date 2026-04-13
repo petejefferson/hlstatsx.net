@@ -56,8 +56,7 @@
         <tr class="data-table-head">
             <th style="width:4%;text-align:center;">Rank</th>
             <th style="text-align:left;"><a href="@(SortUrl("name"))">Player@(Mark("name"))</a></th>
-            <th style="text-align:left;"><a href="@(SortUrl("clan"))">Clan@(Mark("clan"))</a></th>
-            <th style="text-align:center;"><a href="@(SortUrl("armyrank"))">Army Rank@(Mark("armyrank"))</a></th>
+            <th style="text-align:center;"><a href="@(SortUrl("armyrank"))">Rank@(Mark("armyrank"))</a></th>
             <th style="text-align:right;"><a href="@(SortUrl("skill"))">Points@(Mark("skill"))</a></th>
             <th style="text-align:center;"><a href="@(SortUrl("activity"))">Activity@(Mark("activity"))</a></th>
             <th style="text-align:right;"><a href="@(SortUrl("connectiontime"))">Connection Time@(Mark("connectiontime"))</a></th>
@@ -87,12 +86,6 @@
                     else
                     {
                         <a asp-action="Profile" asp-route-id="@player.PlayerId">@player.LastName</a>
-                    }
-                </td>
-                <td style="text-align:left;">
-                    @if (player.Clan is not null)
-                    {
-                        <a asp-controller="Clans" asp-action="Profile" asp-route-id="@player.Clan.ClanId">@player.Clan.Tag</a>
                     }
                 </td>
                 <td style="text-align:center;">
