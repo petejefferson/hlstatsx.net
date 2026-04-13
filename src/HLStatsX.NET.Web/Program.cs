@@ -3,6 +3,7 @@ using HLStatsX.NET.Core.Interfaces.Services;
 using HLStatsX.NET.Infrastructure.Data;
 using HLStatsX.NET.Infrastructure.Repositories;
 using HLStatsX.NET.Infrastructure.Services;
+using HLStatsX.NET.Web.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,6 +16,11 @@ if (builder.Environment.IsDevelopment())
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddMemoryCache();
+builder.Services.AddHttpClient("Steam", c =>
+{
+    c.Timeout = TimeSpan.FromSeconds(5);
+});
+builder.Services.AddScoped<ISteamService, SteamService>();
 
 // Database
 var connectionString = builder.Configuration.GetConnectionString("HLStats")

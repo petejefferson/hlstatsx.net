@@ -30,7 +30,6 @@
 
 <div class="profile-tabs" id="profileTabs">
     <a href="#tab-general" class="tab-link active">General</a>
-    <a href="#tab-aliases" class="tab-link">Aliases</a>
     <a href="#tab-teams" class="tab-link">Teams &amp; Actions</a>
     <a href="#tab-weapons" class="tab-link">Weapons</a>
     <a href="#tab-maps" class="tab-link">Maps &amp; Servers</a>
@@ -40,58 +39,112 @@
 <div id="tab-general" class="tab-panel active">
   <div class="profile-two-col">
     <section class="profile-card">
-      <h2>Player Profile</h2>
-      <table class="stats-table">
-        <tr><th>Name</th><td><strong>@Model.Player.LastName</strong></td></tr>
-        <tr>
-          <th>Location</th>
+      <table class="data-table">
+        @{
+            var steamUniqueId = Model.Player.UniqueIds.FirstOrDefault()?.UniqueId;
+            bool isBot = steamUniqueId?.StartsWith("BOT", StringComparison.OrdinalIgnoreCase) == true;
+        }
+        <tr class="data-table-head">
+          <td style="vertical-align:top;">Player Profile</td>
+          <td id="player_avatar" rowspan="5" style="text-align:center;vertical-align:middle;padding:8px;width:170px;">
+            @if (Model.AvatarUrl != null)
+            {
+              <img src="@Model.AvatarUrl" style="height:158px;width:158px;" alt="Steam Community Avatar" />
+            }
+          </td>
+        </tr>
+        <tr class="bg1">
           <td>
+            @if (!string.IsNullOrEmpty(Model.Player.Flag))
+            {
+              <img src="/hlstatsimg/flags/@(Model.Player.Flag.ToLower()).gif" alt="@Model.Player.Country" title="@Model.Player.Country" style="vertical-align:middle;" />
+            }
+            <strong>@Model.Player.LastName</strong>
+          </td>
+        </tr>
+        <tr class="bg2">
+          <td>
+            Location:
             @if (!string.IsNullOrEmpty(Model.Player.Country))
             {
-                @if (!string.IsNullOrEmpty(Model.Player.City)) { <text>@Model.Player.City, </text> }
-                @Model.Player.Country
+              @if (!string.IsNullOrEmpty(Model.Player.City)) { <text>@Model.Player.City, </text> }
+              @Model.Player.Country
             }
             else { <text>(Unknown)</text> }
           </td>
         </tr>
-        @{
-            var steamId = Model.Player.UniqueIds.FirstOrDefault()?.UniqueId;
-        }
-        @if (steamId != null)
-        {
-        <tr><th>Steam ID</th><td><code>@steamId</code></td></tr>
-        }
-        <tr><th>Karma</th><td>
-            @if (Model.Player.HideRanking == 2) { <span class="text-danger"><strong>Banned</strong></span> }
-            else { <span class="text-success"><strong>In good standing</strong></span> }
-        </td></tr>
-        @if (Model.Player.Clan is not null)
-        {
-        <tr><th>Clan</th><td><a asp-controller="Clans" asp-action="Profile" asp-route-id="@Model.Player.Clan.ClanId">@Model.Player.Clan.Name</a></td></tr>
-        }
-        @if (!string.IsNullOrEmpty(Model.Player.FullName))
-        {
-        <tr><th>Real Name</th><td><strong>@Model.Player.FullName</strong></td></tr>
-        }
-        @if (!string.IsNullOrEmpty(Model.Player.Homepage))
-        {
-        <tr><th>Home Page</th><td><a href="@Model.Player.Homepage" rel="nofollow noopener" target="_blank">@Model.Player.Homepage</a></td></tr>
-        }
-        <tr><th>Last Connect</th><td>@(Model.LastConnect.HasValue ? Model.LastConnect.Value.ToString("ddd. MMM. d, yyyy @ HH:mm:ss") : "(Unknown)")</td></tr>
-        <tr><th>Connection Time</th><td>@FormatTime(Model.Player.ConnectionTime)</td></tr>
-        <tr><th>Average Ping</th><td>
+        <tr class="bg1">
+          <td>
+            @if (steamUniqueId != null && !isBot && Model.Steam64Id.HasValue)
+            {
+              <text>Steam: <a href="http://steamcommunity.com/profiles/@(Model.Steam64Id)" target="_blank">STEAM_0:@steamUniqueId</a></text>
+            }
+            else if (steamUniqueId != null)
+            {
+              <text>Steam: @steamUniqueId</text>
+            }
+          </td>
+        </tr>
+        <tr class="bg2">
+          <td>Karma:
+            @if (Model.Player.HideRanking == 2) { <span style="color:red;font-weight:bold;">Banned</span> }
+            else { <span style="color:green;font-weight:bold;">In good standing</span> }
+          </td>
+        </tr>
+        <tr class="bg1">
+          <td>Member of Clan:</td>
+          <td>
+            @if (Model.Player.Clan is not null) { <a asp-controller="Clans" asp-action="Profile" asp-route-id="@Model.Player.Clan.ClanId">@Model.Player.Clan.Name</a> }
+            else { <text>(None)</text> }
+          </td>
+        </tr>
+        <tr class="bg2">
+          <td>Real Name:</td>
+          <td>
+            @if (!string.IsNullOrEmpty(Model.Player.FullName)) { <strong>@Model.Player.FullName</strong> }
+            else { <em>(Not Specified)</em> }
+          </td>
+        </tr>
+        <tr class="bg1">
+          <td>Home Page:</td>
+          <td>
+            @if (!string.IsNullOrEmpty(Model.Player.Homepage)) { <a href="@Model.Player.Homepage" rel="nofollow noopener" target="_blank">@Model.Player.Homepage</a> }
+            else { <em>(Not Specified)</em> }
+          </td>
+        </tr>
+        <tr class="bg2">
+          <td>Last Connect:</td>
+          <td>@(Model.LastConnect.HasValue ? Model.LastConnect.Value.ToString("ddd. MMM. d, yyyy @ HH:mm:ss") : "(Unknown)")</td>
+        </tr>
+        <tr class="bg1">
+          <td>Connection Time:</td>
+          <td>@FormatTime(Model.Player.ConnectionTime)</td>
+        </tr>
+        <tr class="bg2">
+          <td>Average Ping:</td>
+          <td>
             @if (Model.Ping != null) { <text>@Model.Ping.AvgPing ms (Latency: @Model.Ping.AvgLatency ms)</text> }
             else { <text>-</text> }
-        </td></tr>
-        <tr><th>Favorite Server</th><td>
+          </td>
+        </tr>
+        <tr class="bg1">
+          <td>Favorite Server:</td>
+          <td>
             @if (Model.FavoriteServer != null) { <a asp-controller="Servers" asp-action="Detail" asp-route-id="@Model.FavoriteServer.ServerId">@Model.FavoriteServer.ServerName</a> }
             else { <text>-</text> }
-        </td></tr>
-        <tr><th>Favorite Map</th><td>@(Model.FavoriteMap ?? "-")</td></tr>
-        <tr><th>Favorite Weapon</th><td>
+          </td>
+        </tr>
+        <tr class="bg2">
+          <td>Favorite Map:</td>
+          <td>@(Model.FavoriteMap ?? "-")</td>
+        </tr>
+        <tr class="bg1">
+          <td>Favorite Weapon:</td>
+          <td>
             @if (Model.FavoriteWeapon != null) { <text>@Model.FavoriteWeapon.WeaponName</text> }
             else { <text>-</text> }
-        </td></tr>
+          </td>
+        </tr>
       </table>
     </section>
 
@@ -132,6 +185,53 @@
       </p>
       <p><small>* = from recent event records</small></p>
     </section>
+  </div>
+
+  <div class="profile-section">
+    <h2>Miscellaneous Statistics</h2>
+    <div class="profile-two-col">
+      <section>
+        <table class="data-table">
+          <thead><tr class="data-table-head"><td>Player Trend</td></tr></thead>
+          <tbody>
+            <tr class="bg1">
+              <td style="text-align:center;padding:8px;">
+                @if (Model.TrendData.Count < 2)
+                {
+                  <em>Not enough session data to display a trend.</em>
+                }
+                else
+                {
+                  <canvas id="trendChart" width="380" height="200" style="background:#1a1a1a;border-radius:4px;"></canvas>
+                }
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section>
+        <table class="data-table">
+          <thead><tr class="data-table-head"><td colspan="2">Forum Signature</td></tr></thead>
+          <tbody>
+            <tr class="bg1">
+              <td style="text-align:center;padding:12px;">
+                <img src="@(Url.Action("Sig", "Players", new { id = Model.Player.PlayerId }))"
+                     alt="Forum signature" title="Copy &amp; paste the URL below into your forum signature" />
+                <br /><br />
+                <a href="#" onclick="setSigText(1);return false;">bbCode 1 (phpBB, SMF)</a>
+                &nbsp;|&nbsp;
+                <a href="#" onclick="setSigText(2);return false;">bbCode 2 (IPB)</a>
+                &nbsp;|&nbsp;
+                <a href="#" onclick="setSigText(0);return false;">Direct Image</a>
+                <br />
+                <textarea id="siglink" rows="2" style="width:95%;margin-top:6px;" readonly
+                          onclick="this.select()">@defaultSigText</textarea>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
   </div>
 
   <div class="profile-section">
@@ -241,89 +341,6 @@
   </div>
   }
 
-  <div class="profile-section">
-    <h2>Miscellaneous Statistics</h2>
-    <div class="profile-two-col">
-      <section>
-        <table class="data-table">
-          <thead><tr class="data-table-head"><td>Player Trend</td></tr></thead>
-          <tbody>
-            <tr class="bg1">
-              <td style="text-align:center;padding:8px;">
-                @if (Model.TrendData.Count < 2)
-                {
-                  <em>Not enough session data to display a trend.</em>
-                }
-                else
-                {
-                  <canvas id="trendChart" width="380" height="200" style="background:#1a1a1a;border-radius:4px;"></canvas>
-                }
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
-      <section>
-        <table class="data-table">
-          <thead><tr class="data-table-head"><td colspan="2">Forum Signature</td></tr></thead>
-          <tbody>
-            <tr class="bg1">
-              <td style="text-align:center;padding:12px;">
-                <img src="@(Url.Action("Sig", "Players", new { id = Model.Player.PlayerId }))"
-                     alt="Forum signature" title="Copy &amp; paste the URL below into your forum signature" />
-                <br /><br />
-                <a href="#" onclick="setSigText(1);return false;">bbCode 1 (phpBB, SMF)</a>
-                &nbsp;|&nbsp;
-                <a href="#" onclick="setSigText(2);return false;">bbCode 2 (IPB)</a>
-                &nbsp;|&nbsp;
-                <a href="#" onclick="setSigText(0);return false;">Direct Image</a>
-                <br />
-                <textarea id="siglink" rows="2" style="width:95%;margin-top:6px;" readonly
-                          onclick="this.select()">@defaultSigText</textarea>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
-    </div>
-  </div>
-</div>
-
-<div id="tab-aliases" class="tab-panel" style="display:none;">
-  <h2>Known Aliases</h2>
-  @if (Model.Aliases.Count <= 1)
-  {
-    <p>No aliases to display.</p>
-  }
-  else
-  {
-    <table class="stats-table sortable">
-      <thead>
-        <tr>
-          <th>Name</th><th>Time</th><th>Last Use</th>
-          <th>Kills</th><th>Deaths</th><th>K:D</th>
-          <th>Headshots</th><th>HS:K</th><th>Suicides</th><th>Accuracy</th>
-        </tr>
-      </thead>
-      <tbody>
-        @foreach (var a in Model.Aliases)
-        {
-          <tr>
-            <td>@a.Name</td>
-            <td>@FormatTime(a.ConnectionTime)</td>
-            <td>@(a.LastUse.HasValue ? a.LastUse.Value.ToString("yyyy-MM-dd") : "-")</td>
-            <td>@a.Kills</td>
-            <td>@a.Deaths</td>
-            <td>@a.KdRatio</td>
-            <td>@a.Headshots</td>
-            <td>@a.HsKRatio</td>
-            <td>@a.Suicides</td>
-            <td>@a.Accuracy%</td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  }
 </div>
 
 <div id="tab-teams" class="tab-panel" style="display:none;">
@@ -574,6 +591,37 @@
     </table>
   }
 </div>
+
+@if (Model.Aliases.Count > 1)
+{
+  <h2>Aliases</h2>
+  <table class="stats-table">
+    <thead>
+      <tr>
+        <th>Name</th><th>Time</th><th>Last Use</th>
+        <th>Kills</th><th>Deaths</th><th>K:D</th>
+        <th>Headshots</th><th>HS:K</th><th>Suicides</th><th>Accuracy</th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach (var a in Model.Aliases)
+      {
+        <tr>
+          <td>@a.Name</td>
+          <td>@FormatTime(a.ConnectionTime)</td>
+          <td>@(a.LastUse.HasValue ? a.LastUse.Value.ToString("yyyy-MM-dd") : "-")</td>
+          <td>@a.Kills</td>
+          <td>@a.Deaths</td>
+          <td>@a.KdRatio</td>
+          <td>@a.Headshots</td>
+          <td>@a.HsKRatio</td>
+          <td>@a.Suicides</td>
+          <td>@a.Accuracy%</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}
 
 @section Scripts {
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>

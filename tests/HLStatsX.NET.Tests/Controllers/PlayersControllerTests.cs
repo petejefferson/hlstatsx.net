@@ -4,6 +4,7 @@ using HLStatsX.NET.Core.Interfaces.Services;
 using HLStatsX.NET.Core.Models;
 using HLStatsX.NET.Web.Controllers;
 using HLStatsX.NET.Web.Models.ViewModels;
+using HLStatsX.NET.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Moq;
@@ -34,7 +35,11 @@ public class PlayersControllerTests
         var envMock = new Mock<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>();
         envMock.Setup(e => e.WebRootPath).Returns(string.Empty);
 
-        _controller = new PlayersController(_playerServiceMock.Object, _awardServiceMock.Object, _config, envMock.Object);
+        var steamMock = new Mock<ISteamService>();
+        steamMock.Setup(s => s.GetAvatarUrlAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+                 .ReturnsAsync((string?)null);
+
+        _controller = new PlayersController(_playerServiceMock.Object, _awardServiceMock.Object, _config, envMock.Object, steamMock.Object);
     }
 
     [Fact]

@@ -2,6 +2,7 @@ using HLStatsX.NET.Core.Entities;
 using HLStatsX.NET.Core.Interfaces.Services;
 using HLStatsX.NET.Core.Models;
 using HLStatsX.NET.Web.Models.ViewModels;
+using HLStatsX.NET.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 using SkiaSharp;
 
@@ -13,13 +14,15 @@ public class PlayersController : Controller
     private readonly IAwardService _awards;
     private readonly IConfiguration _config;
     private readonly IWebHostEnvironment _env;
+    private readonly ISteamService _steam;
 
-    public PlayersController(IPlayerService players, IAwardService awards, IConfiguration config, IWebHostEnvironment env)
+    public PlayersController(IPlayerService players, IAwardService awards, IConfiguration config, IWebHostEnvironment env, ISteamService steam)
     {
         _players = players;
         _awards = awards;
         _config = config;
         _env = env;
+        _steam = steam;
     }
 
     public async Task<IActionResult> Index(string? game, int page = 1, string sortBy = "skill", bool desc = true, string rankType = "total", int minKills = 1, CancellationToken ct = default)
@@ -85,6 +88,9 @@ public class PlayersController : Controller
 
         var game = player.Game;
 
+        var steamUniqueId = player.UniqueIds.FirstOrDefault()?.UniqueId;
+        var steam64Id     = ISteamService.ToSteam64(steamUniqueId);
+
         // Fire all independent profile queries concurrently. Each service/repository
         // method creates its own short-lived DbContext via IDbContextFactory, so
         // concurrent access is safe.
@@ -112,6 +118,7 @@ public class PlayersController : Controller
         var actionVictimsTask = _players.GetPlayerActionVictimsAsync(id, ct);
         var trendTask         = _players.GetTrendDataAsync(id, 30, ct);
         var globalAwardsTask  = _players.GetGlobalAwardsAsync(id, game, ct);
+        var avatarTask        = _steam.GetAvatarUrlAsync(steamUniqueId, ct);
 
         await Task.WhenAll(
             rankTask, rankEntityTask, nextRankTask, allRanksTask,
@@ -119,7 +126,8 @@ public class PlayersController : Controller
             pingTask, lastConnectTask, favServerTask, favMapTask,
             favWeaponTask, killStatsTask, mapPerfTask, serverPerfTask,
             weaponStatsTask, teamSelTask, roleSelTask,
-            playerActionsTask, actionVictimsTask, trendTask, globalAwardsTask);
+            playerActionsTask, actionVictimsTask, trendTask, globalAwardsTask,
+            avatarTask);
 
         var rankEntity = rankEntityTask.Result;
         var allRanks   = allRanksTask.Result;
@@ -153,7 +161,9 @@ public class PlayersController : Controller
             PlayerActions       = playerActionsTask.Result,
             PlayerActionVictims = actionVictimsTask.Result,
             TrendData           = trendTask.Result,
-            GlobalAwards        = globalAwardsTask.Result
+            GlobalAwards        = globalAwardsTask.Result,
+            AvatarUrl           = avatarTask.Result,
+            Steam64Id           = steam64Id
         });
     }
 
