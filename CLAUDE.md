@@ -119,6 +119,30 @@ Use `@(SortUrl("field"))` and `@(Mark("field"))` — explicit `@(expr)` is requi
 - Use literal Unicode characters (`▼` `▲`) in C# strings, not HTML entities + `Html.Raw()`
 - `@{...}` code blocks inside `@if {}` must appear **before** any HTML output in that scope — pre-compute variables at the top of the block, not after a closing tag
 
+### EF Core GroupBy Gotchas
+
+- **Never use `let` after `group...into` in query syntax.** A `let` clause following a `group...into` forces EF Core to carry the raw group object into the Select, producing an untranslatable expression (`g = g` in the LINQ tree). Error: *"Translation of 'Select' which contains grouping parameter without composition is not supported."*
+
+  **Wrong:**
+  ```csharp
+  group f by f.Weapon into g
+  orderby g.Count() descending
+  let code = g.Key          // ← captures raw g, EF Core can't translate
+  join w in db.Weapons on code equals w.Code into wg
+  ```
+
+  **Right:** use method syntax — aggregate fully in `Select` first, then project:
+  ```csharp
+  .GroupBy(f => f.Weapon)
+  .Select(g => new { Code = g.Key, Count = g.Count() })
+  .OrderByDescending(x => x.Count)
+  .Select(x => x.Code)
+  .FirstOrDefaultAsync(ct)
+  ```
+  If a join on the result is needed, do it as a second query after materialising the key.
+
+- **`OrderByDescending` must come after a fully-aggregated `Select`**, not before a Select that still references the group. The pattern `GroupBy → Select(aggregations) → OrderByDescending → Select(projection)` translates cleanly.
+
 ### Search
 
 `SearchController` accepts `q`, `game`, `st` (`"player"`, `"clan"`, or empty for both), and `page`. Player search queries `hlstats_PlayerNames` (all aliases), returning `MatchedName` — the alias that matched the query.
@@ -137,6 +161,21 @@ Use `@(SortUrl("field"))` and `@(Mark("field"))` — explicit `@(expr)` is requi
 | `form-text` | Inline text inputs |
 | `btn-small` | Small action buttons |
 | `stats-table` | Secondary stats tables (weapons, maps on profile pages) |
+
+### Leaderboard Filter Parameters
+
+The Players/Index leaderboard accepts these URL parameters (all preserved across sort, pagination, and ranking-view changes):
+
+| Parameter | Default | Notes |
+|---|---|---|
+| `game` | config default | Game code |
+| `sortBy` | `"skill"` | Column to sort |
+| `desc` | `true` | Sort direction |
+| `rankType` | `"total"` | `"total"`, `"week"`, `"month"`, or `"yyyy-MM-dd"` |
+| `minKills` | `1` | Minimum kills threshold — applied as `kills >= minKills` in DB |
+| `page` | `1` | Page number |
+
+`minKills` flows all the way from the controller through `IPlayerService` → `IPlayerRepository` → the query WHERE/HAVING clause. Any new leaderboard filter must propagate the same way and be included in `SortUrl`, the ranking-view form hidden fields, and the pagination URL.
 
 ## Tests
 

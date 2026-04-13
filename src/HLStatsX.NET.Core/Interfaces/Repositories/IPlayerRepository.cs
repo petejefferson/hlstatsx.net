@@ -10,9 +10,9 @@ namespace HLStatsX.NET.Core.Interfaces.Repositories;
 public interface IPlayerRepository
 {
     Task<Player?> GetByIdAsync(int playerId, CancellationToken ct = default);
-    Task<PagedResult<Player>> GetRankingsAsync(string game, int page, int pageSize, string sortBy = "skill", bool descending = true, CancellationToken ct = default);
+    Task<PagedResult<Player>> GetRankingsAsync(string game, int page, int pageSize, string sortBy = "skill", bool descending = true, int minKills = 1, CancellationToken ct = default);
     Task<IReadOnlyList<DateTime>> GetHistoryDatesAsync(string game, int count = 50, CancellationToken ct = default);
-    Task<PagedResult<PlayerLeaderboardRow>> GetHistoryRankingsAsync(string game, DateTime from, DateTime to, int page, int pageSize, string sortBy = "kills", bool descending = true, CancellationToken ct = default);
+    Task<PagedResult<PlayerLeaderboardRow>> GetHistoryRankingsAsync(string game, DateTime from, DateTime to, int page, int pageSize, string sortBy = "kills", bool descending = true, int minKills = 1, CancellationToken ct = default);
     Task<IReadOnlyList<PlayerName>> GetAliasesAsync(int playerId, CancellationToken ct = default);
     Task<IReadOnlyList<PlayerHistory>> GetHistoryAsync(int playerId, int days = 30, CancellationToken ct = default);
     Task<IReadOnlyList<PlayerAward>> GetAwardsAsync(int playerId, CancellationToken ct = default);

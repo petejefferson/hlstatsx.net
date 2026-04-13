@@ -26,12 +26,12 @@ public class PlayerRepository : IPlayerRepository
     }
 
     public async Task<PagedResult<Player>> GetRankingsAsync(string game, int page, int pageSize,
-        string sortBy = "skill", bool descending = true, CancellationToken ct = default)
+        string sortBy = "skill", bool descending = true, int minKills = 1, CancellationToken ct = default)
     {
         await using var db = _factory.CreateDbContext();
 
         IQueryable<Player> query = db.Players
-            .Where(p => p.Game == game && p.HideRanking == 0 && p.Kills > 0)
+            .Where(p => p.Game == game && p.HideRanking == 0 && p.Kills >= minKills)
             .Include(p => p.Clan);
 
         query = (sortBy.ToLowerInvariant(), descending) switch
@@ -162,7 +162,7 @@ public class PlayerRepository : IPlayerRepository
     public async Task<PagedResult<PlayerLeaderboardRow>> GetHistoryRankingsAsync(
         string game, DateTime from, DateTime to,
         int page, int pageSize, string sortBy = "kills", bool descending = true,
-        CancellationToken ct = default)
+        int minKills = 1, CancellationToken ct = default)
     {
         await using var db = _factory.CreateDbContext();
 
@@ -182,7 +182,7 @@ public class PlayerRepository : IPlayerRepository
         var joined =
             from agg  in histAgg
             join p    in db.Players on agg.PlayerId equals p.PlayerId
-            where p.HideRanking == 0 && agg.Kills > 0
+            where p.HideRanking == 0 && agg.Kills >= minKills
             join c    in db.Clans on p.ClanId equals c.ClanId into cg
             from clan in cg.DefaultIfEmpty()
             select new

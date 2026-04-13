@@ -95,19 +95,22 @@ public class PlayerStatsRepository : IPlayerStatsRepository
     {
         await using var db = _factory.CreateDbContext();
 
-        // Left-join weapon name in the same query — avoids a second DB round-trip
-        var result = await (
-            from f in db.EventFrags
-            where f.KillerId == playerId
-            group f by f.Weapon into g
-            orderby g.Count() descending
-            let code = g.Key
-            join w in db.Weapons on code equals w.Code into wg
-            from weapon in wg.DefaultIfEmpty()
-            select new { Code = code, Name = weapon != null ? weapon.Name : code }
-        ).FirstOrDefaultAsync(ct);
+        var topCode = await db.EventFrags
+            .Where(f => f.KillerId == playerId)
+            .GroupBy(f => f.Weapon)
+            .Select(g => new { Code = g.Key, Count = g.Count() })
+            .OrderByDescending(x => x.Count)
+            .Select(x => x.Code)
+            .FirstOrDefaultAsync(ct);
 
-        return result is null ? null : new FavoriteWeapon(result.Code, result.Name);
+        if (topCode is null) return null;
+
+        var name = await db.Weapons
+            .Where(w => w.Code == topCode)
+            .Select(w => w.Name)
+            .FirstOrDefaultAsync(ct);
+
+        return new FavoriteWeapon(topCode, name ?? topCode);
     }
 
     public async Task<Rank?> GetNextRankAsync(string game, int kills, CancellationToken ct = default)

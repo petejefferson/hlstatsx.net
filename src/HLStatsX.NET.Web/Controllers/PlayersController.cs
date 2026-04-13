@@ -19,10 +19,11 @@ public class PlayersController : Controller
         _config = config;
     }
 
-    public async Task<IActionResult> Index(string? game, int page = 1, string sortBy = "skill", bool desc = true, string rankType = "total", CancellationToken ct = default)
+    public async Task<IActionResult> Index(string? game, int page = 1, string sortBy = "skill", bool desc = true, string rankType = "total", int minKills = 1, CancellationToken ct = default)
     {
         game ??= _config["HLStatsX:DefaultGame"] ?? "cstrike";
         int pageSize = _config.GetValue<int>("HLStatsX:DefaultPageSize", 50);
+        if (minKills < 1) minKills = 1;
 
         var ranks          = await _awards.GetRanksAsync(game, ct);
         var availableDates = await _players.GetHistoryDatesAsync(game, ct);
@@ -30,16 +31,16 @@ public class PlayersController : Controller
         PagedResult<PlayerLeaderboardRow> result;
         if (rankType == "total")
         {
-            var players = await _players.GetLeaderboardAsync(game, page, pageSize, sortBy, desc, ct);
+            var players = await _players.GetLeaderboardAsync(game, page, pageSize, sortBy, desc, minKills, ct);
             result = MapToRows(players);
         }
         else
         {
             var (from, to) = ParseRankType(rankType);
-            result = await _players.GetPeriodLeaderboardAsync(game, from, to, page, pageSize, sortBy, desc, ct);
+            result = await _players.GetPeriodLeaderboardAsync(game, from, to, page, pageSize, sortBy, desc, minKills, ct);
         }
 
-        return View(new PlayerLeaderboardViewModel(result, game, sortBy, desc, ranks, rankType, availableDates));
+        return View(new PlayerLeaderboardViewModel(result, game, sortBy, desc, ranks, rankType, availableDates, minKills));
     }
 
     private static PagedResult<PlayerLeaderboardRow> MapToRows(PagedResult<Player> players)

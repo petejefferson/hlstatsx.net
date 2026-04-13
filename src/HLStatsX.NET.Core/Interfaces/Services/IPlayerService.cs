@@ -6,9 +6,9 @@ namespace HLStatsX.NET.Core.Interfaces.Services;
 public interface IPlayerService
 {
     Task<Player?> GetPlayerAsync(int playerId, CancellationToken ct = default);
-    Task<PagedResult<Player>> GetLeaderboardAsync(string game, int page, int pageSize, string sortBy = "skill", bool descending = true, CancellationToken ct = default);
+    Task<PagedResult<Player>> GetLeaderboardAsync(string game, int page, int pageSize, string sortBy = "skill", bool descending = true, int minKills = 1, CancellationToken ct = default);
     Task<IReadOnlyList<DateTime>> GetHistoryDatesAsync(string game, CancellationToken ct = default);
-    Task<PagedResult<PlayerLeaderboardRow>> GetPeriodLeaderboardAsync(string game, DateTime from, DateTime to, int page, int pageSize, string sortBy, bool descending, CancellationToken ct = default);
+    Task<PagedResult<PlayerLeaderboardRow>> GetPeriodLeaderboardAsync(string game, DateTime from, DateTime to, int page, int pageSize, string sortBy, bool descending, int minKills = 1, CancellationToken ct = default);
     Task<int> GetPlayerRankAsync(int playerId, string game, CancellationToken ct = default);
     Task<IReadOnlyList<PlayerHistory>> GetPlayerHistoryAsync(int playerId, int days = 30, CancellationToken ct = default);
     Task<IReadOnlyList<PlayerAward>> GetPlayerAwardsAsync(int playerId, CancellationToken ct = default);

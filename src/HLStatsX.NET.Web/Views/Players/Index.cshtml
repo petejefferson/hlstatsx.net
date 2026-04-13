@@ -15,7 +15,7 @@
     string SortUrl(string field)
     {
         bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
-        return Url.Action("Index", new { game = Model.Game, sortBy = field, desc = nextDesc, rankType = Model.RankType })!;
+        return Url.Action("Index", new { game = Model.Game, sortBy = field, desc = nextDesc, rankType = Model.RankType, minKills = Model.MinKills })!;
     }
     string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
 }
@@ -32,9 +32,10 @@
     </form>
 
     <form method="get" asp-action="Index" style="display:flex; align-items:center; gap:0.4rem;">
-        <input type="hidden" name="game"   value="@Model.Game" />
-        <input type="hidden" name="sortBy" value="@Model.SortBy" />
-        <input type="hidden" name="desc"   value="@Model.Descending.ToString().ToLower()" />
+        <input type="hidden" name="game"     value="@Model.Game" />
+        <input type="hidden" name="sortBy"   value="@Model.SortBy" />
+        <input type="hidden" name="desc"     value="@Model.Descending.ToString().ToLower()" />
+        <input type="hidden" name="minKills" value="@Model.MinKills" />
         <strong>&bull;</strong> Ranking view:
         <select name="rankType">
             <option value="total" selected="@(Model.RankType == "total" ? "selected" : null)">Total Ranking</option>
@@ -115,4 +116,20 @@
     </tbody>
 </table>
 
-<partial name="_Pagination" model="@PaginationModel.From(Model.Players, p => Url.Action("Index", new { game = Model.Game, sortBy = Model.SortBy, desc = Model.Descending, rankType = Model.RankType, page = p })!)" />
+<partial name="_Pagination" model="@PaginationModel.From(Model.Players, p => Url.Action("Index", new { game = Model.Game, sortBy = Model.SortBy, desc = Model.Descending, rankType = Model.RankType, minKills = Model.MinKills, page = p })!)" />
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+    <form method="get" asp-action="Index" style="display:flex; align-items:center; gap:0.4rem;">
+        <input type="hidden" name="game"     value="@Model.Game" />
+        <input type="hidden" name="sortBy"   value="@Model.SortBy" />
+        <input type="hidden" name="desc"     value="@Model.Descending.ToString().ToLower()" />
+        <input type="hidden" name="rankType" value="@Model.RankType" />
+        <strong>&bull;</strong> Only show players with
+        <input type="text" name="minKills" value="@Model.MinKills" size="4" maxlength="6" class="form-text" />
+        or more kills.
+        <button type="submit" class="btn-small">Apply</button>
+    </form>
+    <div>
+        Go to: <a asp-controller="Clans" asp-action="Index" asp-route-game="@Model.Game">Clan Rankings</a>
+    </div>
+</div>

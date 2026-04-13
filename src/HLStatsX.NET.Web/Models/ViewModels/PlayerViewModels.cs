@@ -10,7 +10,8 @@ public record PlayerLeaderboardViewModel(
     bool Descending,
     IReadOnlyList<Rank> Ranks,
     string RankType,
-    IReadOnlyList<DateTime> AvailableDates
+    IReadOnlyList<DateTime> AvailableDates,
+    int MinKills = 1
 )
 {
     public bool IsHistorical => RankType != "total";

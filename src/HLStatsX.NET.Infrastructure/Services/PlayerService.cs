@@ -20,14 +20,14 @@ public class PlayerService : IPlayerService
         _players.GetByIdAsync(playerId, ct);
 
     public Task<PagedResult<Player>> GetLeaderboardAsync(string game, int page, int pageSize,
-        string sortBy = "skill", bool descending = true, CancellationToken ct = default) =>
-        _players.GetRankingsAsync(game, page, pageSize, sortBy, descending, ct);
+        string sortBy = "skill", bool descending = true, int minKills = 1, CancellationToken ct = default) =>
+        _players.GetRankingsAsync(game, page, pageSize, sortBy, descending, minKills, ct);
 
     public Task<IReadOnlyList<DateTime>> GetHistoryDatesAsync(string game, CancellationToken ct = default) =>
         _players.GetHistoryDatesAsync(game, 50, ct);
 
-    public Task<PagedResult<PlayerLeaderboardRow>> GetPeriodLeaderboardAsync(string game, DateTime from, DateTime to, int page, int pageSize, string sortBy, bool descending, CancellationToken ct = default) =>
-        _players.GetHistoryRankingsAsync(game, from, to, page, pageSize, sortBy, descending, ct);
+    public Task<PagedResult<PlayerLeaderboardRow>> GetPeriodLeaderboardAsync(string game, DateTime from, DateTime to, int page, int pageSize, string sortBy, bool descending, int minKills = 1, CancellationToken ct = default) =>
+        _players.GetHistoryRankingsAsync(game, from, to, page, pageSize, sortBy, descending, minKills, ct);
 
     public Task<int> GetPlayerRankAsync(int playerId, string game, CancellationToken ct = default) =>
         _players.GetRankAsync(playerId, game, ct);

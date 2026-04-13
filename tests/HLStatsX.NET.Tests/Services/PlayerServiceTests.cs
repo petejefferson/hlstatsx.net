@@ -50,7 +50,7 @@ public class PlayerServiceTests
             new() { PlayerId = 2, LastName = "Bravo", Game = "cstrike", Skill = 1800, Kills = 400 }
         };
         var expected = PagedResult<Player>.Create(players, 2, 1, 50);
-        _repoMock.Setup(r => r.GetRankingsAsync("cstrike", 1, 50, "skill", true, default)).ReturnsAsync(expected);
+        _repoMock.Setup(r => r.GetRankingsAsync("cstrike", 1, 50, "skill", true, 1, default)).ReturnsAsync(expected);
 
         var result = await _service.GetLeaderboardAsync("cstrike", 1, 50);
 

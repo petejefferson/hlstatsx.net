@@ -43,7 +43,7 @@ public class PlayersControllerTests
         };
         var paged = PagedResult<Player>.Create(players, 1, 1, 50);
         _playerServiceMock
-            .Setup(s => s.GetLeaderboardAsync("cstrike", 1, 50, "skill", true, default))
+            .Setup(s => s.GetLeaderboardAsync("cstrike", 1, 50, "skill", true, 1, default))
             .ReturnsAsync(paged);
         _playerServiceMock
             .Setup(s => s.GetHistoryDatesAsync("cstrike", default))
