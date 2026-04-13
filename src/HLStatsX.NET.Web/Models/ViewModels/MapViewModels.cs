@@ -7,5 +7,7 @@ public record MapListViewModel(
     PagedResult<MapCount> Maps,
     string Game,
     string SortBy,
-    bool Descending
+    bool Descending,
+    long TotalKills,
+    long TotalHeadshots
 );

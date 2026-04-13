@@ -20,8 +20,11 @@ public class MapsController : Controller
     {
         game ??= _config["HLStatsX:DefaultGame"] ?? "cstrike";
         int pageSize = _config.GetValue<int>("HLStatsX:DefaultPageSize", 50);
-        var result = await _maps.GetAllAsync(game, page, pageSize, sortBy, desc, ct);
-        return View(new MapListViewModel(result, game, sortBy, desc));
+        var resultTask = _maps.GetAllAsync(game, page, pageSize, sortBy, desc, ct);
+        var totalsTask = _maps.GetKillTotalsAsync(game, ct);
+        await Task.WhenAll(resultTask, totalsTask);
+        var totals = totalsTask.Result;
+        return View(new MapListViewModel(resultTask.Result, game, sortBy, desc, totals.TotalKills, totals.TotalHeadshots));
     }
 
     public async Task<IActionResult> Detail(string name, string? game, CancellationToken ct)

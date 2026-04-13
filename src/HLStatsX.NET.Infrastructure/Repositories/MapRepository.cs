@@ -26,15 +26,30 @@ public class MapRepository : IMapRepository
 
         query = (sortBy.ToLowerInvariant(), desc) switch
         {
-            ("headshots", true)  => query.OrderByDescending(m => m.Headshots),
-            ("headshots", false) => query.OrderBy(m => m.Headshots),
-            (_, true)            => query.OrderByDescending(m => m.Kills),
-            (_, false)           => query.OrderBy(m => m.Kills)
+            ("map",        true)  => query.OrderByDescending(m => m.Map),
+            ("map",        false) => query.OrderBy(m => m.Map),
+            ("headshots",  true)  => query.OrderByDescending(m => m.Headshots),
+            ("headshots",  false) => query.OrderBy(m => m.Headshots),
+            ("hpk",        true)  => query.OrderByDescending(m => m.Kills == 0 ? 0.0 : (double)m.Headshots / m.Kills),
+            ("hpk",        false) => query.OrderBy(m => m.Kills == 0 ? 0.0 : (double)m.Headshots / m.Kills),
+            (_,            true)  => query.OrderByDescending(m => m.Kills),
+            (_,            false) => query.OrderBy(m => m.Kills)
         };
 
         var total = await query.CountAsync(ct);
         var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
         return PagedResult<MapCount>.Create(items, total, page, pageSize);
+    }
+
+    public async Task<(long TotalKills, long TotalHeadshots)> GetKillTotalsAsync(string game, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        var totals = await db.MapCounts
+            .Where(m => m.Game == game)
+            .GroupBy(_ => 1)
+            .Select(g => new { Kills = (long?)g.Sum(m => (long)m.Kills), Headshots = (long?)g.Sum(m => (long)m.Headshots) })
+            .FirstOrDefaultAsync(ct);
+        return (totals?.Kills ?? 0, totals?.Headshots ?? 0);
     }
 
     public async Task<IReadOnlyList<MapCount>> GetTopMapsAsync(string game, int count = 10, CancellationToken ct = default)

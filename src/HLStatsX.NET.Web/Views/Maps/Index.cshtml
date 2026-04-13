@@ -8,28 +8,54 @@
         return Url.Action("Index", new { game = Model.Game, sortBy = field, desc = nextDesc })!;
     }
     string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
+
+    double safeKills = Model.TotalKills > 0 ? Model.TotalKills : 1;
+    double safeHeadshots = Model.TotalHeadshots > 0 ? Model.TotalHeadshots : 1;
 }
 
-<h1>Maps &mdash; @Model.Game</h1>
+<h1>Map Statistics &mdash; @Model.Game</h1>
 
-<table class="stats-table">
+<p>From a total of <strong>@Model.TotalKills.ToString("N0")</strong> kills with <strong>@Model.TotalHeadshots.ToString("N0")</strong> headshots</p>
+
+<table class="data-table">
     <thead>
-        <tr>
+        <tr class="data-table-head">
             <th>Rank</th>
-            <th>Map</th>
+            <th><a href="@(SortUrl("map"))">Map@(Mark("map"))</a></th>
             <th><a href="@(SortUrl("kills"))">Kills@(Mark("kills"))</a></th>
+            <th>%</th>
+            <th>Ratio</th>
             <th><a href="@(SortUrl("headshots"))">Headshots@(Mark("headshots"))</a></th>
+            <th>%</th>
+            <th>Ratio</th>
+            <th><a href="@(SortUrl("hpk"))">HS:K@(Mark("hpk"))</a></th>
         </tr>
     </thead>
     <tbody>
-        @{ int rank = (Model.Maps.Page - 1) * Model.Maps.PageSize + 1; }
+        @{
+            int rank = (Model.Maps.Page - 1) * Model.Maps.PageSize + 1;
+            bool bg = false;
+        }
         @foreach (var m in Model.Maps.Items)
         {
+            string rowClass = bg ? "bg2" : "bg1";
+            bg = !bg;
+            double kpct = Math.Round(m.Kills / safeKills * 100, 2);
+            double hpct = Math.Round(m.Headshots / safeHeadshots * 100, 2);
+            double hpk  = m.Kills > 0 ? Math.Round((double)m.Headshots / m.Kills, 2) : 0;
+            string mapDisplay = string.IsNullOrEmpty(m.Map) ? "(Unaccounted)" : m.Map;
             <tr>
-                <td>@rank</td>
-                <td>@m.Map</td>
-                <td>@m.Kills</td>
-                <td>@m.Headshots</td>
+                <td class="@rowClass" style="text-align:right">@rank</td>
+                <td class="@(bg ? "bg1" : "bg2")">
+                    <a asp-controller="Maps" asp-action="Detail" asp-route-name="@m.Map">@mapDisplay</a>
+                </td>
+                <td class="@rowClass" style="text-align:right">@m.Kills.ToString("N0")</td>
+                <td class="@(bg ? "bg1" : "bg2")" style="text-align:right">@(kpct.ToString("F2"))%</td>
+                <td class="@rowClass"><meter min="0" max="100" low="25" high="50" optimum="75" value="@kpct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)"></meter></td>
+                <td class="@(bg ? "bg1" : "bg2")" style="text-align:right">@m.Headshots.ToString("N0")</td>
+                <td class="@rowClass" style="text-align:right">@(hpct.ToString("F2"))%</td>
+                <td class="@(bg ? "bg1" : "bg2")"><meter min="0" max="100" low="25" high="50" optimum="75" value="@hpct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)"></meter></td>
+                <td class="@rowClass" style="text-align:right">@hpk.ToString("F2")</td>
             </tr>
             rank++;
         }
