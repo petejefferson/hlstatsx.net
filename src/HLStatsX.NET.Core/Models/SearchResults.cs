@@ -3,7 +3,7 @@ using HLStatsX.NET.Core.Entities;
 namespace HLStatsX.NET.Core.Models;
 
 /// <summary>A single row in player search results — MatchedName is the alias that matched the query.</summary>
-public record PlayerSearchResult(int PlayerId, string MatchedName, string? Flag, string? Country, string Game);
+public record PlayerSearchResult(int PlayerId, string MatchedName, string? Flag, string? Country, string Game, bool IsBot = false);
 
 public class SearchResults
 {

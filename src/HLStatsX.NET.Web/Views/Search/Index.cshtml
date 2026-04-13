@@ -68,7 +68,17 @@
                             <td style="text-align:center;">@(Model.PageSize * (Model.Page - 1) + row + 1)</td>
                             <td>
                                 <img src="/hlstatsimg/flags/@(flagFile).gif" alt="@flagAlt" title="@flagAlt" />&nbsp;
-                                <a asp-controller="Players" asp-action="Profile" asp-route-id="@p.PlayerId">@p.MatchedName</a>
+                                @{
+                                    bool hideBots = (bool)(ViewData["HideBotPlayers"] ?? true);
+                                }
+                                @if (p.IsBot && hideBots)
+                                {
+                                    @p.MatchedName
+                                }
+                                else
+                                {
+                                    <a asp-controller="Players" asp-action="Profile" asp-route-id="@p.PlayerId">@p.MatchedName</a>
+                                }
                             </td>
                             <td>@p.Game</td>
                         </tr>

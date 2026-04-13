@@ -205,6 +205,13 @@ public class PlayerStatsRepository : IPlayerStatsRepository
             .Select(p => new { p.PlayerId, p.LastName })
             .ToDictionaryAsync(p => p.PlayerId, p => p.LastName, ct);
 
+        var botIds = opponentIds.Count > 0
+            ? await db.PlayerUniqueIds
+                .Where(u => opponentIds.Contains(u.PlayerId) && EF.Functions.Like(u.UniqueId, "BOT%"))
+                .Select(u => u.PlayerId)
+                .ToHashSetAsync(ct)
+            : new HashSet<int>();
+
         return killsList
             .Where(k => k.Kills >= 5)
             .Select(k => new KillStatRow(
@@ -212,7 +219,8 @@ public class PlayerStatsRepository : IPlayerStatsRepository
                 names.GetValueOrDefault(k.VictimId, "Unknown"),
                 k.Kills,
                 deathsDict.GetValueOrDefault(k.VictimId, 0),
-                k.Headshots))
+                k.Headshots,
+                botIds.Contains(k.VictimId)))
             .OrderByDescending(r => r.Kills)
             .ToList();
     }

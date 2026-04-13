@@ -35,6 +35,7 @@ public class Player
     public float? Lng { get; set; }
 
     public bool IsHidden => HideRanking != 0;
+    public bool IsBot    => UniqueIds.Any(u => u.UniqueId.StartsWith("BOT", StringComparison.OrdinalIgnoreCase));
 
     // Navigation properties
     public Clan? Clan { get; set; }

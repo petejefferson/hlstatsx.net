@@ -22,8 +22,12 @@ public class SearchController : Controller
         ViewData["st"]    = st ?? "";
 
         if (string.IsNullOrWhiteSpace(q))
+        {
+            ViewData["HideBotPlayers"] = _config.GetValue<bool>("HLStatsX:HideBotPlayers", true);
             return View("Index", (object?)null);
+        }
 
+        ViewData["HideBotPlayers"] = _config.GetValue<bool>("HLStatsX:HideBotPlayers", true);
         var results = await _search.SearchAsync(q, game, st, page, 50, ct);
         return View(results);
     }

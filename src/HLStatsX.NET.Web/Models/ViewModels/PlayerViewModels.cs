@@ -11,7 +11,8 @@ public record PlayerLeaderboardViewModel(
     IReadOnlyList<Rank> Ranks,
     string RankType,
     IReadOnlyList<DateTime> AvailableDates,
-    int MinKills = 1
+    int MinKills = 1,
+    bool HideBotPlayers = true
 )
 {
     public bool IsHistorical => RankType != "total";
@@ -45,8 +46,8 @@ public record PlayerProfileViewModel
     public required IReadOnlyList<ActionStatRow> PlayerActionVictims { get; init; }
     public required IReadOnlyList<TrendPoint> TrendData { get; init; }
     public required IReadOnlyList<GlobalAwardRow> GlobalAwards { get; init; }
-    public string? AvatarUrl { get; init; }
     public long? Steam64Id { get; init; }
+    public bool HideBotPlayers { get; init; }
 
     public double RankPercent => CurrentRank is null || NextRank is null ? 0
         : NextRank.MinKills == CurrentRank.MinKills ? 100

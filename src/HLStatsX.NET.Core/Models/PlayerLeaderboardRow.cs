@@ -18,6 +18,7 @@ public record PlayerLeaderboardRow
     public int ConnectionTime { get; init; }
     public int Shots { get; init; }
     public int Hits { get; init; }
+    public bool IsBot { get; init; }
 
     public double KillDeathRatio => Deaths == 0 ? Kills : Math.Round((double)Kills / Deaths, 2);
     public double HsPerKill      => Kills   == 0 ? 0    : Math.Round((double)Headshots / Kills, 2);

@@ -46,7 +46,8 @@ public class PlayersController : Controller
             result = await _players.GetPeriodLeaderboardAsync(game, from, to, page, pageSize, sortBy, desc, minKills, ct);
         }
 
-        return View(new PlayerLeaderboardViewModel(result, game, sortBy, desc, ranks, rankType, availableDates, minKills));
+        return View(new PlayerLeaderboardViewModel(result, game, sortBy, desc, ranks, rankType, availableDates, minKills,
+            _config.GetValue<bool>("HLStatsX:HideBotPlayers", true)));
     }
 
     private static PagedResult<PlayerLeaderboardRow> MapToRows(PagedResult<Player> players)
@@ -66,7 +67,8 @@ public class PlayersController : Controller
             Headshots      = p.Headshots,
             ConnectionTime = p.ConnectionTime,
             Shots          = p.Shots,
-            Hits           = p.Hits
+            Hits           = p.Hits,
+            IsBot          = p.IsBot
         }).ToList();
         return PagedResult<PlayerLeaderboardRow>.Create(rows, players.TotalCount, players.Page, players.PageSize);
     }
@@ -85,6 +87,9 @@ public class PlayersController : Controller
     {
         var player = await _players.GetPlayerAsync(id, ct);
         if (player is null) return NotFound();
+
+        if (_config.GetValue<bool>("HLStatsX:HideBotPlayers", true) && player.IsBot)
+            return NotFound();
 
         var game = player.Game;
 
@@ -118,7 +123,6 @@ public class PlayersController : Controller
         var actionVictimsTask = _players.GetPlayerActionVictimsAsync(id, ct);
         var trendTask         = _players.GetTrendDataAsync(id, 30, ct);
         var globalAwardsTask  = _players.GetGlobalAwardsAsync(id, game, ct);
-        var avatarTask        = _steam.GetAvatarUrlAsync(steamUniqueId, ct);
 
         await Task.WhenAll(
             rankTask, rankEntityTask, nextRankTask, allRanksTask,
@@ -126,8 +130,7 @@ public class PlayersController : Controller
             pingTask, lastConnectTask, favServerTask, favMapTask,
             favWeaponTask, killStatsTask, mapPerfTask, serverPerfTask,
             weaponStatsTask, teamSelTask, roleSelTask,
-            playerActionsTask, actionVictimsTask, trendTask, globalAwardsTask,
-            avatarTask);
+            playerActionsTask, actionVictimsTask, trendTask, globalAwardsTask);
 
         var rankEntity = rankEntityTask.Result;
         var allRanks   = allRanksTask.Result;
@@ -162,9 +165,17 @@ public class PlayersController : Controller
             PlayerActionVictims = actionVictimsTask.Result,
             TrendData           = trendTask.Result,
             GlobalAwards        = globalAwardsTask.Result,
-            AvatarUrl           = avatarTask.Result,
-            Steam64Id           = steam64Id
+            Steam64Id           = steam64Id,
+            HideBotPlayers      = _config.GetValue<bool>("HLStatsX:HideBotPlayers", true)
         });
+    }
+
+    public async Task<IActionResult> Avatar(long steam64, CancellationToken ct)
+    {
+        var avatarUrl = await _steam.GetAvatarUrlAsync(steam64, ct);
+        if (string.IsNullOrEmpty(avatarUrl))
+            return NotFound();
+        return Redirect(avatarUrl);
     }
 
     public async Task<IActionResult> History(int id, int days = 30, CancellationToken ct = default)

@@ -80,7 +80,14 @@
                 <td style="text-align:center;">@startRank</td>
                 <td style="text-align:left;">
                     <img src="/hlstatsimg/flags/@(flagFile).gif" alt="@flagAlt" title="@flagAlt" />&nbsp;
-                    <a asp-action="Profile" asp-route-id="@player.PlayerId">@player.LastName</a>
+                    @if (player.IsBot && Model.HideBotPlayers)
+                    {
+                        @player.LastName
+                    }
+                    else
+                    {
+                        <a asp-action="Profile" asp-route-id="@player.PlayerId">@player.LastName</a>
+                    }
                 </td>
                 <td style="text-align:left;">
                     @if (player.Clan is not null)

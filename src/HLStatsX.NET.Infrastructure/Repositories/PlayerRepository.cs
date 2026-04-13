@@ -32,7 +32,8 @@ public class PlayerRepository : IPlayerRepository
 
         IQueryable<Player> query = db.Players
             .Where(p => p.Game == game && p.HideRanking == 0 && p.Kills >= minKills)
-            .Include(p => p.Clan);
+            .Include(p => p.Clan)
+            .Include(p => p.UniqueIds);
 
         query = (sortBy.ToLowerInvariant(), descending) switch
         {
@@ -134,6 +135,17 @@ public class PlayerRepository : IPlayerRepository
 
         var total = await q.CountAsync(ct);
         var items = await q.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+
+        if (items.Count > 0)
+        {
+            var playerIds = items.Select(r => r.PlayerId).Distinct().ToList();
+            var botIds = await db.PlayerUniqueIds
+                .Where(u => playerIds.Contains(u.PlayerId) && EF.Functions.Like(u.UniqueId, "BOT%"))
+                .Select(u => u.PlayerId)
+                .ToHashSetAsync(ct);
+            items = items.Select(r => r with { IsBot = botIds.Contains(r.PlayerId) }).ToList();
+        }
+
         return PagedResult<PlayerSearchResult>.Create(items, total, page, pageSize);
     }
 
@@ -229,6 +241,16 @@ public class PlayerRepository : IPlayerRepository
         var total = await ordered.CountAsync(ct);
         var raw   = await ordered.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
 
+        var botIds = new HashSet<int>();
+        if (raw.Count > 0)
+        {
+            var playerIds = raw.Select(x => x.PlayerId).ToList();
+            botIds = await db.PlayerUniqueIds
+                .Where(u => playerIds.Contains(u.PlayerId) && EF.Functions.Like(u.UniqueId, "BOT%"))
+                .Select(u => u.PlayerId)
+                .ToHashSetAsync(ct);
+        }
+
         var items = raw.Select(x => new PlayerLeaderboardRow
         {
             PlayerId       = x.PlayerId,
@@ -244,7 +266,8 @@ public class PlayerRepository : IPlayerRepository
             Headshots      = x.Headshots,
             ConnectionTime = x.ConnTime,
             Shots          = 0,   // not recorded in history table
-            Hits           = 0    // not recorded in history table
+            Hits           = 0,   // not recorded in history table
+            IsBot          = botIds.Contains(x.PlayerId)
         }).ToList();
 
         return PagedResult<PlayerLeaderboardRow>.Create(items, total, page, pageSize);

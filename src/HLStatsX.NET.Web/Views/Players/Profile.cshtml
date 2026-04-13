@@ -47,9 +47,11 @@
         <tr class="data-table-head">
           <td style="vertical-align:top;">Player Profile</td>
           <td id="player_avatar" rowspan="5" style="text-align:center;vertical-align:middle;padding:8px;width:170px;">
-            @if (Model.AvatarUrl != null)
+            @if (Model.Steam64Id.HasValue)
             {
-              <img src="@Model.AvatarUrl" style="height:158px;width:158px;" alt="Steam Community Avatar" />
+              <img src="@(Url.Action("Avatar", "Players", new { steam64 = Model.Steam64Id.Value }))"
+                   style="height:158px;width:158px;" alt="Steam Community Avatar"
+                   onerror="this.style.display='none'" />
             }
           </td>
         </tr>
@@ -576,7 +578,16 @@
         @foreach (var k in Model.KillStats)
         {
           <tr>
-            <td><a asp-action="Profile" asp-route-id="@k.VictimId">@k.VictimName</a></td>
+            <td>
+              @if (k.VictimIsBot && Model.HideBotPlayers)
+              {
+                  @k.VictimName
+              }
+              else
+              {
+                  <a asp-action="Profile" asp-route-id="@k.VictimId">@k.VictimName</a>
+              }
+            </td>
             <td>@k.Kills</td>
             <td>@(ksTotalKills > 0 ? $"{(double)k.Kills / ksTotalKills * 100:F1}%" : "-")</td>
             <td>@k.Deaths</td>
