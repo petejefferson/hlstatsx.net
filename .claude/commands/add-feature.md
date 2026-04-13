@@ -6,6 +6,7 @@ Follow this workflow to add the feature described above to HLStatsX.NET.
 Look up the relevant file(s) in `OriginalPHP/pages/` to understand:
 - What the page/feature displays
 - The SQL queries it runs (these map directly to EF Core queries)
+- **Exactly which columns each table SELECTs** — only add entity properties for columns that actually appear in PHP SELECT/INSERT/UPDATE statements. Never guess or add columns speculatively; a missing column causes a runtime `MySqlException`. Check `admintasks/` files for INSERT/UPDATE statements if you need to confirm all real columns for a table.
 - Any edge cases or special logic
 - URL parameters it accepts
 

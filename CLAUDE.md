@@ -38,6 +38,7 @@ When adding a feature, changes flow bottom-up: entity/interface → repository �
 - Connection string key: `HLStats` in `appsettings.json` / `appsettings.Development.json`
 - `HLStatsDbContext` in `Infrastructure/Data/` — add new `DbSet<T>` here when adding entities
 - **EF Core is pinned to 9.x** — Pomelo hasn't released a 10.x version yet. Do not upgrade EF Core past `9.0.*` until Pomelo 10 is available. All other packages target .NET 10.
+- **Entity columns must match the actual DB schema.** Only add properties that correspond to columns the PHP SQL queries actually SELECT. Never guess or add columns speculatively. Cross-check every entity property against the PHP SELECT list for that table — e.g. `hlstats_Countries` only has `flag` and `name`; adding a `code` property caused a runtime `MySqlException`. When in doubt, check `OriginalPHP/pages/admintasks/` for INSERT/UPDATE statements that reveal all real columns.
 
 ## Configuration
 
