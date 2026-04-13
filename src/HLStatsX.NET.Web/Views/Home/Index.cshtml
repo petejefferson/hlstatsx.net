@@ -10,23 +10,65 @@
     var chartMax = Model.ServerLoad.Any() ? Model.ServerLoad.Max(x => x.MaxPlayers) : 32;
 }
 
-<div class="site-summary">
-    <p class="tracking-line">
-        Tracking <strong>@Model.TotalPlayers.ToString("N0")</strong> players
-        @if (Model.NewPlayersLast24h >= 0)
-        {
-            <text>(<strong>+@Model.NewPlayersLast24h.ToString("N0")</strong> new players last 24h) </text>
-        }
-        with <strong>@Model.Stats.TotalKills.ToString("N0")</strong> kills
-        @if (Model.Stats.NewKillsLast24h >= 0)
-        {
-            <text>(<strong>+@Model.Stats.NewKillsLast24h.ToString("N0")</strong> last 24h) </text>
-        }
-        and <strong>@Model.Stats.TotalHeadshots.ToString("N0")</strong> headshots
-        (<strong>@Model.Stats.HeadshotPercent.ToString("F2")%</strong>)
-        on <strong>@Model.Stats.TotalServers.ToString("N0")</strong> server@(Model.Stats.TotalServers == 1 ? "" : "s")
-    </p>
-</div>
+<table class="data-table" style="margin-bottom:1rem;">
+    <tr class="data-table-head">
+        <td>
+            Tracking <strong>@Model.TotalPlayers.ToString("N0")</strong> players
+            @if (Model.NewPlayersLast24h >= 0)
+            {
+                <text>(<strong>+@Model.NewPlayersLast24h.ToString("N0")</strong> new players last 24h) </text>
+            }
+            with <strong>@Model.Stats.TotalKills.ToString("N0")</strong> kills
+            @if (Model.Stats.NewKillsLast24h >= 0)
+            {
+                <text>(<strong>+@Model.Stats.NewKillsLast24h.ToString("N0")</strong> last 24h) </text>
+            }
+            and <strong>@Model.Stats.TotalHeadshots.ToString("N0")</strong> headshots
+            (<strong>@Model.Stats.HeadshotPercent.ToString("F2")%</strong>)
+            on <strong>@Model.Stats.TotalServers.ToString("N0")</strong> server@(Model.Stats.TotalServers == 1 ? "" : "s")
+        </td>
+    </tr>
+</table>
+
+@if (Model.Servers.Any())
+{
+    <table class="data-table" style="margin-bottom:1rem;">
+        <thead>
+            <tr class="data-table-head">
+                <th style="width:37%;text-align:left;">Server</th>
+                <th style="width:23%;text-align:left;">Address</th>
+                <th style="width:6%;text-align:center;">Map</th>
+                <th style="width:6%;text-align:center;">Played</th>
+                <th style="width:10%;text-align:center;">Players</th>
+                <th style="width:6%;text-align:center;">Kills</th>
+                <th style="width:6%;text-align:center;">Headshots</th>
+                <th style="width:6%;text-align:center;">Hpk</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var sv in Model.Servers)
+            {
+                long elapsed = sv.MapStarted > 0 ? DateTimeOffset.UtcNow.ToUnixTimeSeconds() - sv.MapStarted : 0;
+                if (elapsed < 0) elapsed = 0;
+                string mapTime = $"{elapsed / 3600:D2}:{elapsed % 3600 / 60:D2}:{elapsed % 60:D2}";
+                double hpk = sv.Kills > 0 ? (double)sv.Headshots / sv.Kills : 0.0;
+                <tr class="bg1">
+                    <td><a asp-controller="Servers" asp-action="Detail" asp-route-id="@sv.ServerId">@sv.Name</a></td>
+                    <td>
+                        @sv.DisplayAddress
+                        <a href="steam://connect/@sv.DisplayAddress">(Join)</a>
+                    </td>
+                    <td style="text-align:center;">@sv.ActMap</td>
+                    <td style="text-align:center;">@mapTime</td>
+                    <td style="text-align:center;">@sv.ActPlayers / @sv.MaxPlayers</td>
+                    <td style="text-align:center;">@sv.Kills.ToString("N0")</td>
+                    <td style="text-align:center;">@sv.Headshots.ToString("N0")</td>
+                    <td style="text-align:center;">@hpk.ToString("F4")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
 
 @if (Model.ServerLoad.Any())
 {

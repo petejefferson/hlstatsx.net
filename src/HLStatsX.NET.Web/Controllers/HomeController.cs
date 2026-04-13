@@ -43,7 +43,7 @@ public class HomeController : Controller
             playerCount,
             newPlayers24h,
             gameStats,
-            servers.Count(s => s.IsActive),
+            servers,
             livestats,
             dailyAwards,
             serverLoad,

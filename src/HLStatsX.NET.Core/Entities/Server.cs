@@ -21,7 +21,10 @@ public class Server
     public string City { get; set; } = string.Empty;
     public string Country { get; set; } = string.Empty;
 
+    public int MapStarted { get; set; }
+
     public bool IsActive => LastEvent > 0;
+    public string DisplayAddress => !string.IsNullOrEmpty(PublicAddress) ? PublicAddress : $"{Address}:{Port}";
 
     public Game? GameNavigation { get; set; }
     public ServerConfig? Config { get; set; }

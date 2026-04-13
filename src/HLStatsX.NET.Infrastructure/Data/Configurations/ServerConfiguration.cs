@@ -22,6 +22,7 @@ public class ServerConfiguration : IEntityTypeConfiguration<Server>
         builder.Property(s => s.MaxPlayers).HasColumnName("max_players");
         builder.Property(s => s.ActMap).HasColumnName("act_map").HasMaxLength(64);
         builder.Property(s => s.LastEvent).HasColumnName("last_event");
+        builder.Property(s => s.MapStarted).HasColumnName("map_started");
         builder.Property(s => s.Kills).HasColumnName("kills");
         builder.Property(s => s.Headshots).HasColumnName("headshots");
         builder.Property(s => s.Lat).HasColumnName("lat");
@@ -30,6 +31,7 @@ public class ServerConfiguration : IEntityTypeConfiguration<Server>
         builder.Property(s => s.Country).HasColumnName("country").HasMaxLength(64);
 
         builder.Ignore(s => s.IsActive);
+        builder.Ignore(s => s.DisplayAddress);
 
         builder.HasOne(s => s.GameNavigation)
             .WithMany(g => g.Servers)

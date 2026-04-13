@@ -192,6 +192,13 @@ The Players/Index leaderboard accepts these URL parameters (all preserved across
 | `/build-check` | Run build + tests and report results |
 | `/feature-commit` | Stage and commit the current completed feature |
 
+## PHP Live Reference
+
+A live running instance of the original PHP site is available for visual and behaviour reference:
+**https://tft.nervaware.co.uk/stats/hlstats.php**
+
+Use this before implementing any feature to verify expected layout, data format, and edge cases.
+
 ## PHP Reference — Feature Map
 
 Pages in `OriginalPHP/pages/` and their .NET status:

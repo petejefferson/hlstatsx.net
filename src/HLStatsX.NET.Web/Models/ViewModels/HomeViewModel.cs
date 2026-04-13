@@ -8,7 +8,7 @@ public record HomeViewModel(
     int TotalPlayers,
     int NewPlayersLast24h,       // -1 = no data
     GameStats Stats,
-    int ActiveServers,
+    IReadOnlyList<Server> Servers,
     IReadOnlyList<Livestat> Livestats,
     IReadOnlyList<Award> DailyAwards,
     IReadOnlyList<ServerLoad> ServerLoad,

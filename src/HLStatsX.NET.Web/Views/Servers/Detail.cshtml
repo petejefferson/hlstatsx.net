@@ -1,20 +1,44 @@
 @model ServerDetailViewModel
 @{
     ViewData["Title"] = Model.Server.Name;
+
+    var s = Model.Server;
+    long elapsed = s.MapStarted > 0 ? DateTimeOffset.UtcNow.ToUnixTimeSeconds() - s.MapStarted : 0;
+    if (elapsed < 0) elapsed = 0;
+    string mapTime = $"{elapsed / 3600:D2}:{elapsed % 3600 / 60:D2}:{elapsed % 60:D2}";
+    double hpk = s.Kills > 0 ? (double)s.Headshots / s.Kills : 0.0;
 }
 
-<h1>@Model.Server.Name</h1>
-<p class="server-address">@Model.Server.Address:@Model.Server.Port</p>
+<h1>Server Live View</h1>
 
-<table class="stats-table server-info">
-    <tr><th>Map</th><td>@Model.Server.ActMap</td></tr>
-    <tr><th>Players</th><td>@Model.Server.ActPlayers / @Model.Server.MaxPlayers</td></tr>
-    <tr><th>Status</th><td>@(Model.Server.IsActive ? "Online" : "Offline")</td></tr>
-    @if (!string.IsNullOrEmpty(Model.Server.Country))
-    {
-        <tr><th>Location</th><td>@Model.Server.City, @Model.Server.Country</td></tr>
-    }
-    <tr><th>Total Kills</th><td>@Model.Server.Kills</td></tr>
+<table class="data-table">
+    <thead>
+        <tr class="data-table-head">
+            <th style="width:37%;text-align:left;">Server</th>
+            <th style="width:23%;text-align:left;">Address</th>
+            <th style="width:6%;text-align:center;">Map</th>
+            <th style="width:6%;text-align:center;">Played</th>
+            <th style="width:10%;text-align:center;">Players</th>
+            <th style="width:6%;text-align:center;">Kills</th>
+            <th style="width:6%;text-align:center;">Headshots</th>
+            <th style="width:6%;text-align:center;">Hpk</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr class="bg1">
+            <td><strong>@s.Name</strong></td>
+            <td>
+                @s.DisplayAddress
+                <a href="steam://connect/@s.DisplayAddress">(Join)</a>
+            </td>
+            <td style="text-align:center;">@s.ActMap</td>
+            <td style="text-align:center;">@mapTime</td>
+            <td style="text-align:center;">@s.ActPlayers / @s.MaxPlayers</td>
+            <td style="text-align:center;">@s.Kills.ToString("N0")</td>
+            <td style="text-align:center;">@s.Headshots.ToString("N0")</td>
+            <td style="text-align:center;">@hpk.ToString("F4")</td>
+        </tr>
+    </tbody>
 </table>
 
 <section>

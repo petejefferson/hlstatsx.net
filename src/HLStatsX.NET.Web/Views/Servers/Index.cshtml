@@ -5,6 +5,26 @@
 
 <h1>Game Servers</h1>
 
+<table class="data-table" style="margin-bottom:1rem;">
+    <tr class="data-table-head">
+        <td>
+            Tracking <strong>@Model.TotalPlayers.ToString("N0")</strong> players
+            @if (Model.NewPlayersLast24h >= 0)
+            {
+                <text>(<strong>+@Model.NewPlayersLast24h.ToString("N0")</strong> new players last 24h) </text>
+            }
+            with <strong>@Model.Stats.TotalKills.ToString("N0")</strong> kills
+            @if (Model.Stats.NewKillsLast24h >= 0)
+            {
+                <text>(<strong>+@Model.Stats.NewKillsLast24h.ToString("N0")</strong> last 24h) </text>
+            }
+            and <strong>@Model.Stats.TotalHeadshots.ToString("N0")</strong> headshots
+            (<strong>@Model.Stats.HeadshotPercent.ToString("F2")%</strong>)
+            on <strong>@Model.Stats.TotalServers.ToString("N0")</strong> server@(Model.Stats.TotalServers == 1 ? "" : "s")
+        </td>
+    </tr>
+</table>
+
 <table class="stats-table">
     <thead>
         <tr>

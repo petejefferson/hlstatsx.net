@@ -7,19 +7,30 @@ namespace HLStatsX.NET.Web.Controllers;
 public class ServersController : Controller
 {
     private readonly IServerService _servers;
+    private readonly IPlayerService _players;
     private readonly IConfiguration _config;
 
-    public ServersController(IServerService servers, IConfiguration config)
+    public ServersController(IServerService servers, IPlayerService players, IConfiguration config)
     {
         _servers = servers;
+        _players = players;
         _config = config;
     }
 
     public async Task<IActionResult> Index(string? game, CancellationToken ct)
     {
         game ??= _config["HLStatsX:DefaultGame"] ?? "cstrike";
-        var servers = await _servers.GetServersAsync(game, ct);
-        return View(new ServerListViewModel(servers, game));
+
+        var serversTask     = _servers.GetServersAsync(game, ct);
+        var gameStatsTask   = _servers.GetGameStatsAsync(game, ct);
+        var playerCountTask = _players.GetTotalCountAsync(game, ct);
+        await Task.WhenAll(serversTask, gameStatsTask, playerCountTask);
+
+        var gameStats    = gameStatsTask.Result;
+        var playerCount  = playerCountTask.Result;
+        var newPlayers24h = gameStats.Trend24hPlayers >= 0 ? playerCount - gameStats.Trend24hPlayers : -1;
+
+        return View(new ServerListViewModel(serversTask.Result, game, playerCount, newPlayers24h, gameStats));
     }
 
     public async Task<IActionResult> Detail(int id, CancellationToken ct)
