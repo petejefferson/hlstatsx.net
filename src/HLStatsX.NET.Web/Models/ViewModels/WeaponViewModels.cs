@@ -7,7 +7,9 @@ public record WeaponListViewModel(
     PagedResult<Weapon> Weapons,
     string Game,
     string SortBy,
-    bool Descending
+    bool Descending,
+    int TotalKills,
+    int TotalHeadshots
 );
 
 public record WeaponDetailViewModel(

@@ -32,8 +32,18 @@ public class WeaponRepository : IWeaponRepository
 
         query = (sortBy.ToLowerInvariant(), desc) switch
         {
+            ("modifier",  true)  => query.OrderByDescending(w => w.Modifier),
+            ("modifier",  false) => query.OrderBy(w => w.Modifier),
+            ("kills",     true)  => query.OrderByDescending(w => w.Kills),
+            ("kills",     false) => query.OrderBy(w => w.Kills),
+            ("kpercent",  true)  => query.OrderByDescending(w => w.Kills),
+            ("kpercent",  false) => query.OrderBy(w => w.Kills),
             ("headshots", true)  => query.OrderByDescending(w => w.Headshots),
             ("headshots", false) => query.OrderBy(w => w.Headshots),
+            ("hpercent",  true)  => query.OrderByDescending(w => w.Headshots),
+            ("hpercent",  false) => query.OrderBy(w => w.Headshots),
+            ("hpk",       true)  => query.OrderByDescending(w => w.Kills == 0 ? 0.0 : (double)w.Headshots / w.Kills),
+            ("hpk",       false) => query.OrderBy(w => w.Kills == 0 ? 0.0 : (double)w.Headshots / w.Kills),
             ("hspct",     true)  => query.OrderByDescending(w => w.Kills == 0 ? 0.0 : (double)w.Headshots / w.Kills),
             ("hspct",     false) => query.OrderBy(w => w.Kills == 0 ? 0.0 : (double)w.Headshots / w.Kills),
             (_,           true)  => query.OrderByDescending(w => w.Kills),
@@ -53,6 +63,17 @@ public class WeaponRepository : IWeaponRepository
             .OrderByDescending(w => w.Kills)
             .Take(count)
             .ToListAsync(ct);
+    }
+
+    public async Task<(int TotalKills, int TotalHeadshots)> GetKillTotalsAsync(string game, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        var totals = await db.Weapons
+            .Where(w => w.Game == game)
+            .GroupBy(_ => 1)
+            .Select(g => new { Kills = (int?)g.Sum(w => w.Kills), Headshots = (int?)g.Sum(w => w.Headshots) })
+            .FirstOrDefaultAsync(ct);
+        return (totals?.Kills ?? 0, totals?.Headshots ?? 0);
     }
 
     public async Task UpdateAsync(Weapon weapon, CancellationToken ct = default)

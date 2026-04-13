@@ -8,30 +8,58 @@
         return Url.Action("Index", new { game = Model.Game, sortBy = field, desc = nextDesc })!;
     }
     string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
+
+    double safeKills = Model.TotalKills > 0 ? Model.TotalKills : 1;
+    double safeHeadshots = Model.TotalHeadshots > 0 ? Model.TotalHeadshots : 1;
 }
 
-<h1>Weapons &mdash; @Model.Game</h1>
+<h1>Weapon Statistics &mdash; @Model.Game</h1>
 
-<table class="stats-table">
+<p>From a total of <strong>@Model.TotalKills.ToString("N0")</strong> kills with <strong>@Model.TotalHeadshots.ToString("N0")</strong> headshots</p>
+
+<table class="data-table">
     <thead>
-        <tr>
+        <tr class="data-table-head">
             <th>Rank</th>
-            <th>Weapon</th>
+            <th><a href="@(SortUrl("weapon"))">Weapon@(Mark("weapon"))</a></th>
+            <th><a href="@(SortUrl("modifier"))">Modifier@(Mark("modifier"))</a></th>
             <th><a href="@(SortUrl("kills"))">Kills@(Mark("kills"))</a></th>
+            <th><a href="@(SortUrl("kpercent"))">%@(Mark("kpercent"))</a></th>
+            <th><a href="@(SortUrl("kpercent"))">Ratio@(Mark("kpercent"))</a></th>
             <th><a href="@(SortUrl("headshots"))">Headshots@(Mark("headshots"))</a></th>
-            <th><a href="@(SortUrl("hspct"))">HS%@(Mark("hspct"))</a></th>
+            <th><a href="@(SortUrl("hpercent"))">%@(Mark("hpercent"))</a></th>
+            <th><a href="@(SortUrl("hpercent"))">Ratio@(Mark("hpercent"))</a></th>
+            <th><a href="@(SortUrl("hpk"))">HS:K@(Mark("hpk"))</a></th>
         </tr>
     </thead>
     <tbody>
-        @{ int rank = (Model.Weapons.Page - 1) * Model.Weapons.PageSize + 1; }
+        @{
+            int rank = (Model.Weapons.Page - 1) * Model.Weapons.PageSize + 1;
+            bool bg = false;
+        }
         @foreach (var w in Model.Weapons.Items)
         {
+            string rowClass = bg ? "bg2" : "bg1";
+            bg = !bg;
+            double kpct = Math.Round(w.Kills / safeKills * 100, 2);
+            double hpct = Math.Round(w.Headshots / safeHeadshots * 100, 2);
+            double hpk  = w.Kills > 0 ? Math.Round((double)w.Headshots / w.Kills, 2) : 0;
+            string imgSrc = $"/hlstatsimg/games/{Model.Game}/weapons/{w.Code.ToLower()}.gif";
             <tr>
-                <td>@rank</td>
-                <td><a asp-action="Detail" asp-route-id="@w.WeaponId">@w.Name</a></td>
-                <td>@w.Kills</td>
-                <td>@w.Headshots</td>
-                <td>@w.HeadshotPercent%</td>
+                <td class="@rowClass" style="text-align:right">@rank</td>
+                <td class="@(bg ? "bg1" : "bg2")" style="text-align:center">
+                    <a asp-controller="Weapons" asp-action="Detail" asp-route-id="@w.WeaponId">
+                        <img src="@imgSrc" width="90" height="17" alt="@w.Name" title="@w.Name" />
+                    </a>
+                </td>
+                <td class="@rowClass" style="text-align:right">@w.Modifier.ToString("F2")</td>
+                <td class="@(bg ? "bg1" : "bg2")" style="text-align:right">@w.Kills.ToString("N0")</td>
+                <td class="@rowClass" style="text-align:right">@(kpct.ToString("F2"))%</td>
+                <td class="@(bg ? "bg1" : "bg2")"><meter min="0" max="100" low="25" high="50" optimum="75" value="@kpct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)"></meter></td>
+                <td class="@rowClass" style="text-align:right">@w.Headshots.ToString("N0")</td>
+                <td class="@(bg ? "bg1" : "bg2")" style="text-align:right">@(hpct.ToString("F2"))%</td>
+                <td class="@rowClass"><meter min="0" max="100" low="25" high="50" optimum="75" value="@hpct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)"></meter></td>
+                <td class="@(bg ? "bg1" : "bg2")" style="text-align:right">@hpk.ToString("F2")</td>
             </tr>
             rank++;
         }

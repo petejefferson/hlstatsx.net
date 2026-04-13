@@ -19,8 +19,11 @@ public class WeaponsController : Controller
     {
         game ??= _config["HLStatsX:DefaultGame"] ?? "cstrike";
         int pageSize = _config.GetValue<int>("HLStatsX:DefaultPageSize", 50);
-        var result = await _weapons.GetAllAsync(game, page, pageSize, sortBy, desc, ct);
-        return View(new WeaponListViewModel(result, game, sortBy, desc));
+        var resultTask = _weapons.GetAllAsync(game, page, pageSize, sortBy, desc, ct);
+        var totalsTask = _weapons.GetKillTotalsAsync(game, ct);
+        await Task.WhenAll(resultTask, totalsTask);
+        var totals = totalsTask.Result;
+        return View(new WeaponListViewModel(resultTask.Result, game, sortBy, desc, totals.TotalKills, totals.TotalHeadshots));
     }
 
     public async Task<IActionResult> Detail(int id, CancellationToken ct)
