@@ -66,7 +66,9 @@
       "Bash(dotnet sdk:*)",
       "Bash(dotnet package:*)",
       "Bash(python -c \"import json,sys; v=json.load\\(sys.stdin\\)['versions']; print\\('\\\\n'.join\\([x for x in v if x.startswith\\('9.'\\)]\\)[-5:]\\)\")",
-      "Bash(dotnet add:*)"
+      "Bash(dotnet add:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
