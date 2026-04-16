@@ -23,12 +23,40 @@ public class ClansController : Controller
         return View(new ClanLeaderboardViewModel(result, game, sortBy, desc, minMembers));
     }
 
-    public async Task<IActionResult> Profile(int id, CancellationToken ct)
+    public async Task<IActionResult> Profile(
+        int id,
+        int membersPage = 1, string membersSortBy = "skill", bool membersDesc = true,
+        CancellationToken ct = default)
     {
         var clan = await _clans.GetClanAsync(id, ct);
         if (clan is null) return NotFound();
 
-        var members = await _clans.GetMembersAsync(id, ct);
-        return View(new ClanProfileViewModel(clan, members, clan.Game));
+        var summary = await _clans.GetSummaryAsync(id, ct);
+        if (summary is null) return NotFound();
+
+        int pageSize = _config.GetValue<int>("HLStatsX:DefaultPageSize", 50);
+
+        var favServerTask      = _clans.GetFavoriteServerAsync(id, ct);
+        var favMapTask         = _clans.GetFavoriteMapAsync(id, ct);
+        var favWeaponTask      = _clans.GetFavoriteWeaponAsync(id, clan.Game, ct);
+        var membersTask        = _clans.GetMembersPagedAsync(id, membersPage, pageSize, membersSortBy, membersDesc, summary.TotalKills, ct);
+        var weaponsTask        = _clans.GetWeaponUsageAsync(id, clan.Game, summary.TotalKills, summary.TotalHeadshots, ct);
+        var mapsTask           = _clans.GetMapPerformanceAsync(id, summary.TotalKills, summary.TotalHeadshots, ct);
+        var actionsTask        = _clans.GetActionsAsync(id, ct);
+        var actionVictimsTask  = _clans.GetActionVictimsAsync(id, ct);
+        var teamsTask          = _clans.GetTeamSelectionAsync(id, clan.Game, ct);
+        var rolesTask          = _clans.GetRoleSelectionAsync(id, clan.Game, ct);
+
+        await Task.WhenAll(
+            favServerTask, favMapTask, favWeaponTask, membersTask,
+            weaponsTask, mapsTask, actionsTask, actionVictimsTask, teamsTask, rolesTask);
+
+        return View(new ClanProfileViewModel(
+            clan, summary,
+            favServerTask.Result, favMapTask.Result, favWeaponTask.Result,
+            membersTask.Result, membersPage, membersSortBy, membersDesc,
+            weaponsTask.Result, mapsTask.Result,
+            actionsTask.Result, actionVictimsTask.Result,
+            teamsTask.Result, rolesTask.Result));
     }
 }

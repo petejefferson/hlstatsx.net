@@ -13,6 +13,21 @@ public record ClanLeaderboardViewModel(
 
 public record ClanProfileViewModel(
     Clan Clan,
-    IReadOnlyList<Player> Members,
-    string Game
-);
+    ClanSummaryStats Summary,
+    ClanFavoriteServer? FavoriteServer,
+    string? FavoriteMap,
+    ClanFavoriteWeapon? FavoriteWeapon,
+    PagedResult<ClanMemberRow> Members,
+    int MembersPage,
+    string MembersSortBy,
+    bool MembersDescending,
+    IReadOnlyList<ClanWeaponRow> WeaponUsage,
+    IReadOnlyList<ClanMapRow> MapPerformance,
+    IReadOnlyList<ClanActionRow> Actions,
+    IReadOnlyList<ClanActionRow> ActionVictims,
+    IReadOnlyList<ClanTeamRow> Teams,
+    IReadOnlyList<ClanRoleRow> Roles
+)
+{
+    public string Game => Clan.Game;
+};

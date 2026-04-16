@@ -1,43 +1,427 @@
 @model ClanProfileViewModel
+@using HLStatsX.NET.Core.Models
 @{
-    ViewData["Title"] = Model.Clan.Name;
+    ViewData["Title"] = $"{Model.Clan.Tag} — {Model.Clan.Name}";
+
+    string FormatTime(long seconds)
+    {
+        var ts = TimeSpan.FromSeconds(seconds);
+        var parts = new List<string>();
+        if (ts.Days    > 0) parts.Add($"{ts.Days} day{(ts.Days != 1 ? "s" : "")}");
+        if (ts.Hours   > 0) parts.Add($"{ts.Hours} hour{(ts.Hours != 1 ? "s" : "")}");
+        if (ts.Minutes > 0) parts.Add($"{ts.Minutes} minute{(ts.Minutes != 1 ? "s" : "")}");
+        return parts.Count > 0 ? string.Join(", ", parts) : "0 minutes";
+    }
+
+    string MemberSortUrl(string field)
+    {
+        bool nextDesc = Model.MembersSortBy == field ? !Model.MembersDescending : true;
+        return Url.Action("Profile", new { id = Model.Clan.ClanId, membersSortBy = field, membersDesc = nextDesc, membersPage = 1 })!;
+    }
+    string MemberMark(string field) => Model.MembersSortBy == field ? (Model.MembersDescending ? " ▼" : " ▲") : "";
 }
 
 <h1>@Model.Clan.Tag &mdash; @Model.Clan.Name</h1>
 
-<section class="clan-members">
-    <h2>Members (@Model.Members.Count)</h2>
-    <table class="stats-table">
-        <thead>
-            <tr>
-                <th>Player</th>
-                <th>Skill</th>
-                <th>Kills</th>
-                <th>Deaths</th>
-                <th>K/D</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var m in Model.Members.OrderByDescending(p => p.Skill))
+<div class="profile-tabs" id="profileTabs">
+    <a href="#tab-general"  class="tab-link active">General</a>
+    <a href="#tab-weapons"  class="tab-link">Weapons</a>
+    <a href="#tab-maps"     class="tab-link">Maps</a>
+    <a href="#tab-actions"  class="tab-link">Teams &amp; Actions</a>
+</div>
+
+@* ══════════════════════════════════════════════════════ GENERAL TAB *@
+<div id="tab-general" class="tab-panel active">
+
+  <div class="profile-two-col">
+    <section class="profile-card">
+      <table class="data-table">
+        <tr class="data-table-head"><td colspan="2">Statistics Summary</td></tr>
+        <tr class="bg1">
+          <td>Clan:</td>
+          <td><strong>@Model.Clan.Name</strong></td>
+        </tr>
+        <tr class="bg2">
+          <td>Home Page:</td>
+          <td>
+            @if (!string.IsNullOrWhiteSpace(Model.Clan.Homepage))
             {
-                <tr>
-                    <td>
-                        @if (!string.IsNullOrEmpty(m.Flag))
-                        {
-                            <img src="/hlstatsimg/flags/@(m.Flag.ToLowerInvariant()).gif" alt="@m.Country" title="@m.Country" />
-                        }
-                        <a asp-controller="Players" asp-action="Profile" asp-route-id="@m.PlayerId">@m.LastName</a>
-                    </td>
-                    <td>@m.Skill</td>
-                    <td>@m.Kills</td>
-                    <td>@m.Deaths</td>
-                    <td>@m.KillDeathRatio</td>
-                </tr>
+              <a href="@Model.Clan.Homepage" target="_blank" rel="noopener">@Model.Clan.Homepage</a>
             }
-            @if (!Model.Members.Any())
+            else { <text>(Not specified.)</text> }
+          </td>
+        </tr>
+        <tr class="bg1">
+          <td>Activity:</td>
+          <td>
+            <meter min="0" max="100" low="25" high="50" optimum="75" value="@Model.Summary.AvgActivity" style="width:120px;"></meter>
+            @Model.Summary.AvgActivity.ToString("F2")%
+          </td>
+        </tr>
+        <tr class="bg2">
+          <td>Members:</td>
+          <td>@Model.Summary.ActiveMemberCount active (@Model.Summary.TotalMemberCount total)</td>
+        </tr>
+        <tr class="bg1">
+          <td>Avg. Member Points:</td>
+          <td><strong>@Model.Summary.AvgSkill.ToString("N0")</strong></td>
+        </tr>
+        <tr class="bg2">
+          <td>Total Kills:</td>
+          <td>@Model.Summary.TotalKills.ToString("N0")</td>
+        </tr>
+        <tr class="bg1">
+          <td>Total Deaths:</td>
+          <td>@Model.Summary.TotalDeaths.ToString("N0")</td>
+        </tr>
+        <tr class="bg2">
+          <td>Avg. Kills:</td>
+          <td>@(Model.Summary.ActiveMemberCount == 0 ? "-" : (Model.Summary.TotalKills / Model.Summary.ActiveMemberCount).ToString("N0"))</td>
+        </tr>
+        <tr class="bg1">
+          <td>Kills per Death:</td>
+          <td>
+            @if (Model.Summary.TotalDeaths != 0)
             {
-                <tr><td colspan="5">No members.</td></tr>
+              <strong>@((Model.Summary.TotalKills / (double)Model.Summary.TotalDeaths).ToString("F2"))</strong>
             }
-        </tbody>
+            else { <text>-</text> }
+          </td>
+        </tr>
+        <tr class="bg2">
+          <td>Kills per Minute:</td>
+          <td>
+            @if (Model.Summary.TotalConnectionTime > 0)
+            {
+              @((Model.Summary.TotalKills / (Model.Summary.TotalConnectionTime / 60.0)).ToString("F2"))
+            }
+            else { <text>-</text> }
+          </td>
+        </tr>
+        <tr class="bg1">
+          <td>Total Connection Time:</td>
+          <td>@FormatTime(Model.Summary.TotalConnectionTime)</td>
+        </tr>
+        <tr class="bg2">
+          <td>Avg. Connection Time:</td>
+          <td>
+            @if (Model.Summary.ActiveMemberCount > 0 && Model.Summary.TotalConnectionTime > 0)
+            {
+              @FormatTime(Model.Summary.TotalConnectionTime / Model.Summary.ActiveMemberCount)
+            }
+            else { <text>-</text> }
+          </td>
+        </tr>
+        <tr class="bg1">
+          <td>Favourite Server:*</td>
+          <td>
+            @if (Model.FavoriteServer is not null)
+            {
+              <a asp-controller="Servers" asp-action="Detail" asp-route-id="@Model.FavoriteServer.ServerId">@Model.FavoriteServer.ServerName</a>
+            }
+            else { <text>-</text> }
+          </td>
+        </tr>
+        <tr class="bg2">
+          <td>Favourite Map:*</td>
+          <td>
+            @if (Model.FavoriteMap is not null)
+            {
+              <a asp-controller="Maps" asp-action="Detail" asp-route-map="@Model.FavoriteMap" asp-route-game="@(Model.Game)">@Model.FavoriteMap</a>
+            }
+            else { <text>-</text> }
+          </td>
+        </tr>
+        <tr class="bg1">
+          <td>Favourite Weapon:*</td>
+          <td>
+            @if (Model.FavoriteWeapon is not null)
+            {
+              <a asp-controller="Weapons" asp-action="Detail" asp-route-code="@(Model.FavoriteWeapon.WeaponCode)" asp-route-game="@(Model.Game)">
+                <img src="/hlstatsimg/games/@(Model.Game)/weapons/@(Model.FavoriteWeapon.WeaponCode).png"
+                     alt="@Model.FavoriteWeapon.WeaponName" title="@Model.FavoriteWeapon.WeaponName"
+                     style="vertical-align:middle;max-height:24px;"
+                     onerror="this.style.display='none'" />
+                @Model.FavoriteWeapon.WeaponName
+              </a>
+            }
+            else { <text>-</text> }
+          </td>
+        </tr>
+      </table>
+    </section>
+  </div>
+
+  {{!-- Members table --}}
+  <div class="profile-section" style="margin-top:20px;">
+    <h2>Members</h2>
+    <table class="data-table">
+      <tr class="data-table-head">
+        <td><a href="@(MemberSortUrl("name"))">Name@(MemberMark("name"))</a></td>
+        <td style="text-align:right;"><a href="@(MemberSortUrl("skill"))">Points@(MemberMark("skill"))</a></td>
+        <td style="text-align:right;"><a href="@(MemberSortUrl("activity"))">Activity@(MemberMark("activity"))</a></td>
+        <td style="text-align:right;"><a href="@(MemberSortUrl("time"))">Time@(MemberMark("time"))</a></td>
+        <td style="text-align:right;"><a href="@(MemberSortUrl("kills"))">Kills@(MemberMark("kills"))</a></td>
+        <td style="text-align:right;">Clan Kills %</td>
+        <td style="text-align:right;"><a href="@(MemberSortUrl("deaths"))">Deaths@(MemberMark("deaths"))</a></td>
+        <td style="text-align:right;">K/D</td>
+      </tr>
+      @{int rowNum = 0;}
+      @foreach (var m in Model.Members.Items)
+      {
+        string rowClass = rowNum % 2 == 0 ? "bg1" : "bg2";
+        rowNum++;
+        <tr class="@rowClass">
+          <td>
+            @if (!string.IsNullOrEmpty(m.Flag))
+            {
+              <img src="/hlstatsimg/flags/@(m.Flag.ToLowerInvariant()).gif" alt="@m.Country" title="@m.Country" style="vertical-align:middle;" />
+            }
+            <a asp-controller="Players" asp-action="Profile" asp-route-id="@m.PlayerId">@m.LastName</a>
+          </td>
+          <td style="text-align:right;">@m.Skill.ToString("N0")</td>
+          <td style="text-align:right;">
+            <meter min="0" max="100" value="@m.ActivityScore" style="width:60px;"></meter>
+            @m.ActivityScore%
+          </td>
+          <td style="text-align:right;">@FormatTime(m.ConnectionTime)</td>
+          <td style="text-align:right;">@m.Kills.ToString("N0")</td>
+          <td style="text-align:right;">@m.ClanKillPercent.ToString("F2")%</td>
+          <td style="text-align:right;">@m.Deaths.ToString("N0")</td>
+          <td style="text-align:right;">@m.KillDeathRatio.ToString("F2")</td>
+        </tr>
+      }
+      @if (!Model.Members.Items.Any())
+      {
+        <tr><td colspan="8">No members.</td></tr>
+      }
     </table>
-</section>
+    <partial name="_Pagination" model="@PaginationModel.From(Model.Members, p => Url.Action("Profile", new { id = Model.Clan.ClanId, membersPage = p, membersSortBy = Model.MembersSortBy, membersDesc = Model.MembersDescending })!)" />
+  </div>
+
+  <p style="margin-top:16px;font-size:0.9em;">Items marked * are generated from all recorded events.</p>
+</div>
+
+@* ══════════════════════════════════════════════════════ WEAPONS TAB *@
+<div id="tab-weapons" class="tab-panel" style="display:none;">
+  @if (!Model.WeaponUsage.Any())
+  {
+    <p>No weapon data available.</p>
+  }
+  else
+  {
+    <h2>Weapon Usage *</h2>
+    <table class="data-table">
+      <tr class="data-table-head">
+        <td>Weapon</td>
+        <td style="text-align:right;">Points Modifier</td>
+        <td style="text-align:right;">Kills</td>
+        <td style="text-align:right;">% of Kills</td>
+        <td style="text-align:right;">Headshots</td>
+        <td style="text-align:right;">% of Headshots</td>
+        <td style="text-align:right;">HS/Kill</td>
+      </tr>
+      @{rowNum = 0;}
+      @foreach (var w in Model.WeaponUsage)
+      {
+        string rowClass = rowNum % 2 == 0 ? "bg1" : "bg2";
+        rowNum++;
+        <tr class="@rowClass">
+          <td>
+            <a asp-controller="Weapons" asp-action="Detail" asp-route-code="@(w.WeaponCode)" asp-route-game="@(Model.Game)">
+              <img src="/hlstatsimg/games/@(Model.Game)/weapons/@(w.WeaponCode).png"
+                   alt="@w.WeaponName" title="@w.WeaponName"
+                   style="vertical-align:middle;max-height:20px;"
+                   onerror="this.style.display='none'" />
+              @w.WeaponName
+            </a>
+          </td>
+          <td style="text-align:right;">@w.Modifier.ToString("F2")</td>
+          <td style="text-align:right;">@w.Kills.ToString("N0")</td>
+          <td style="text-align:right;">@w.KillPercent.ToString("F2")%</td>
+          <td style="text-align:right;">@w.Headshots.ToString("N0")</td>
+          <td style="text-align:right;">@w.HeadshotPercent.ToString("F2")%</td>
+          <td style="text-align:right;">@w.HeadshotsPerKill.ToString("F2")</td>
+        </tr>
+      }
+    </table>
+    <p style="margin-top:8px;font-size:0.9em;">* Generated from all recorded events.</p>
+  }
+</div>
+
+@* ══════════════════════════════════════════════════════ MAPS TAB *@
+<div id="tab-maps" class="tab-panel" style="display:none;">
+  @if (!Model.MapPerformance.Any())
+  {
+    <p>No map data available.</p>
+  }
+  else
+  {
+    <h2>Map Performance *</h2>
+    <table class="data-table">
+      <tr class="data-table-head">
+        <td>Map</td>
+        <td style="text-align:right;">Kills</td>
+        <td style="text-align:right;">% of Kills</td>
+        <td style="text-align:right;">Deaths</td>
+        <td style="text-align:right;">K/D</td>
+        <td style="text-align:right;">Headshots</td>
+        <td style="text-align:right;">% of HS</td>
+        <td style="text-align:right;">HS/Kill</td>
+      </tr>
+      @{rowNum = 0;}
+      @foreach (var m in Model.MapPerformance)
+      {
+        string rowClass = rowNum % 2 == 0 ? "bg1" : "bg2";
+        rowNum++;
+        <tr class="@rowClass">
+          <td>
+            @if (m.Map == "(Unaccounted)")
+            {
+              <text>(Unaccounted)</text>
+            }
+            else
+            {
+              <a asp-controller="Maps" asp-action="Detail" asp-route-map="@m.Map" asp-route-game="@(Model.Game)">@m.Map</a>
+            }
+          </td>
+          <td style="text-align:right;">@m.Kills.ToString("N0")</td>
+          <td style="text-align:right;">@m.KillPercent.ToString("F2")%</td>
+          <td style="text-align:right;">@m.Deaths.ToString("N0")</td>
+          <td style="text-align:right;">@m.KillDeathRatio.ToString("F2")</td>
+          <td style="text-align:right;">@m.Headshots.ToString("N0")</td>
+          <td style="text-align:right;">@m.HeadshotPercent.ToString("F2")%</td>
+          <td style="text-align:right;">@m.HeadshotsPerKill.ToString("F2")</td>
+        </tr>
+      }
+    </table>
+    <p style="margin-top:8px;font-size:0.9em;">* Generated from all recorded events.</p>
+  }
+</div>
+
+@* ══════════════════════════════════════════════════════ TEAMS & ACTIONS TAB *@
+<div id="tab-actions" class="tab-panel" style="display:none;">
+
+  @if (Model.Actions.Any())
+  {
+    <h2>Player Actions *</h2>
+    <table class="data-table">
+      <tr class="data-table-head">
+        <td>Action</td>
+        <td style="text-align:right;">Achieved</td>
+        <td style="text-align:right;">Points Bonus</td>
+      </tr>
+      @{rowNum = 0;}
+      @foreach (var a in Model.Actions)
+      {
+        string rowClass = rowNum % 2 == 0 ? "bg1" : "bg2";
+        rowNum++;
+        <tr class="@rowClass">
+          <td>@a.Description</td>
+          <td style="text-align:right;">@a.Count.ToString("N0") times</td>
+          <td style="text-align:right;">@a.TotalBonus.ToString("N0")</td>
+        </tr>
+      }
+    </table>
+    <br />
+  }
+
+  @if (Model.ActionVictims.Any())
+  {
+    <h2>Victims of Player Actions *</h2>
+    <table class="data-table">
+      <tr class="data-table-head">
+        <td>Action</td>
+        <td style="text-align:right;">Times Victimised</td>
+        <td style="text-align:right;">Points Bonus</td>
+      </tr>
+      @{rowNum = 0;}
+      @foreach (var a in Model.ActionVictims)
+      {
+        string rowClass = rowNum % 2 == 0 ? "bg1" : "bg2";
+        rowNum++;
+        <tr class="@rowClass">
+          <td>@a.Description</td>
+          <td style="text-align:right;">@a.Count.ToString("N0") times</td>
+          <td style="text-align:right;">@a.TotalBonus.ToString("N0")</td>
+        </tr>
+      }
+    </table>
+    <br />
+  }
+
+  @if (Model.Teams.Any())
+  {
+    <h2>Team Selection *</h2>
+    <table class="data-table">
+      <tr class="data-table-head">
+        <td>Team</td>
+        <td style="text-align:right;">Joined</td>
+        <td>Ratio</td>
+        <td style="text-align:right;">%</td>
+      </tr>
+      @{rowNum = 0;}
+      @foreach (var t in Model.Teams)
+      {
+        string rowClass = rowNum % 2 == 0 ? "bg1" : "bg2";
+        rowNum++;
+        <tr class="@rowClass">
+          <td>@t.TeamName</td>
+          <td style="text-align:right;">@t.JoinCount.ToString("N0") times</td>
+          <td><meter min="0" max="100" value="@t.Percent.ToString("F0")" style="width:100px;"></meter></td>
+          <td style="text-align:right;">@t.Percent.ToString("F2")%</td>
+        </tr>
+      }
+    </table>
+    <br />
+  }
+
+  @if (Model.Roles.Any())
+  {
+    <h2>Role Selection *</h2>
+    <table class="data-table">
+      <tr class="data-table-head">
+        <td>Role</td>
+        <td style="text-align:right;">Joined</td>
+        <td style="text-align:right;">%</td>
+        <td>Ratio</td>
+        <td style="text-align:right;">Kills</td>
+        <td style="text-align:right;">Deaths</td>
+        <td style="text-align:right;">K:D</td>
+      </tr>
+      @{rowNum = 0;}
+      @foreach (var r in Model.Roles)
+      {
+        string rowClass = rowNum % 2 == 0 ? "bg1" : "bg2";
+        rowNum++;
+        <tr class="@rowClass">
+          <td>
+            <img src="/hlstatsimg/games/@(Model.Game)/roles/@(Uri.EscapeDataString(r.RoleCode)).png"
+                 alt="@r.RoleName" title="@r.RoleName"
+                 style="vertical-align:middle;max-height:20px;"
+                 onerror="this.style.display='none'" />
+            @r.RoleName
+          </td>
+          <td style="text-align:right;">@r.JoinCount.ToString("N0") times</td>
+          <td style="text-align:right;">@r.Percent.ToString("F2")%</td>
+          <td><meter min="0" max="100" value="@r.Percent.ToString("F0")" style="width:100px;"></meter></td>
+          <td style="text-align:right;">@r.Kills.ToString("N0")</td>
+          <td style="text-align:right;">@r.Deaths.ToString("N0")</td>
+          <td style="text-align:right;">@r.KillDeathRatio.ToString("F2")</td>
+        </tr>
+      }
+    </table>
+    <br />
+  }
+
+  @if (!Model.Actions.Any() && !Model.ActionVictims.Any() && !Model.Teams.Any() && !Model.Roles.Any())
+  {
+    <p>No teams or actions data available.</p>
+  }
+
+  <p style="font-size:0.9em;">* Generated from all recorded events.</p>
+</div>
+
+<div style="margin-top:20px;">
+  <a asp-controller="Clans" asp-action="Index" asp-route-game="@(Model.Game)">&larr; Clan Rankings</a>
+</div>
