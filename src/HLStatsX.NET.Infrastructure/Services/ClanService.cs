@@ -38,8 +38,8 @@ public class ClanService : IClanService
     public Task<ClanFavoriteWeapon?> GetFavoriteWeaponAsync(int clanId, string game, CancellationToken ct = default) =>
         _clans.GetFavoriteWeaponAsync(clanId, game, ct);
 
-    public Task<PagedResult<ClanMemberRow>> GetMembersPagedAsync(int clanId, int page, int pageSize, string sortBy, bool desc, long totalClanKills, CancellationToken ct = default) =>
-        _clans.GetMembersPagedAsync(clanId, page, pageSize, sortBy, desc, totalClanKills, ct);
+    public Task<PagedResult<ClanMemberRow>> GetMembersPagedAsync(int clanId, string game, int page, int pageSize, string sortBy, bool desc, long totalClanKills, CancellationToken ct = default) =>
+        _clans.GetMembersPagedAsync(clanId, game, page, pageSize, sortBy, desc, totalClanKills, ct);
 
     public Task<IReadOnlyList<ClanWeaponRow>> GetWeaponUsageAsync(int clanId, string game, long realKills, long realHeadshots, CancellationToken ct = default) =>
         _clans.GetWeaponUsageAsync(clanId, game, realKills, realHeadshots, ct);

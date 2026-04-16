@@ -39,7 +39,7 @@ public class ClansController : Controller
         var favServerTask      = _clans.GetFavoriteServerAsync(id, ct);
         var favMapTask         = _clans.GetFavoriteMapAsync(id, ct);
         var favWeaponTask      = _clans.GetFavoriteWeaponAsync(id, clan.Game, ct);
-        var membersTask        = _clans.GetMembersPagedAsync(id, membersPage, pageSize, membersSortBy, membersDesc, summary.TotalKills, ct);
+        var membersTask        = _clans.GetMembersPagedAsync(id, clan.Game, membersPage, pageSize, membersSortBy, membersDesc, summary.TotalKills, ct);
         var weaponsTask        = _clans.GetWeaponUsageAsync(id, clan.Game, summary.TotalKills, summary.TotalHeadshots, ct);
         var mapsTask           = _clans.GetMapPerformanceAsync(id, summary.TotalKills, summary.TotalHeadshots, ct);
         var actionsTask        = _clans.GetActionsAsync(id, ct);

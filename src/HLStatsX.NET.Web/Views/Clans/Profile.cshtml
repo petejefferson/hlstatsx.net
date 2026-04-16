@@ -158,13 +158,14 @@
     <table class="data-table">
       <tr class="data-table-head">
         <td><a href="@(MemberSortUrl("name"))">Name@(MemberMark("name"))</a></td>
+        <td style="text-align:center;"><a href="@(MemberSortUrl("mmrank"))">Rank@(MemberMark("mmrank"))</a></td>
         <td style="text-align:right;"><a href="@(MemberSortUrl("skill"))">Points@(MemberMark("skill"))</a></td>
-        <td style="text-align:right;"><a href="@(MemberSortUrl("activity"))">Activity@(MemberMark("activity"))</a></td>
+        <td style="text-align:right;">Activity</td>
         <td style="text-align:right;"><a href="@(MemberSortUrl("time"))">Time@(MemberMark("time"))</a></td>
         <td style="text-align:right;"><a href="@(MemberSortUrl("kills"))">Kills@(MemberMark("kills"))</a></td>
         <td style="text-align:right;">Clan Kills %</td>
         <td style="text-align:right;"><a href="@(MemberSortUrl("deaths"))">Deaths@(MemberMark("deaths"))</a></td>
-        <td style="text-align:right;">K/D</td>
+        <td style="text-align:right;"><a href="@(MemberSortUrl("kpd"))">K/D@(MemberMark("kpd"))</a></td>
       </tr>
       @{int rowNum = 0;}
       @foreach (var m in Model.Members.Items)
@@ -178,6 +179,19 @@
               <img src="/hlstatsimg/flags/@(m.Flag.ToLowerInvariant()).gif" alt="@m.Country" title="@m.Country" style="vertical-align:middle;" />
             }
             <a asp-controller="Players" asp-action="Profile" asp-route-id="@m.PlayerId">@m.LastName</a>
+          </td>
+          <td style="text-align:center;">
+            @if (m.RankImage != null)
+            {
+              <img src="/hlstatsimg/ranks/@(m.RankImage).png"
+                   alt="@m.RankName" title="@(m.RankName ?? "") (#@m.MmRank)"
+                   style="max-height:24px;vertical-align:middle;"
+                   onerror="this.style.display='none'" />
+            }
+            @if (m.MmRank.HasValue)
+            {
+              <span style="font-size:0.85em;">@m.MmRank</span>
+            }
           </td>
           <td style="text-align:right;">@m.Skill.ToString("N0")</td>
           <td style="text-align:right;">
@@ -193,7 +207,7 @@
       }
       @if (!Model.Members.Items.Any())
       {
-        <tr><td colspan="8">No members.</td></tr>
+        <tr><td colspan="9">No members.</td></tr>
       }
     </table>
     <partial name="_Pagination" model="@PaginationModel.From(Model.Members, p => Url.Action("Profile", new { id = Model.Clan.ClanId, membersPage = p, membersSortBy = Model.MembersSortBy, membersDesc = Model.MembersDescending })!)" />

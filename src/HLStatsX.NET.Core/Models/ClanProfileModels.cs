@@ -26,7 +26,9 @@ public record ClanMemberRow(
     int ConnectionTime,
     int ActivityScore,
     double KillDeathRatio,
-    double ClanKillPercent);
+    double ClanKillPercent,
+    string? RankName,
+    string? RankImage);
 
 public record ClanWeaponRow(
     string WeaponCode,

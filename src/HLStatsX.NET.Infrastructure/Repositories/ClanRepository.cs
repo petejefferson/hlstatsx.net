@@ -193,27 +193,35 @@ public class ClanRepository : IClanRepository
     }
 
     public async Task<PagedResult<ClanMemberRow>> GetMembersPagedAsync(
-        int clanId, int page, int pageSize, string sortBy, bool desc, long totalClanKills, CancellationToken ct = default)
+        int clanId, string game, int page, int pageSize, string sortBy, bool desc, long totalClanKills, CancellationToken ct = default)
     {
-        await using var db = _factory.CreateDbContext();
+        await using var db1 = _factory.CreateDbContext();
+        await using var db2 = _factory.CreateDbContext();
 
         long safeKills = totalClanKills == 0 ? 1 : totalClanKills;
 
-        var q = db.Players
+        var q = db1.Players
             .Where(p => p.ClanId == clanId && p.HideRanking == 0)
             .Select(p => new
             {
                 p.PlayerId, p.LastName, p.Flag, p.Country,
                 p.Skill, p.MmRank, p.Kills, p.Deaths,
                 p.ConnectionTime, p.ActivityScore,
+                RawKpd = p.Deaths == 0 ? (double)p.Kills : (double)p.Kills / p.Deaths,
             });
 
         var sorted = (sortBy.ToLowerInvariant(), desc) switch
         {
+            ("name",     true)  => q.OrderByDescending(x => x.LastName),
+            ("name",     false) => q.OrderBy(x => x.LastName),
+            ("mmrank",   true)  => q.OrderByDescending(x => x.MmRank).ThenByDescending(x => x.Skill),
+            ("mmrank",   false) => q.OrderBy(x => x.MmRank).ThenByDescending(x => x.Skill),
             ("kills",    true)  => q.OrderByDescending(x => x.Kills).ThenByDescending(x => x.Skill),
             ("kills",    false) => q.OrderBy(x => x.Kills).ThenByDescending(x => x.Skill),
             ("deaths",   true)  => q.OrderByDescending(x => x.Deaths).ThenByDescending(x => x.Skill),
             ("deaths",   false) => q.OrderBy(x => x.Deaths).ThenByDescending(x => x.Skill),
+            ("kpd",      true)  => q.OrderByDescending(x => x.RawKpd).ThenByDescending(x => x.Skill),
+            ("kpd",      false) => q.OrderBy(x => x.RawKpd).ThenByDescending(x => x.Skill),
             ("time",     true)  => q.OrderByDescending(x => x.ConnectionTime).ThenByDescending(x => x.Skill),
             ("time",     false) => q.OrderBy(x => x.ConnectionTime).ThenByDescending(x => x.Skill),
             ("activity", true)  => q.OrderByDescending(x => x.ActivityScore).ThenByDescending(x => x.Skill),
@@ -222,17 +230,27 @@ public class ClanRepository : IClanRepository
             _                   => q.OrderByDescending(x => x.Skill),
         };
 
-        var total = await sorted.CountAsync(ct);
-        var raw   = await sorted.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+        var totalTask = sorted.CountAsync(ct);
+        var rawTask   = sorted.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+        var ranksTask = db2.Ranks.Where(r => r.Game == game).ToListAsync(ct);
 
-        var rows = raw.Select(x => new ClanMemberRow(
-            x.PlayerId, x.LastName, x.Flag, x.Country,
-            x.Skill, x.MmRank, x.Kills, x.Deaths,
-            x.ConnectionTime, x.ActivityScore,
-            x.Deaths == 0 ? x.Kills : Math.Round((double)x.Kills / x.Deaths, 2),
-            Math.Round((double)x.Kills / safeKills * 100, 2))).ToList();
+        await Task.WhenAll(totalTask, rawTask, ranksTask);
 
-        return PagedResult<ClanMemberRow>.Create(rows, total, page, pageSize);
+        var ranks = ranksTask.Result;
+
+        var rows = rawTask.Result.Select(x =>
+        {
+            var rank = ranks.FirstOrDefault(r => x.Kills >= r.MinKills && x.Kills <= r.MaxKills);
+            return new ClanMemberRow(
+                x.PlayerId, x.LastName, x.Flag, x.Country,
+                x.Skill, x.MmRank, x.Kills, x.Deaths,
+                x.ConnectionTime, x.ActivityScore,
+                x.Deaths == 0 ? x.Kills : Math.Round((double)x.Kills / x.Deaths, 2),
+                Math.Round((double)x.Kills / safeKills * 100, 2),
+                rank?.RankName, rank?.Image);
+        }).ToList();
+
+        return PagedResult<ClanMemberRow>.Create(rows, totalTask.Result, page, pageSize);
     }
 
     public async Task<IReadOnlyList<ClanWeaponRow>> GetWeaponUsageAsync(

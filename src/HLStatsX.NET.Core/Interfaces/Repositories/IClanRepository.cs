@@ -18,7 +18,7 @@ public interface IClanRepository
     Task<ClanFavoriteServer?> GetFavoriteServerAsync(int clanId, CancellationToken ct = default);
     Task<string?> GetFavoriteMapAsync(int clanId, CancellationToken ct = default);
     Task<ClanFavoriteWeapon?> GetFavoriteWeaponAsync(int clanId, string game, CancellationToken ct = default);
-    Task<PagedResult<ClanMemberRow>> GetMembersPagedAsync(int clanId, int page, int pageSize, string sortBy, bool desc, long totalClanKills, CancellationToken ct = default);
+    Task<PagedResult<ClanMemberRow>> GetMembersPagedAsync(int clanId, string game, int page, int pageSize, string sortBy, bool desc, long totalClanKills, CancellationToken ct = default);
     Task<IReadOnlyList<ClanWeaponRow>> GetWeaponUsageAsync(int clanId, string game, long realKills, long realHeadshots, CancellationToken ct = default);
     Task<IReadOnlyList<ClanMapRow>> GetMapPerformanceAsync(int clanId, long realKills, long realHeadshots, CancellationToken ct = default);
     Task<IReadOnlyList<ClanActionRow>> GetActionsAsync(int clanId, CancellationToken ct = default);
