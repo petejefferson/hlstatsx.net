@@ -1,0 +1,73 @@
+@model MapDetailViewModel
+@{
+    ViewData["Title"] = $"Map Detail — {Model.MapName}";
+
+    string SortUrl(string field)
+    {
+        bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
+        return Url.Action("Detail", new { name = Model.MapName, game = Model.Game, sortBy = field, desc = nextDesc, page = 1 })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
+}
+
+<h1>@Model.MapName</h1>
+<p>
+    From a total of <strong>@Model.TotalKills.ToString("N0")</strong> kills &mdash;
+    <a asp-controller="Maps" asp-action="Index" asp-route-game="@Model.Game">Back to Map Statistics</a>
+</p>
+
+<div style="display:flex;gap:1.5rem;align-items:flex-start;">
+    <div style="flex:1;min-width:0;">
+        <table class="data-table">
+            <thead>
+                <tr class="data-table-head">
+                    <th style="text-align:right;">#</th>
+                    <th><a href="@(SortUrl("name"))">Player@(Mark("name"))</a></th>
+                    <th style="text-align:right;"><a href="@(SortUrl("kills"))">Kills on @Model.MapName@(Mark("kills"))</a></th>
+                    <th style="text-align:right;"><a href="@(SortUrl("headshots"))">Headshots@(Mark("headshots"))</a></th>
+                    <th style="text-align:right;"><a href="@(SortUrl("hpk"))">HpK@(Mark("hpk"))</a></th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int pageOffset = (Model.Players.Page - 1) * Model.Players.PageSize;
+                    bool bg = false;
+                }
+                @foreach (var p in Model.Players.Items)
+                {
+                    pageOffset++;
+                    string rowClass = bg ? "bg2" : "bg1";
+                    bg = !bg;
+                    string? flagFile = string.IsNullOrEmpty(p.Flag) ? null : p.Flag.ToLowerInvariant();
+                    <tr class="@rowClass">
+                        <td style="text-align:right;">@pageOffset</td>
+                        <td>
+                            @if (flagFile is not null)
+                            {
+                                <img src="/hlstatsimg/flags/@(flagFile).gif" alt="@p.Flag" title="@p.Flag"
+                                     style="vertical-align:middle;" onerror="this.style.display='none'" />
+                            }
+                            <a asp-controller="Players" asp-action="Profile" asp-route-id="@p.PlayerId">@p.PlayerName</a>
+                        </td>
+                        <td style="text-align:right;">@p.Kills.ToString("N0")</td>
+                        <td style="text-align:right;">@p.Headshots.ToString("N0")</td>
+                        <td style="text-align:right;">@p.HeadshotsPerKill.ToString("F2")</td>
+                    </tr>
+                }
+                @if (!Model.Players.Items.Any())
+                {
+                    <tr class="bg1"><td colspan="5" style="text-align:center;">No player data for this map.</td></tr>
+                }
+            </tbody>
+        </table>
+
+        <partial name="_Pagination" model="@PaginationModel.From(Model.Players, p => Url.Action("Detail", new { name = Model.MapName, game = Model.Game, sortBy = Model.SortBy, desc = Model.Descending, page = p })!)" />
+    </div>
+
+    <div style="flex:0 0 auto;">
+        <img src="/hlstatsimg/games/@(Model.Game)/maps/@(Model.MapName).jpg"
+             alt="@Model.MapName"
+             style="max-width:300px;"
+             onerror="this.src='/hlstatsimg/nomap.png';this.onerror=null;" />
+    </div>
+</div>

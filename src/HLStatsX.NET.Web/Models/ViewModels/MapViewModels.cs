@@ -11,3 +11,12 @@ public record MapListViewModel(
     long TotalKills,
     long TotalHeadshots
 );
+
+public record MapDetailViewModel(
+    string MapName,
+    string Game,
+    long TotalKills,
+    PagedResult<MapPlayerRow> Players,
+    string SortBy,
+    bool Descending
+);

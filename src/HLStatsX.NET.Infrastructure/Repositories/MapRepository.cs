@@ -61,4 +61,62 @@ public class MapRepository : IMapRepository
             .Take(count)
             .ToListAsync(ct);
     }
+
+    public async Task<PagedResult<MapPlayerRow>> GetPlayerLeaderboardAsync(string map, string game, int page, int pageSize, string sortBy, bool desc, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+
+        var grouped = db.EventFrags
+            .Join(db.Players, f => f.KillerId, p => p.PlayerId, (f, p) => new
+            {
+                f.Map,
+                p.PlayerId,
+                p.LastName,
+                p.Flag,
+                p.Game,
+                p.HideRanking,
+                f.Headshot
+            })
+            .Where(x => x.Map == map && x.Game == game && x.HideRanking == 0)
+            .GroupBy(x => new { x.PlayerId, x.LastName, x.Flag })
+            .Select(g => new
+            {
+                g.Key.PlayerId,
+                g.Key.LastName,
+                g.Key.Flag,
+                Kills = (long)g.Count(),
+                Headshots = g.Sum(x => x.Headshot ? 1L : 0L)
+            });
+
+        grouped = (sortBy.ToLowerInvariant(), desc) switch
+        {
+            ("name",       true)  => grouped.OrderByDescending(x => x.LastName),
+            ("name",       false) => grouped.OrderBy(x => x.LastName),
+            ("headshots",  true)  => grouped.OrderByDescending(x => x.Headshots),
+            ("headshots",  false) => grouped.OrderBy(x => x.Headshots),
+            ("hpk",        true)  => grouped.OrderByDescending(x => x.Kills == 0 ? 0.0 : (double)x.Headshots / x.Kills),
+            ("hpk",        false) => grouped.OrderBy(x => x.Kills == 0 ? 0.0 : (double)x.Headshots / x.Kills),
+            (_,            true)  => grouped.OrderByDescending(x => x.Kills),
+            (_,            false) => grouped.OrderBy(x => x.Kills),
+        };
+
+        var total = await grouped.CountAsync(ct);
+        var rows = await grouped.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+
+        var items = rows.Select(x => new MapPlayerRow(
+            x.PlayerId, x.LastName, x.Flag, x.Kills, x.Headshots,
+            x.Kills == 0 ? 0 : Math.Round((double)x.Headshots / x.Kills, 2)
+        )).ToList();
+
+        return PagedResult<MapPlayerRow>.Create(items, total, page, pageSize);
+    }
+
+    public async Task<long> GetMapTotalKillsAsync(string map, string game, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        return await db.EventFrags
+            .Join(db.Servers, f => f.ServerId, s => s.ServerId, (f, s) => new { f.Map, s.Game })
+            .Where(x => x.Map == map && x.Game == game)
+            .LongCountAsync(ct);
+    }
 }

@@ -138,7 +138,7 @@
             @if (Model.FavoriteWeapon is not null)
             {
               <a asp-controller="Weapons" asp-action="Detail" asp-route-code="@(Model.FavoriteWeapon.WeaponCode)" asp-route-game="@(Model.Game)">
-                <img src="/hlstatsimg/games/@(Model.Game)/weapons/@(Model.FavoriteWeapon.WeaponCode).png"
+                <img src="/hlstatsimg/games/@(Model.Game)/weapons/@(Model.FavoriteWeapon.WeaponCode).gif"
                      alt="@Model.FavoriteWeapon.WeaponName" title="@Model.FavoriteWeapon.WeaponName"
                      style="vertical-align:middle;max-height:24px;"
                      onerror="this.style.display='none'" />
@@ -247,11 +247,10 @@
         <tr class="@rowClass">
           <td>
             <a asp-controller="Weapons" asp-action="Detail" asp-route-code="@(w.WeaponCode)" asp-route-game="@(Model.Game)">
-              <img src="/hlstatsimg/games/@(Model.Game)/weapons/@(w.WeaponCode).png"
-                   alt="@w.WeaponName" title="@w.WeaponName"
+              <img src="/hlstatsimg/games/@(Model.Game)/weapons/@(w.WeaponCode).gif"
+                   alt="" title="@w.WeaponName"
                    style="vertical-align:middle;max-height:20px;"
                    onerror="this.style.display='none'" />
-              @w.WeaponName
             </a>
           </td>
           <td style="text-align:right;">@w.Modifier.ToString("F2")</td>

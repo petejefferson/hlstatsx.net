@@ -27,12 +27,15 @@ public class MapsController : Controller
         return View(new MapListViewModel(resultTask.Result, game, sortBy, desc, totals.TotalKills, totals.TotalHeadshots));
     }
 
-    public async Task<IActionResult> Detail(string name, string? game, CancellationToken ct)
+    public async Task<IActionResult> Detail(string name, string? game, int page = 1, string sortBy = "kills", bool desc = true, CancellationToken ct = default)
     {
         game ??= _config["HLStatsX:DefaultGame"] ?? "cstrike";
-        var map = await _maps.GetByNameAsync(name, game, ct);
-        if (map is null) return NotFound();
-        ViewBag.Game = game;
-        return View(map);
+        int pageSize = _config.GetValue<int>("HLStatsX:DefaultPageSize", 50);
+
+        var totalKillsTask = _maps.GetMapTotalKillsAsync(name, game, ct);
+        var playersTask    = _maps.GetPlayerLeaderboardAsync(name, game, page, pageSize, sortBy, desc, ct);
+        await Task.WhenAll(totalKillsTask, playersTask);
+
+        return View(new MapDetailViewModel(name, game, totalKillsTask.Result, playersTask.Result, sortBy, desc));
     }
 }
