@@ -230,15 +230,17 @@ public class ClanRepository : IClanRepository
             _                   => q.OrderByDescending(x => x.Skill),
         };
 
-        var totalTask = sorted.CountAsync(ct);
-        var rawTask   = sorted.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+        // ranksTask runs on its own context in parallel; count + fetch must be sequential on db1
         var ranksTask = db2.Ranks.Where(r => r.Game == game).ToListAsync(ct);
 
-        await Task.WhenAll(totalTask, rawTask, ranksTask);
+        var total = await sorted.CountAsync(ct);
+        var raw   = await sorted.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+
+        await ranksTask;
 
         var ranks = ranksTask.Result;
 
-        var rows = rawTask.Result.Select(x =>
+        var rows = raw.Select(x =>
         {
             var rank = ranks.FirstOrDefault(r => x.Kills >= r.MinKills && x.Kills <= r.MaxKills);
             return new ClanMemberRow(
@@ -250,7 +252,7 @@ public class ClanRepository : IClanRepository
                 rank?.RankName, rank?.Image);
         }).ToList();
 
-        return PagedResult<ClanMemberRow>.Create(rows, totalTask.Result, page, pageSize);
+        return PagedResult<ClanMemberRow>.Create(rows, total, page, pageSize);
     }
 
     public async Task<IReadOnlyList<ClanWeaponRow>> GetWeaponUsageAsync(
