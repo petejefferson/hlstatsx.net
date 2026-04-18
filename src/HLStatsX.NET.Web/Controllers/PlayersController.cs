@@ -87,8 +87,9 @@ public class PlayersController : Controller
         string wuSort = "kills", bool wuDesc = true,
         string wsSort = "kills", bool wsDesc = true,
         string wtSort = "hits",  bool wtDesc = true,
-        string mpSort = "kpd",   bool mpDesc = true,
-        string spSort = "kills", bool spDesc = true,
+        string mpSort = "kpd",    bool mpDesc = true,
+        string spSort = "kills",  bool spDesc = true,
+        string ksSort = "kills",  bool ksDesc = true,
         CancellationToken ct = default)
     {
         var player = await _players.GetPlayerAsync(id, ct);
@@ -165,7 +166,9 @@ public class PlayersController : Controller
             FavoriteServer      = favServerTask.Result,
             FavoriteMap         = favMapTask.Result,
             FavoriteWeapon      = favWeaponTask.Result,
-            KillStats           = killStatsTask.Result,
+            KillStats           = SortKillStats(killStatsTask.Result, ksSort, ksDesc),
+            KillStatsSortBy     = ksSort,
+            KillStatsDesc       = ksDesc,
             MapPerformance      = SortMapPerformance(mapPerfTask.Result, mpSort, mpDesc),
             MapSortBy           = mpSort,
             MapDesc             = mpDesc,
@@ -241,6 +244,22 @@ public class PlayersController : Controller
             "middle"   => desc ? rows.OrderByDescending(w => w.MiddlePct)  : rows.OrderBy(w => w.MiddlePct),
             "right"    => desc ? rows.OrderByDescending(w => w.RightPct)   : rows.OrderBy(w => w.RightPct),
             _          => desc ? rows.OrderByDescending(w => w.Hits)       : rows.OrderBy(w => w.Hits),
+        };
+        return ordered.ToList();
+    }
+
+    private static IReadOnlyList<KillStatRow> SortKillStats(IReadOnlyList<KillStatRow> rows, string sortBy, bool desc)
+    {
+        IOrderedEnumerable<KillStatRow> ordered = sortBy switch
+        {
+            "name"     => desc ? rows.OrderByDescending(k => k.VictimName) : rows.OrderBy(k => k.VictimName),
+            "deaths" or "dpercent" => desc ? rows.OrderByDescending(k => k.Deaths) : rows.OrderBy(k => k.Deaths),
+            "kpd"     => desc ? rows.OrderByDescending(k => k.Deaths == 0 ? (double)k.Kills : (double)k.Kills / k.Deaths)
+                               : rows.OrderBy(k => k.Deaths == 0 ? (double)k.Kills : (double)k.Kills / k.Deaths),
+            "headshots" or "hpercent" => desc ? rows.OrderByDescending(k => k.Headshots) : rows.OrderBy(k => k.Headshots),
+            "hpk"     => desc ? rows.OrderByDescending(k => k.Kills > 0 ? (double)k.Headshots / k.Kills : 0)
+                               : rows.OrderBy(k => k.Kills > 0 ? (double)k.Headshots / k.Kills : 0),
+            _         => desc ? rows.OrderByDescending(k => k.Kills) : rows.OrderBy(k => k.Kills),
         };
         return ordered.ToList();
     }

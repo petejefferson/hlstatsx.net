@@ -860,52 +860,89 @@
 </div>
 
 <div id="tab-kills" class="tab-panel" style="display:none;">
-  <h2>Kill Statistics *</h2>
+@{
+    string KsSortUrl(string field)
+    {
+        bool nextDesc = Model.KillStatsSortBy == field ? !Model.KillStatsDesc : true;
+        return Url.Action("Profile", new { id = Model.Player.PlayerId,
+            ksSort = field, ksDesc = nextDesc,
+            mpSort = Model.MapSortBy,           mpDesc = Model.MapDesc,
+            spSort = Model.ServerSortBy,        spDesc = Model.ServerDesc,
+            wuSort = Model.WeaponUsageSortBy,   wuDesc = Model.WeaponUsageDesc,
+            wsSort = Model.WeaponStatsmeSortBy, wsDesc = Model.WeaponStatsmeDesc,
+            wtSort = Model.WeaponTargetSortBy,  wtDesc = Model.WeaponTargetDesc })! + "#tab-kills";
+    }
+    string KsMark(string field) => Model.KillStatsSortBy == field ? (Model.KillStatsDesc ? " ▼" : " ▲") : "";
+}
+  <h2>Player Kill Statistics *</h2>
   @if (!Model.KillStats.Any())
   {
     <p>No kill stat data available (minimum 5 kills against a single player).</p>
   }
   else
   {
-    long ksTotalKills = Model.KillStats.Sum(k => k.Kills);
-    long ksTotalDeaths = Model.KillStats.Sum(k => k.Deaths);
-    long ksTotalHS = Model.KillStats.Sum(k => k.Headshots);
-    <table class="stats-table">
+    long ksRealKills  = Model.RealStats.RealKills  > 0 ? Model.RealStats.RealKills  : 1;
+    long ksRealDeaths = Model.RealStats.RealDeaths > 0 ? Model.RealStats.RealDeaths : 1;
+    long ksRealHS     = Model.KillStats.Sum(k => k.Headshots);
+    if (ksRealHS == 0) ksRealHS = 1;
+    <table class="data-table">
       <thead>
-        <tr>
-          <th>Victim</th>
-          <th>Kills</th><th>%</th>
-          <th>Deaths</th><th>%</th>
-          <th>K:D</th>
-          <th>Headshots</th><th>%</th><th>HS:K</th>
+        <tr class="data-table-head">
+          <th>Rank</th>
+          <th><a href="@(KsSortUrl("name"))">Victim@(KsMark("name"))</a></th>
+          <th style="text-align:right"><a href="@(KsSortUrl("kills"))">Kills@(KsMark("kills"))</a></th>
+          <th style="text-align:right"><a href="@(KsSortUrl("kpercent"))">%@(KsMark("kpercent"))</a></th>
+          <th><a href="@(KsSortUrl("kpercent"))">Ratio@(KsMark("kpercent"))</a></th>
+          <th style="text-align:right"><a href="@(KsSortUrl("deaths"))">Deaths@(KsMark("deaths"))</a></th>
+          <th style="text-align:right"><a href="@(KsSortUrl("dpercent"))">%@(KsMark("dpercent"))</a></th>
+          <th><a href="@(KsSortUrl("dpercent"))">Ratio@(KsMark("dpercent"))</a></th>
+          <th style="text-align:right"><a href="@(KsSortUrl("kpd"))">K:D@(KsMark("kpd"))</a></th>
+          <th style="text-align:right"><a href="@(KsSortUrl("headshots"))">Headshots@(KsMark("headshots"))</a></th>
+          <th style="text-align:right"><a href="@(KsSortUrl("hpercent"))">%@(KsMark("hpercent"))</a></th>
+          <th><a href="@(KsSortUrl("hpercent"))">Ratio@(KsMark("hpercent"))</a></th>
+          <th style="text-align:right"><a href="@(KsSortUrl("hpk"))">HS:K@(KsMark("hpk"))</a></th>
         </tr>
       </thead>
       <tbody>
+        @{int ksRank = 1; bool ksBg = false;}
         @foreach (var k in Model.KillStats)
         {
+          string ksRow = ksBg ? "bg2" : "bg1"; ksBg = !ksBg;
+          string ksAlt = ksBg ? "bg2" : "bg1";
+          double ksKpct = Math.Round((double)k.Kills     / ksRealKills  * 100, 2);
+          double ksDpct = Math.Round((double)k.Deaths    / ksRealDeaths * 100, 2);
+          double ksHpct = Math.Round((double)k.Headshots / ksRealHS     * 100, 2);
+          double ksKpd  = k.Deaths == 0 ? k.Kills : Math.Round((double)k.Kills / k.Deaths, 2);
+          double ksHpk  = k.Kills  == 0 ? 0       : Math.Round((double)k.Headshots / k.Kills, 2);
           <tr>
-            <td>
+            <td class="@ksRow" style="text-align:right">@ksRank</td>
+            <td class="@ksAlt">
               @if (k.VictimIsBot && Model.HideBotPlayers)
               {
-                  @k.VictimName
+                @k.VictimName
               }
               else
               {
-                  <a asp-action="Profile" asp-route-id="@k.VictimId">@k.VictimName</a>
+                <a asp-action="Profile" asp-route-id="@k.VictimId">@k.VictimName</a>
               }
             </td>
-            <td>@k.Kills.ToString("N0")</td>
-            <td>@(ksTotalKills > 0 ? $"{(double)k.Kills / ksTotalKills * 100:F2}%" : "-")</td>
-            <td>@k.Deaths.ToString("N0")</td>
-            <td>@(ksTotalDeaths > 0 ? $"{(double)k.Deaths / ksTotalDeaths * 100:F2}%" : "-")</td>
-            <td>@(k.Deaths == 0 ? k.Kills.ToString("N0") : $"{(double)k.Kills / k.Deaths:F2}")</td>
-            <td>@k.Headshots.ToString("N0")</td>
-            <td>@(ksTotalHS > 0 ? $"{(double)k.Headshots / ksTotalHS * 100:F2}%" : "-")</td>
-            <td>@(k.Kills == 0 ? "-" : $"{(double)k.Headshots / k.Kills:F2}")</td>
+            <td class="@ksRow" style="text-align:right">@k.Kills.ToString("N0")</td>
+            <td class="@ksAlt" style="text-align:right">@(ksKpct.ToString("F2"))%</td>
+            <td class="@ksRow"><meter min="0" max="100" low="25" high="50" optimum="75" value="@(ksKpct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))"></meter></td>
+            <td class="@ksAlt" style="text-align:right">@k.Deaths.ToString("N0")</td>
+            <td class="@ksRow" style="text-align:right">@(ksDpct.ToString("F2"))%</td>
+            <td class="@ksAlt"><meter min="0" max="100" low="25" high="50" optimum="75" value="@(ksDpct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))"></meter></td>
+            <td class="@ksRow" style="text-align:right">@ksKpd.ToString("F2")</td>
+            <td class="@ksAlt" style="text-align:right">@k.Headshots.ToString("N0")</td>
+            <td class="@ksRow" style="text-align:right">@(ksHpct.ToString("F2"))%</td>
+            <td class="@ksAlt"><meter min="0" max="100" low="25" high="50" optimum="75" value="@(ksHpct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))"></meter></td>
+            <td class="@ksRow" style="text-align:right">@(k.Kills == 0 ? "-" : ksHpk.ToString("F2"))</td>
           </tr>
+          ksRank++;
         }
       </tbody>
     </table>
+    <br />
   }
 </div>
 
