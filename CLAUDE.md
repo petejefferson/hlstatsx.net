@@ -114,6 +114,12 @@ Every list page uses local Razor functions:
 
 Use `@(SortUrl("field"))` and `@(Mark("field"))` — explicit `@(expr)` is required inside HTML attributes.
 
+**Every table must have a `Rank` column as its first column.** Header: `<td style="text-align:right;">Rank</td>`. Data cell: `<td style="text-align:right;">@rowNum</td>` using a sequential loop counter. The header text is always "Rank" — never "#" or any other label.
+
+**Every table must have sortable columns.** All data columns (except Rank and bar-graph ratio columns) must be clickable sort links using `SortUrl`/`Mark`. This applies to every table on every page — leaderboards, profile sub-tables, detail pages, etc.
+
+For profile sub-tables (multiple sort pairs on one page), each `SortUrl` must preserve the sort state of all other tables, and sort URLs append `#tab-id` to return to the correct tab. Sort data in-memory in the controller using `private static IReadOnlyList<T> SortX(...)` helpers — do not add sort parameters to service/repository signatures.
+
 ### Razor Gotchas
 
 - Always use `@(expr)` explicit syntax in HTML attributes and tag helper attributes — implicit `@expr` breaks when the expression contains string literals with double quotes

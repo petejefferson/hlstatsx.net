@@ -23,11 +23,23 @@ public record ClanProfileViewModel(
     string MembersSortBy,
     bool MembersDescending,
     IReadOnlyList<ClanWeaponRow> WeaponUsage,
+    string WeaponsSortBy,
+    bool WeaponsDescending,
     IReadOnlyList<ClanMapRow> MapPerformance,
+    string MapsSortBy,
+    bool MapsDescending,
     IReadOnlyList<ClanActionRow> Actions,
+    string ActionsSortBy,
+    bool ActionsDescending,
     IReadOnlyList<ClanActionRow> ActionVictims,
+    string VictimsSortBy,
+    bool VictimsDescending,
     IReadOnlyList<ClanTeamRow> Teams,
-    IReadOnlyList<ClanRoleRow> Roles
+    string TeamsSortBy,
+    bool TeamsDescending,
+    IReadOnlyList<ClanRoleRow> Roles,
+    string RolesSortBy,
+    bool RolesDescending
 )
 {
     public string Game => Clan.Game;

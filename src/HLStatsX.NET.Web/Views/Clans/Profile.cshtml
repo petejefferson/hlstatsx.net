@@ -16,18 +16,122 @@
     string MemberSortUrl(string field)
     {
         bool nextDesc = Model.MembersSortBy == field ? !Model.MembersDescending : true;
-        return Url.Action("Profile", new { id = Model.Clan.ClanId, membersSortBy = field, membersDesc = nextDesc, membersPage = 1 })!;
+        return Url.Action("Profile", new {
+            id = Model.Clan.ClanId, membersSortBy = field, membersDesc = nextDesc, membersPage = 1,
+            weaponsSortBy = Model.WeaponsSortBy, weaponsDesc = Model.WeaponsDescending,
+            mapsSortBy = Model.MapsSortBy, mapsDesc = Model.MapsDescending,
+            actionsSortBy = Model.ActionsSortBy, actionsDesc = Model.ActionsDescending,
+            victimsSortBy = Model.VictimsSortBy, victimsDesc = Model.VictimsDescending,
+            teamsSortBy = Model.TeamsSortBy, teamsDesc = Model.TeamsDescending,
+            rolesSortBy = Model.RolesSortBy, rolesDesc = Model.RolesDescending
+        })!;
     }
     string MemberMark(string field) => Model.MembersSortBy == field ? (Model.MembersDescending ? " ▼" : " ▲") : "";
+
+    string WeaponSortUrl(string field)
+    {
+        bool nextDesc = Model.WeaponsSortBy == field ? !Model.WeaponsDescending : true;
+        return Url.Action("Profile", new {
+            id = Model.Clan.ClanId,
+            membersSortBy = Model.MembersSortBy, membersDesc = Model.MembersDescending, membersPage = Model.MembersPage,
+            weaponsSortBy = field, weaponsDesc = nextDesc,
+            mapsSortBy = Model.MapsSortBy, mapsDesc = Model.MapsDescending,
+            actionsSortBy = Model.ActionsSortBy, actionsDesc = Model.ActionsDescending,
+            victimsSortBy = Model.VictimsSortBy, victimsDesc = Model.VictimsDescending,
+            teamsSortBy = Model.TeamsSortBy, teamsDesc = Model.TeamsDescending,
+            rolesSortBy = Model.RolesSortBy, rolesDesc = Model.RolesDescending
+        }) + "#tab-weapons";
+    }
+    string WeaponMark(string field) => Model.WeaponsSortBy == field ? (Model.WeaponsDescending ? " ▼" : " ▲") : "";
+
+    string MapSortUrl(string field)
+    {
+        bool nextDesc = Model.MapsSortBy == field ? !Model.MapsDescending : true;
+        return Url.Action("Profile", new {
+            id = Model.Clan.ClanId,
+            membersSortBy = Model.MembersSortBy, membersDesc = Model.MembersDescending, membersPage = Model.MembersPage,
+            weaponsSortBy = Model.WeaponsSortBy, weaponsDesc = Model.WeaponsDescending,
+            mapsSortBy = field, mapsDesc = nextDesc,
+            actionsSortBy = Model.ActionsSortBy, actionsDesc = Model.ActionsDescending,
+            victimsSortBy = Model.VictimsSortBy, victimsDesc = Model.VictimsDescending,
+            teamsSortBy = Model.TeamsSortBy, teamsDesc = Model.TeamsDescending,
+            rolesSortBy = Model.RolesSortBy, rolesDesc = Model.RolesDescending
+        }) + "#tab-maps";
+    }
+    string MapMark(string field) => Model.MapsSortBy == field ? (Model.MapsDescending ? " ▼" : " ▲") : "";
+
+    string ActionSortUrl(string field)
+    {
+        bool nextDesc = Model.ActionsSortBy == field ? !Model.ActionsDescending : true;
+        return Url.Action("Profile", new {
+            id = Model.Clan.ClanId,
+            membersSortBy = Model.MembersSortBy, membersDesc = Model.MembersDescending, membersPage = Model.MembersPage,
+            weaponsSortBy = Model.WeaponsSortBy, weaponsDesc = Model.WeaponsDescending,
+            mapsSortBy = Model.MapsSortBy, mapsDesc = Model.MapsDescending,
+            actionsSortBy = field, actionsDesc = nextDesc,
+            victimsSortBy = Model.VictimsSortBy, victimsDesc = Model.VictimsDescending,
+            teamsSortBy = Model.TeamsSortBy, teamsDesc = Model.TeamsDescending,
+            rolesSortBy = Model.RolesSortBy, rolesDesc = Model.RolesDescending
+        }) + "#tab-actions";
+    }
+    string ActionMark(string field) => Model.ActionsSortBy == field ? (Model.ActionsDescending ? " ▼" : " ▲") : "";
+
+    string VictimSortUrl(string field)
+    {
+        bool nextDesc = Model.VictimsSortBy == field ? !Model.VictimsDescending : true;
+        return Url.Action("Profile", new {
+            id = Model.Clan.ClanId,
+            membersSortBy = Model.MembersSortBy, membersDesc = Model.MembersDescending, membersPage = Model.MembersPage,
+            weaponsSortBy = Model.WeaponsSortBy, weaponsDesc = Model.WeaponsDescending,
+            mapsSortBy = Model.MapsSortBy, mapsDesc = Model.MapsDescending,
+            actionsSortBy = Model.ActionsSortBy, actionsDesc = Model.ActionsDescending,
+            victimsSortBy = field, victimsDesc = nextDesc,
+            teamsSortBy = Model.TeamsSortBy, teamsDesc = Model.TeamsDescending,
+            rolesSortBy = Model.RolesSortBy, rolesDesc = Model.RolesDescending
+        }) + "#tab-actions";
+    }
+    string VictimMark(string field) => Model.VictimsSortBy == field ? (Model.VictimsDescending ? " ▼" : " ▲") : "";
+
+    string TeamSortUrl(string field)
+    {
+        bool nextDesc = Model.TeamsSortBy == field ? !Model.TeamsDescending : true;
+        return Url.Action("Profile", new {
+            id = Model.Clan.ClanId,
+            membersSortBy = Model.MembersSortBy, membersDesc = Model.MembersDescending, membersPage = Model.MembersPage,
+            weaponsSortBy = Model.WeaponsSortBy, weaponsDesc = Model.WeaponsDescending,
+            mapsSortBy = Model.MapsSortBy, mapsDesc = Model.MapsDescending,
+            actionsSortBy = Model.ActionsSortBy, actionsDesc = Model.ActionsDescending,
+            victimsSortBy = Model.VictimsSortBy, victimsDesc = Model.VictimsDescending,
+            teamsSortBy = field, teamsDesc = nextDesc,
+            rolesSortBy = Model.RolesSortBy, rolesDesc = Model.RolesDescending
+        }) + "#tab-actions";
+    }
+    string TeamMark(string field) => Model.TeamsSortBy == field ? (Model.TeamsDescending ? " ▼" : " ▲") : "";
+
+    string RoleSortUrl(string field)
+    {
+        bool nextDesc = Model.RolesSortBy == field ? !Model.RolesDescending : true;
+        return Url.Action("Profile", new {
+            id = Model.Clan.ClanId,
+            membersSortBy = Model.MembersSortBy, membersDesc = Model.MembersDescending, membersPage = Model.MembersPage,
+            weaponsSortBy = Model.WeaponsSortBy, weaponsDesc = Model.WeaponsDescending,
+            mapsSortBy = Model.MapsSortBy, mapsDesc = Model.MapsDescending,
+            actionsSortBy = Model.ActionsSortBy, actionsDesc = Model.ActionsDescending,
+            victimsSortBy = Model.VictimsSortBy, victimsDesc = Model.VictimsDescending,
+            teamsSortBy = Model.TeamsSortBy, teamsDesc = Model.TeamsDescending,
+            rolesSortBy = field, rolesDesc = nextDesc
+        }) + "#tab-actions";
+    }
+    string RoleMark(string field) => Model.RolesSortBy == field ? (Model.RolesDescending ? " ▼" : " ▲") : "";
 }
 
 <h1>@Model.Clan.Tag &mdash; @Model.Clan.Name</h1>
 
 <div class="profile-tabs" id="profileTabs">
     <a href="#tab-general"  class="tab-link active">General</a>
+    <a href="#tab-actions"  class="tab-link">Teams &amp; Actions</a>
     <a href="#tab-weapons"  class="tab-link">Weapons</a>
     <a href="#tab-maps"     class="tab-link">Maps</a>
-    <a href="#tab-actions"  class="tab-link">Teams &amp; Actions</a>
 </div>
 
 @* ══════════════════════════════════════════════════════ GENERAL TAB *@
@@ -157,7 +261,7 @@
     <h2>Members</h2>
     <table class="data-table">
       <tr class="data-table-head">
-        <td style="text-align:right;">#</td>
+        <td style="text-align:right;">Rank</td>
         <td><a href="@(MemberSortUrl("name"))">Name@(MemberMark("name"))</a></td>
         <td style="text-align:center;"><a href="@(MemberSortUrl("mmrank"))">Rank@(MemberMark("mmrank"))</a></td>
         <td style="text-align:right;"><a href="@(MemberSortUrl("skill"))">Points@(MemberMark("skill"))</a></td>
@@ -231,13 +335,14 @@
     <h2>Weapon Usage *</h2>
     <table class="data-table">
       <tr class="data-table-head">
-        <td>Weapon</td>
-        <td style="text-align:right;">Points Modifier</td>
-        <td style="text-align:right;">Kills</td>
-        <td style="text-align:right;">% of Kills</td>
-        <td style="text-align:right;">Headshots</td>
-        <td style="text-align:right;">% of Headshots</td>
-        <td style="text-align:right;">HS/Kill</td>
+        <td style="text-align:right;">Rank</td>
+        <td><a href="@(WeaponSortUrl("name"))">Weapon@(WeaponMark("name"))</a></td>
+        <td style="text-align:right;"><a href="@(WeaponSortUrl("modifier"))">Points Modifier@(WeaponMark("modifier"))</a></td>
+        <td style="text-align:right;"><a href="@(WeaponSortUrl("kills"))">Kills@(WeaponMark("kills"))</a></td>
+        <td style="text-align:right;"><a href="@(WeaponSortUrl("killpct"))">% of Kills@(WeaponMark("killpct"))</a></td>
+        <td style="text-align:right;"><a href="@(WeaponSortUrl("headshots"))">Headshots@(WeaponMark("headshots"))</a></td>
+        <td style="text-align:right;"><a href="@(WeaponSortUrl("hspct"))">% of Headshots@(WeaponMark("hspct"))</a></td>
+        <td style="text-align:right;"><a href="@(WeaponSortUrl("hsperkill"))">HS/Kill@(WeaponMark("hsperkill"))</a></td>
       </tr>
       @{rowNum = 0;}
       @foreach (var w in Model.WeaponUsage)
@@ -245,6 +350,7 @@
         string rowClass = rowNum % 2 == 0 ? "bg1" : "bg2";
         rowNum++;
         <tr class="@rowClass">
+          <td style="text-align:right;">@rowNum</td>
           <td>
             <a asp-controller="Weapons" asp-action="Detail" asp-route-code="@(w.WeaponCode)" asp-route-game="@(Model.Game)">
               <img src="/hlstatsimg/games/@(Model.Game)/weapons/@(w.WeaponCode).gif"
@@ -277,14 +383,15 @@
     <h2>Map Performance *</h2>
     <table class="data-table">
       <tr class="data-table-head">
-        <td>Map</td>
-        <td style="text-align:right;">Kills</td>
-        <td style="text-align:right;">% of Kills</td>
-        <td style="text-align:right;">Deaths</td>
-        <td style="text-align:right;">K/D</td>
-        <td style="text-align:right;">Headshots</td>
-        <td style="text-align:right;">% of HS</td>
-        <td style="text-align:right;">HS/Kill</td>
+        <td style="text-align:right;">Rank</td>
+        <td><a href="@(MapSortUrl("map"))">Map@(MapMark("map"))</a></td>
+        <td style="text-align:right;"><a href="@(MapSortUrl("kills"))">Kills@(MapMark("kills"))</a></td>
+        <td style="text-align:right;"><a href="@(MapSortUrl("killpct"))">% of Kills@(MapMark("killpct"))</a></td>
+        <td style="text-align:right;"><a href="@(MapSortUrl("deaths"))">Deaths@(MapMark("deaths"))</a></td>
+        <td style="text-align:right;"><a href="@(MapSortUrl("kd"))">K/D@(MapMark("kd"))</a></td>
+        <td style="text-align:right;"><a href="@(MapSortUrl("headshots"))">Headshots@(MapMark("headshots"))</a></td>
+        <td style="text-align:right;"><a href="@(MapSortUrl("hspct"))">% of HS@(MapMark("hspct"))</a></td>
+        <td style="text-align:right;"><a href="@(MapSortUrl("hsperkill"))">HS/Kill@(MapMark("hsperkill"))</a></td>
       </tr>
       @{rowNum = 0;}
       @foreach (var m in Model.MapPerformance)
@@ -292,6 +399,7 @@
         string rowClass = rowNum % 2 == 0 ? "bg1" : "bg2";
         rowNum++;
         <tr class="@rowClass">
+          <td style="text-align:right;">@rowNum</td>
           <td>
             @if (m.Map == "(Unaccounted)")
             {
@@ -324,9 +432,10 @@
     <h2>Player Actions *</h2>
     <table class="data-table">
       <tr class="data-table-head">
-        <td>Action</td>
-        <td style="text-align:right;">Achieved</td>
-        <td style="text-align:right;">Points Bonus</td>
+        <td style="text-align:right;">Rank</td>
+        <td><a href="@(ActionSortUrl("desc"))">Action@(ActionMark("desc"))</a></td>
+        <td style="text-align:right;"><a href="@(ActionSortUrl("count"))">Achieved@(ActionMark("count"))</a></td>
+        <td style="text-align:right;"><a href="@(ActionSortUrl("bonus"))">Points Bonus@(ActionMark("bonus"))</a></td>
       </tr>
       @{rowNum = 0;}
       @foreach (var a in Model.Actions)
@@ -334,6 +443,7 @@
         string rowClass = rowNum % 2 == 0 ? "bg1" : "bg2";
         rowNum++;
         <tr class="@rowClass">
+          <td style="text-align:right;">@rowNum</td>
           <td>@a.Description</td>
           <td style="text-align:right;">@a.Count.ToString("N0") times</td>
           <td style="text-align:right;">@a.TotalBonus.ToString("N0")</td>
@@ -348,9 +458,10 @@
     <h2>Victims of Player Actions *</h2>
     <table class="data-table">
       <tr class="data-table-head">
-        <td>Action</td>
-        <td style="text-align:right;">Times Victimised</td>
-        <td style="text-align:right;">Points Bonus</td>
+        <td style="text-align:right;">Rank</td>
+        <td><a href="@(VictimSortUrl("desc"))">Action@(VictimMark("desc"))</a></td>
+        <td style="text-align:right;"><a href="@(VictimSortUrl("count"))">Times Victimised@(VictimMark("count"))</a></td>
+        <td style="text-align:right;"><a href="@(VictimSortUrl("bonus"))">Points Bonus@(VictimMark("bonus"))</a></td>
       </tr>
       @{rowNum = 0;}
       @foreach (var a in Model.ActionVictims)
@@ -358,6 +469,7 @@
         string rowClass = rowNum % 2 == 0 ? "bg1" : "bg2";
         rowNum++;
         <tr class="@rowClass">
+          <td style="text-align:right;">@rowNum</td>
           <td>@a.Description</td>
           <td style="text-align:right;">@a.Count.ToString("N0") times</td>
           <td style="text-align:right;">@a.TotalBonus.ToString("N0")</td>
@@ -372,10 +484,11 @@
     <h2>Team Selection *</h2>
     <table class="data-table">
       <tr class="data-table-head">
-        <td>Team</td>
-        <td style="text-align:right;">Joined</td>
+        <td style="text-align:right;">Rank</td>
+        <td><a href="@(TeamSortUrl("team"))">Team@(TeamMark("team"))</a></td>
+        <td style="text-align:right;"><a href="@(TeamSortUrl("joined"))">Joined@(TeamMark("joined"))</a></td>
         <td>Ratio</td>
-        <td style="text-align:right;">%</td>
+        <td style="text-align:right;"><a href="@(TeamSortUrl("percent"))">%@(TeamMark("percent"))</a></td>
       </tr>
       @{rowNum = 0;}
       @foreach (var t in Model.Teams)
@@ -383,6 +496,7 @@
         string rowClass = rowNum % 2 == 0 ? "bg1" : "bg2";
         rowNum++;
         <tr class="@rowClass">
+          <td style="text-align:right;">@rowNum</td>
           <td>@t.TeamName</td>
           <td style="text-align:right;">@t.JoinCount.ToString("N0") times</td>
           <td><meter min="0" max="100" value="@t.Percent.ToString("F0")" style="width:100px;"></meter></td>
@@ -398,13 +512,14 @@
     <h2>Role Selection *</h2>
     <table class="data-table">
       <tr class="data-table-head">
-        <td>Role</td>
-        <td style="text-align:right;">Joined</td>
-        <td style="text-align:right;">%</td>
+        <td style="text-align:right;">Rank</td>
+        <td><a href="@(RoleSortUrl("role"))">Role@(RoleMark("role"))</a></td>
+        <td style="text-align:right;"><a href="@(RoleSortUrl("joined"))">Joined@(RoleMark("joined"))</a></td>
+        <td style="text-align:right;"><a href="@(RoleSortUrl("percent"))">%@(RoleMark("percent"))</a></td>
         <td>Ratio</td>
-        <td style="text-align:right;">Kills</td>
-        <td style="text-align:right;">Deaths</td>
-        <td style="text-align:right;">K:D</td>
+        <td style="text-align:right;"><a href="@(RoleSortUrl("kills"))">Kills@(RoleMark("kills"))</a></td>
+        <td style="text-align:right;"><a href="@(RoleSortUrl("deaths"))">Deaths@(RoleMark("deaths"))</a></td>
+        <td style="text-align:right;"><a href="@(RoleSortUrl("kd"))">K:D@(RoleMark("kd"))</a></td>
       </tr>
       @{rowNum = 0;}
       @foreach (var r in Model.Roles)
@@ -412,6 +527,7 @@
         string rowClass = rowNum % 2 == 0 ? "bg1" : "bg2";
         rowNum++;
         <tr class="@rowClass">
+          <td style="text-align:right;">@rowNum</td>
           <td>
             <img src="/hlstatsimg/games/@(Model.Game)/roles/@(Uri.EscapeDataString(r.RoleCode)).png"
                  alt="@r.RoleName" title="@r.RoleName"

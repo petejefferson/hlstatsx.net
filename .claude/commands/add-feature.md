@@ -28,7 +28,8 @@ Start at Core (entities/interfaces), then Infrastructure (repository), then Web 
 
 ## Step 4 — Apply the standard patterns
 - Pagination: use `PagedResult<T>` and the `_Pagination` partial
-- Sortable columns: use `SortUrl(field)` / `Mark(field)` local functions with `@(expr)` explicit syntax
+- Sortable columns: **every table must be sortable** — all data columns (except Rank and bar-graph ratio columns) must be clickable sort links using `SortUrl(field)` / `Mark(field)` local functions with `@(expr)` explicit syntax
+- Rank column: **every table must have a `Rank` column as its first column** — header `<td style="text-align:right;">Rank</td>`, data cell `<td style="text-align:right;">@rowNum</td>` using a sequential loop counter; never use "#" as the header
 - Async: all methods must be `async Task<T>` with `CancellationToken ct = default`
 - Game filter: always filter by `game` parameter — never hardcode a game code
 - CSS: use existing classes (`data-table`, `data-table-head`, `bg1`/`bg2`, `btn-small`, `form-text`)
