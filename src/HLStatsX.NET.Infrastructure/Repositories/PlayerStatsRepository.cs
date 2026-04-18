@@ -327,11 +327,12 @@ public class PlayerStatsRepository : IPlayerStatsRepository
 
         int total     = teamJoins.Sum(t => t.Count);
         var teamNames = await db.Teams
-            .Where(t => t.Game == game)
+            .Where(t => t.Game == game && t.Hidden != "1")
             .ToDictionaryAsync(t => t.Code, t => t.Name, ct);
 
         return teamJoins
-            .Select(t => new TeamStatRow(t.Team, teamNames.GetValueOrDefault(t.Team, t.Team), t.Count, total))
+            .Where(t => teamNames.ContainsKey(t.Team))
+            .Select(t => new TeamStatRow(t.Team, teamNames[t.Team], t.Count, total))
             .OrderByDescending(t => t.JoinCount)
             .ToList();
     }

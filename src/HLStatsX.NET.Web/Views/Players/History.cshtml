@@ -33,9 +33,9 @@
                     <td class="@(h.SkillChange >= 0 ? "positive" : "negative")">
                         @(h.SkillChange >= 0 ? "+" : "")@h.SkillChange
                     </td>
-                    <td>@h.Kills</td>
-                    <td>@h.Deaths</td>
-                    <td>@h.Headshots</td>
+                    <td>@h.Kills.ToString("N0")</td>
+                    <td>@h.Deaths.ToString("N0")</td>
+                    <td>@h.Headshots.ToString("N0")</td>
                 </tr>
             }
         </tbody>

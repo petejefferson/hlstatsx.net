@@ -7,8 +7,8 @@
 
 <table class="stats-table" style="max-width: 400px;">
     <tr><th>Code</th><td>@Model.Weapon.Code</td></tr>
-    <tr><th>Kills</th><td>@Model.Weapon.Kills</td></tr>
-    <tr><th>Headshots</th><td>@Model.Weapon.Headshots</td></tr>
+    <tr><th>Kills</th><td>@Model.Weapon.Kills.ToString("N0")</td></tr>
+    <tr><th>Headshots</th><td>@Model.Weapon.Headshots.ToString("N0")</td></tr>
     <tr><th>HS%</th><td>@Model.Weapon.HeadshotPercent%</td></tr>
     <tr><th>Modifier</th><td>@Model.Weapon.Modifier</td></tr>
 </table>

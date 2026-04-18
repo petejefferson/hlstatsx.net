@@ -344,82 +344,56 @@
   </div>
   }
 
+  @if (Model.Aliases.Count > 1)
+  {
+  <h2>Aliases</h2>
+  <table class="stats-table sortable">
+    <thead>
+      <tr>
+        <th>Rank</th><th>Name</th><th>Time</th><th>Last Use</th>
+        <th>Kills</th><th>Deaths</th><th>K:D</th>
+        <th>Headshots</th><th>HS:K</th><th>Suicides</th><th>Accuracy</th>
+      </tr>
+    </thead>
+    <tbody>
+      @{ int aliasRank = 0; }
+      @foreach (var a in Model.Aliases)
+      {
+        aliasRank++;
+        <tr>
+          <td>@aliasRank</td>
+          <td>@a.Name</td>
+          <td>@FormatTime(a.ConnectionTime)</td>
+          <td>@(a.LastUse.HasValue ? a.LastUse.Value.ToString("yyyy-MM-dd") : "-")</td>
+          <td>@a.Kills.ToString("N0")</td>
+          <td>@a.Deaths.ToString("N0")</td>
+          <td>@a.KdRatio</td>
+          <td>@a.Headshots.ToString("N0")</td>
+          <td>@a.HsKRatio</td>
+          <td>@a.Suicides.ToString("N0")</td>
+          <td>@a.Accuracy%</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+  }
 
 </div>
 
 <div id="tab-teams" class="tab-panel" style="display:none;">
-  <div class="profile-two-col">
-    <section>
-      <h2>Team Selection</h2>
-      @if (!Model.TeamSelection.Any())
-      {
-        <p>No team data available.</p>
-      }
-      else
-      {
-        <table class="stats-table">
-          <thead><tr><th>Team</th><th>Joined</th><th>%</th><th>Ratio</th></tr></thead>
-          <tbody>
-            @foreach (var t in Model.TeamSelection)
-            {
-              double pct = t.TotalJoins > 0 ? (double)t.JoinCount / t.TotalJoins * 100 : 0;
-              <tr>
-                <td>@t.TeamName</td>
-                <td>@t.JoinCount times</td>
-                <td>@pct.ToString("F1")%</td>
-                <td><meter min="0" max="100" value="@pct.ToString("F0")" style="width:80px;"></meter></td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      }
-    </section>
-    <section>
-      <h2>Role Selection</h2>
-      @if (!Model.RoleSelection.Any())
-      {
-        <p>No role data available.</p>
-      }
-      else
-      {
-        <table class="stats-table sortable">
-          <thead><tr><th>Role</th><th>Joined</th><th>%</th><th>Ratio</th><th>Kills</th><th>Deaths</th><th>K:D</th></tr></thead>
-          <tbody>
-            @foreach (var r in Model.RoleSelection)
-            {
-              double rolePct = r.TotalJoins > 0 ? (double)r.JoinCount / r.TotalJoins * 100 : 0;
-              <tr>
-                <td>
-                  @if (!string.IsNullOrEmpty(r.RoleImage))
-                  {
-                    <img src="/hlstatsimg/games/@(Model.Player.Game)/roles/@(Uri.EscapeDataString(r.RoleImage)).png" alt="@r.RoleCode" />
-                  }
-                  @r.RoleName
-                </td>
-                <td>@r.JoinCount times</td>
-                <td>@(rolePct > 0 ? $"{rolePct:F1}%" : "-")</td>
-                <td><meter min="0" max="100" value="@rolePct.ToString("F0")" style="width:80px;"></meter></td>
-                <td>@r.Kills</td>
-                <td>@r.Deaths</td>
-                <td>@(r.Deaths == 0 ? r.Kills.ToString() : $"{(double)r.Kills / r.Deaths:F2}")</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      }
-    </section>
-  </div>
-
   @if (Model.PlayerActions.Any())
   {
   <div class="profile-section">
     <h2>Player Actions *</h2>
-    <table class="stats-table">
-      <thead><tr><th>Action</th><th style="text-align:right;">Earned</th><th style="text-align:right;">Accumulated Points</th></tr></thead>
+    <table class="stats-table sortable">
+      <thead><tr><th>Rank</th><th>Action</th><th style="text-align:right;">Earned</th><th style="text-align:right;">Accumulated Points</th></tr></thead>
       <tbody>
+        @{ int paRank = 0; }
         @foreach (var a in Model.PlayerActions)
         {
+          paRank++;
           <tr>
+            <td>@paRank</td>
             <td>@a.Description</td>
             <td style="text-align:right;">@a.Count.ToString("N0") times</td>
             <td style="text-align:right;">@a.AccumulatedPoints.ToString("N0")</td>
@@ -434,12 +408,15 @@
   {
   <div class="profile-section">
     <h2>Victims of Player-Player Actions *</h2>
-    <table class="stats-table">
-      <thead><tr><th>Action</th><th style="text-align:right;">Earned Against</th><th style="text-align:right;">Accumulated Points</th></tr></thead>
+    <table class="stats-table sortable">
+      <thead><tr><th>Rank</th><th>Action</th><th style="text-align:right;">Earned Against</th><th style="text-align:right;">Accumulated Points</th></tr></thead>
       <tbody>
+        @{ int pavRank = 0; }
         @foreach (var a in Model.PlayerActionVictims)
         {
+          pavRank++;
           <tr>
+            <td>@pavRank</td>
             <td>@a.Description</td>
             <td style="text-align:right;">@a.Count.ToString("N0") times</td>
             <td style="text-align:right;">@a.AccumulatedPoints.ToString("N0")</td>
@@ -449,10 +426,78 @@
     </table>
   </div>
   }
+
+  <div>
+    <section>
+      <h2>Team Selection *</h2>
+      @if (!Model.TeamSelection.Any())
+      {
+        <p>No team data available.</p>
+      }
+      else
+      {
+        <table class="stats-table sortable">
+          <thead><tr><th>Rank</th><th>Team</th><th>Joined</th><th>%</th><th>Ratio</th></tr></thead>
+          <tbody>
+            @{ int teamRank = 0; }
+            @foreach (var t in Model.TeamSelection)
+            {
+              double pct = t.TotalJoins > 0 ? (double)t.JoinCount / t.TotalJoins * 100 : 0;
+              teamRank++;
+              <tr>
+                <td>@teamRank</td>
+                <td>@t.TeamName</td>
+                <td>@t.JoinCount times</td>
+                <td>@pct.ToString("F2")%</td>
+                <td><meter min="0" max="100" low="25" high="50" optimum="75" value="@pct.ToString("F0")" style="width:80px;"></meter></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </section>
+    <section>
+      <h2>Role Selection *</h2>
+      @if (!Model.RoleSelection.Any())
+      {
+        <p>No role data available.</p>
+      }
+      else
+      {
+        <table class="stats-table sortable">
+          <thead><tr><th>Rank</th><th>Role</th><th>Joined</th><th>%</th><th>Ratio</th><th>Kills</th><th>Deaths</th><th>K:D</th></tr></thead>
+          <tbody>
+            @{ int roleRank = 0; }
+            @foreach (var r in Model.RoleSelection)
+            {
+              double rolePct = r.TotalJoins > 0 ? (double)r.JoinCount / r.TotalJoins * 100 : 0;
+              roleRank++;
+              <tr>
+                <td>@roleRank</td>
+                <td>
+                  @if (!string.IsNullOrEmpty(r.RoleImage))
+                  {
+                    <img src="/hlstatsimg/games/@(Model.Player.Game)/roles/@(Uri.EscapeDataString(r.RoleImage)).png" alt="@r.RoleCode" />
+                  }
+                  @r.RoleName
+                </td>
+                <td>@r.JoinCount times</td>
+                <td>@(rolePct > 0 ? $"{rolePct:F2}%" : "-")</td>
+                <td><meter min="0" max="100" low="25" high="50" optimum="75" value="@rolePct.ToString("F0")" style="width:80px;"></meter></td>
+                <td>@r.Kills.ToString("N0")</td>
+                <td>@r.Deaths.ToString("N0")</td>
+                <td>@(r.Deaths == 0 ? r.Kills.ToString("N0") : $"{(double)r.Kills / r.Deaths:F2}")</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </section>
+  </div>
 </div>
 
 <div id="tab-weapons" class="tab-panel" style="display:none;">
-  <h2>Weapon Usage</h2>
+  <h2>Weapon Usage *</h2>
   @if (!Model.WeaponStats.Any())
   {
     <p>No weapon data available.</p>
@@ -475,10 +520,10 @@
           <tr>
             <td>@w.WeaponName</td>
             <td>@w.Modifier.ToString("F2")</td>
-            <td>@w.Kills</td>
-            <td>@(totalKills > 0 ? $"{(double)w.Kills / totalKills * 100:F1}%" : "-")</td>
-            <td>@w.Headshots</td>
-            <td>@(totalHeadshots > 0 ? $"{(double)w.Headshots / totalHeadshots * 100:F1}%" : "-")</td>
+            <td>@w.Kills.ToString("N0")</td>
+            <td>@(totalKills > 0 ? $"{(double)w.Kills / totalKills * 100:F2}%" : "-")</td>
+            <td>@w.Headshots.ToString("N0")</td>
+            <td>@(totalHeadshots > 0 ? $"{(double)w.Headshots / totalHeadshots * 100:F2}%" : "-")</td>
             <td>@(w.Kills > 0 ? $"{(double)w.Headshots / w.Kills:F2}" : "-")</td>
           </tr>
         }
@@ -490,7 +535,7 @@
 <div id="tab-maps" class="tab-panel" style="display:none;">
   <div class="profile-two-col">
     <section>
-      <h2>Map Performance</h2>
+      <h2>Map Performance *</h2>
       @if (!Model.MapPerformance.Any())
       {
         <p>No map data available.</p>
@@ -509,12 +554,12 @@
             {
               <tr>
                 <td>@m.Map</td>
-                <td>@m.Kills</td>
-                <td>@(mpTotalKills > 0 ? $"{(double)m.Kills / mpTotalKills * 100:F1}%" : "-")</td>
-                <td>@m.Deaths</td>
-                <td>@(mpTotalDeaths > 0 ? $"{(double)m.Deaths / mpTotalDeaths * 100:F1}%" : "-")</td>
-                <td>@(m.Deaths == 0 ? m.Kills.ToString() : $"{(double)m.Kills / m.Deaths:F2}")</td>
-                <td>@m.Headshots</td>
+                <td>@m.Kills.ToString("N0")</td>
+                <td>@(mpTotalKills > 0 ? $"{(double)m.Kills / mpTotalKills * 100:F2}%" : "-")</td>
+                <td>@m.Deaths.ToString("N0")</td>
+                <td>@(mpTotalDeaths > 0 ? $"{(double)m.Deaths / mpTotalDeaths * 100:F2}%" : "-")</td>
+                <td>@(m.Deaths == 0 ? m.Kills.ToString("N0") : $"{(double)m.Kills / m.Deaths:F2}")</td>
+                <td>@m.Headshots.ToString("N0")</td>
                 <td>@(m.Kills == 0 ? "-" : $"{(double)m.Headshots / m.Kills:F2}")</td>
               </tr>
             }
@@ -523,7 +568,7 @@
       }
     </section>
     <section>
-      <h2>Server Activity</h2>
+      <h2>Server Activity *</h2>
       @if (!Model.ServerPerformance.Any())
       {
         <p>No server data available.</p>
@@ -540,11 +585,11 @@
             {
               <tr>
                 <td>@s.ServerName</td>
-                <td>@s.Kills</td>
-                <td>@(spTotalKills > 0 ? $"{(double)s.Kills / spTotalKills * 100:F1}%" : "-")</td>
-                <td>@s.Deaths</td>
-                <td>@(s.Deaths == 0 ? s.Kills.ToString() : $"{(double)s.Kills / s.Deaths:F2}")</td>
-                <td>@s.Headshots</td>
+                <td>@s.Kills.ToString("N0")</td>
+                <td>@(spTotalKills > 0 ? $"{(double)s.Kills / spTotalKills * 100:F2}%" : "-")</td>
+                <td>@s.Deaths.ToString("N0")</td>
+                <td>@(s.Deaths == 0 ? s.Kills.ToString("N0") : $"{(double)s.Kills / s.Deaths:F2}")</td>
+                <td>@s.Headshots.ToString("N0")</td>
                 <td>@(s.Kills == 0 ? "-" : $"{(double)s.Headshots / s.Kills:F2}")</td>
               </tr>
             }
@@ -556,7 +601,7 @@
 </div>
 
 <div id="tab-kills" class="tab-panel" style="display:none;">
-  <h2>Kill Statistics</h2>
+  <h2>Kill Statistics *</h2>
   @if (!Model.KillStats.Any())
   {
     <p>No kill stat data available (minimum 5 kills against a single player).</p>
@@ -590,13 +635,13 @@
                   <a asp-action="Profile" asp-route-id="@k.VictimId">@k.VictimName</a>
               }
             </td>
-            <td>@k.Kills</td>
-            <td>@(ksTotalKills > 0 ? $"{(double)k.Kills / ksTotalKills * 100:F1}%" : "-")</td>
-            <td>@k.Deaths</td>
-            <td>@(ksTotalDeaths > 0 ? $"{(double)k.Deaths / ksTotalDeaths * 100:F1}%" : "-")</td>
-            <td>@(k.Deaths == 0 ? k.Kills.ToString() : $"{(double)k.Kills / k.Deaths:F2}")</td>
-            <td>@k.Headshots</td>
-            <td>@(ksTotalHS > 0 ? $"{(double)k.Headshots / ksTotalHS * 100:F1}%" : "-")</td>
+            <td>@k.Kills.ToString("N0")</td>
+            <td>@(ksTotalKills > 0 ? $"{(double)k.Kills / ksTotalKills * 100:F2}%" : "-")</td>
+            <td>@k.Deaths.ToString("N0")</td>
+            <td>@(ksTotalDeaths > 0 ? $"{(double)k.Deaths / ksTotalDeaths * 100:F2}%" : "-")</td>
+            <td>@(k.Deaths == 0 ? k.Kills.ToString("N0") : $"{(double)k.Kills / k.Deaths:F2}")</td>
+            <td>@k.Headshots.ToString("N0")</td>
+            <td>@(ksTotalHS > 0 ? $"{(double)k.Headshots / ksTotalHS * 100:F2}%" : "-")</td>
             <td>@(k.Kills == 0 ? "-" : $"{(double)k.Headshots / k.Kills:F2}")</td>
           </tr>
         }
@@ -604,37 +649,6 @@
     </table>
   }
 </div>
-
-@if (Model.Aliases.Count > 1)
-{
-  <h2>Aliases</h2>
-  <table class="stats-table">
-    <thead>
-      <tr>
-        <th>Name</th><th>Time</th><th>Last Use</th>
-        <th>Kills</th><th>Deaths</th><th>K:D</th>
-        <th>Headshots</th><th>HS:K</th><th>Suicides</th><th>Accuracy</th>
-      </tr>
-    </thead>
-    <tbody>
-      @foreach (var a in Model.Aliases)
-      {
-        <tr>
-          <td>@a.Name</td>
-          <td>@FormatTime(a.ConnectionTime)</td>
-          <td>@(a.LastUse.HasValue ? a.LastUse.Value.ToString("yyyy-MM-dd") : "-")</td>
-          <td>@a.Kills</td>
-          <td>@a.Deaths</td>
-          <td>@a.KdRatio</td>
-          <td>@a.Headshots</td>
-          <td>@a.HsKRatio</td>
-          <td>@a.Suicides</td>
-          <td>@a.Accuracy%</td>
-        </tr>
-      }
-    </tbody>
-  </table>
-}
 
 <div style="clear:both;padding-top:12px;display:flex;justify-content:space-between;">
   <div>Items marked &ldquo;*&rdquo; above are generated from the last @Model.DeleteDays days.</div>

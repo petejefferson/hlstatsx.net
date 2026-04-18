@@ -9,6 +9,7 @@ public class Team
     public string? PlayerlistBgcolor { get; set; }
     public string? PlayerlistColor { get; set; }
     public int PlayerlistIndex { get; set; }
+    public string? Hidden { get; set; }
 
     public Game? GameNavigation { get; set; }
 }

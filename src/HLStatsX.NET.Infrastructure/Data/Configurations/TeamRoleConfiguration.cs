@@ -17,6 +17,7 @@ public class TeamConfiguration : IEntityTypeConfiguration<Team>
         builder.Property(t => t.PlayerlistBgcolor).HasColumnName("playerlist_bgcolor").HasMaxLength(7);
         builder.Property(t => t.PlayerlistColor).HasColumnName("playerlist_color").HasMaxLength(7);
         builder.Property(t => t.PlayerlistIndex).HasColumnName("playerlist_index");
+        builder.Property(t => t.Hidden).HasColumnName("hidden");
 
         builder.HasOne(t => t.GameNavigation)
             .WithMany(g => g.Teams)
