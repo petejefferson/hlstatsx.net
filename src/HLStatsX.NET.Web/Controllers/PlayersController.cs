@@ -87,6 +87,8 @@ public class PlayersController : Controller
         string wuSort = "kills", bool wuDesc = true,
         string wsSort = "kills", bool wsDesc = true,
         string wtSort = "hits",  bool wtDesc = true,
+        string mpSort = "kpd",   bool mpDesc = true,
+        string spSort = "kills", bool spDesc = true,
         CancellationToken ct = default)
     {
         var player = await _players.GetPlayerAsync(id, ct);
@@ -164,8 +166,12 @@ public class PlayersController : Controller
             FavoriteMap         = favMapTask.Result,
             FavoriteWeapon      = favWeaponTask.Result,
             KillStats           = killStatsTask.Result,
-            MapPerformance      = mapPerfTask.Result,
-            ServerPerformance   = serverPerfTask.Result,
+            MapPerformance      = SortMapPerformance(mapPerfTask.Result, mpSort, mpDesc),
+            MapSortBy           = mpSort,
+            MapDesc             = mpDesc,
+            ServerPerformance   = SortServerPerformance(serverPerfTask.Result, spSort, spDesc),
+            ServerSortBy        = spSort,
+            ServerDesc          = spDesc,
             WeaponStats         = SortWeaponUsage(weaponStatsTask.Result, wuSort, wuDesc),
             WeaponUsageSortBy   = wuSort,
             WeaponUsageDesc     = wuDesc,
@@ -235,6 +241,38 @@ public class PlayersController : Controller
             "middle"   => desc ? rows.OrderByDescending(w => w.MiddlePct)  : rows.OrderBy(w => w.MiddlePct),
             "right"    => desc ? rows.OrderByDescending(w => w.RightPct)   : rows.OrderBy(w => w.RightPct),
             _          => desc ? rows.OrderByDescending(w => w.Hits)       : rows.OrderBy(w => w.Hits),
+        };
+        return ordered.ToList();
+    }
+
+    private static IReadOnlyList<MapStatRow> SortMapPerformance(IReadOnlyList<MapStatRow> rows, string sortBy, bool desc)
+    {
+        IOrderedEnumerable<MapStatRow> ordered = sortBy switch
+        {
+            "map"      => desc ? rows.OrderByDescending(m => m.Map)       : rows.OrderBy(m => m.Map),
+            "kills" or "kpercent" => desc ? rows.OrderByDescending(m => m.Kills)  : rows.OrderBy(m => m.Kills),
+            "deaths" or "dpercent" => desc ? rows.OrderByDescending(m => m.Deaths) : rows.OrderBy(m => m.Deaths),
+            "headshots" or "hpercent" => desc ? rows.OrderByDescending(m => m.Headshots) : rows.OrderBy(m => m.Headshots),
+            "hpk"     => desc ? rows.OrderByDescending(m => m.Kills > 0 ? (double)m.Headshots / m.Kills : 0)
+                               : rows.OrderBy(m => m.Kills > 0 ? (double)m.Headshots / m.Kills : 0),
+            _         => desc ? rows.OrderByDescending(m => m.Deaths == 0 ? (double)m.Kills : (double)m.Kills / m.Deaths)
+                               : rows.OrderBy(m => m.Deaths == 0 ? (double)m.Kills : (double)m.Kills / m.Deaths),
+        };
+        return ordered.ToList();
+    }
+
+    private static IReadOnlyList<ServerStatRow> SortServerPerformance(IReadOnlyList<ServerStatRow> rows, string sortBy, bool desc)
+    {
+        IOrderedEnumerable<ServerStatRow> ordered = sortBy switch
+        {
+            "server"   => desc ? rows.OrderByDescending(s => s.ServerName) : rows.OrderBy(s => s.ServerName),
+            "deaths"   => desc ? rows.OrderByDescending(s => s.Deaths)     : rows.OrderBy(s => s.Deaths),
+            "kpd"     => desc ? rows.OrderByDescending(s => s.Deaths == 0 ? (double)s.Kills : (double)s.Kills / s.Deaths)
+                               : rows.OrderBy(s => s.Deaths == 0 ? (double)s.Kills : (double)s.Kills / s.Deaths),
+            "headshots" or "hpercent" => desc ? rows.OrderByDescending(s => s.Headshots) : rows.OrderBy(s => s.Headshots),
+            "hpk"     => desc ? rows.OrderByDescending(s => s.Kills > 0 ? (double)s.Headshots / s.Kills : 0)
+                               : rows.OrderBy(s => s.Kills > 0 ? (double)s.Headshots / s.Kills : 0),
+            _         => desc ? rows.OrderByDescending(s => s.Kills)       : rows.OrderBy(s => s.Kills),
         };
         return ordered.ToList();
     }

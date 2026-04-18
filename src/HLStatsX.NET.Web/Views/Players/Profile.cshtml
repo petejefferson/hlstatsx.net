@@ -717,71 +717,146 @@
 </div>
 
 <div id="tab-maps" class="tab-panel" style="display:none;">
-  <div class="profile-two-col">
-    <section>
-      <h2>Map Performance *</h2>
-      @if (!Model.MapPerformance.Any())
-      {
-        <p>No map data available.</p>
-      }
-      else
-      {
-        long mpTotalKills = Model.MapPerformance.Sum(m => m.Kills);
-        long mpTotalDeaths = Model.MapPerformance.Sum(m => m.Deaths);
-        long mpTotalHS = Model.MapPerformance.Sum(m => m.Headshots);
-        <table class="stats-table">
-          <thead>
-            <tr><th>Map</th><th>Kills</th><th>%</th><th>Deaths</th><th>%</th><th>K:D</th><th>HS</th><th>HS:K</th></tr>
-          </thead>
-          <tbody>
-            @foreach (var m in Model.MapPerformance)
-            {
-              <tr>
-                <td>@m.Map</td>
-                <td>@m.Kills.ToString("N0")</td>
-                <td>@(mpTotalKills > 0 ? $"{(double)m.Kills / mpTotalKills * 100:F2}%" : "-")</td>
-                <td>@m.Deaths.ToString("N0")</td>
-                <td>@(mpTotalDeaths > 0 ? $"{(double)m.Deaths / mpTotalDeaths * 100:F2}%" : "-")</td>
-                <td>@(m.Deaths == 0 ? m.Kills.ToString("N0") : $"{(double)m.Kills / m.Deaths:F2}")</td>
-                <td>@m.Headshots.ToString("N0")</td>
-                <td>@(m.Kills == 0 ? "-" : $"{(double)m.Headshots / m.Kills:F2}")</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      }
-    </section>
-    <section>
-      <h2>Server Activity *</h2>
-      @if (!Model.ServerPerformance.Any())
-      {
-        <p>No server data available.</p>
-      }
-      else
-      {
-        long spTotalKills = Model.ServerPerformance.Sum(s => s.Kills);
-        <table class="stats-table">
-          <thead>
-            <tr><th>Server</th><th>Kills</th><th>%</th><th>Deaths</th><th>K:D</th><th>HS</th><th>HS:K</th></tr>
-          </thead>
-          <tbody>
-            @foreach (var s in Model.ServerPerformance)
-            {
-              <tr>
-                <td>@s.ServerName</td>
-                <td>@s.Kills.ToString("N0")</td>
-                <td>@(spTotalKills > 0 ? $"{(double)s.Kills / spTotalKills * 100:F2}%" : "-")</td>
-                <td>@s.Deaths.ToString("N0")</td>
-                <td>@(s.Deaths == 0 ? s.Kills.ToString("N0") : $"{(double)s.Kills / s.Deaths:F2}")</td>
-                <td>@s.Headshots.ToString("N0")</td>
-                <td>@(s.Kills == 0 ? "-" : $"{(double)s.Headshots / s.Kills:F2}")</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      }
-    </section>
-  </div>
+@{
+    string MpSortUrl(string field)
+    {
+        bool nextDesc = Model.MapSortBy == field ? !Model.MapDesc : true;
+        return Url.Action("Profile", new { id = Model.Player.PlayerId,
+            mpSort = field, mpDesc = nextDesc,
+            spSort = Model.ServerSortBy, spDesc = Model.ServerDesc,
+            wuSort = Model.WeaponUsageSortBy,   wuDesc = Model.WeaponUsageDesc,
+            wsSort = Model.WeaponStatsmeSortBy, wsDesc = Model.WeaponStatsmeDesc,
+            wtSort = Model.WeaponTargetSortBy,  wtDesc = Model.WeaponTargetDesc })! + "#tab-maps";
+    }
+    string MpMark(string field) => Model.MapSortBy == field ? (Model.MapDesc ? " ▼" : " ▲") : "";
+
+    string SpSortUrl(string field)
+    {
+        bool nextDesc = Model.ServerSortBy == field ? !Model.ServerDesc : true;
+        return Url.Action("Profile", new { id = Model.Player.PlayerId,
+            mpSort = Model.MapSortBy, mpDesc = Model.MapDesc,
+            spSort = field, spDesc = nextDesc,
+            wuSort = Model.WeaponUsageSortBy,   wuDesc = Model.WeaponUsageDesc,
+            wsSort = Model.WeaponStatsmeSortBy, wsDesc = Model.WeaponStatsmeDesc,
+            wtSort = Model.WeaponTargetSortBy,  wtDesc = Model.WeaponTargetDesc })! + "#tab-maps";
+    }
+    string SpMark(string field) => Model.ServerSortBy == field ? (Model.ServerDesc ? " ▼" : " ▲") : "";
+}
+
+  @* ── Map Performance ── *@
+  @if (Model.MapPerformance.Any())
+  {
+    long mpRealKills  = Model.RealStats.RealKills  > 0 ? Model.RealStats.RealKills  : 1;
+    long mpRealDeaths = Model.RealStats.RealDeaths > 0 ? Model.RealStats.RealDeaths : 1;
+    long mpRealHS     = Model.RealStats.RealHeadshots > 0 ? Model.RealStats.RealHeadshots : 1;
+    <h2>Map Performance *</h2>
+    <table class="data-table">
+      <thead>
+        <tr class="data-table-head">
+          <th>Rank</th>
+          <th><a href="@(MpSortUrl("map"))">Map@(MpMark("map"))</a></th>
+          <th style="text-align:right"><a href="@(MpSortUrl("kills"))">Kills@(MpMark("kills"))</a></th>
+          <th style="text-align:right"><a href="@(MpSortUrl("kpercent"))">%@(MpMark("kpercent"))</a></th>
+          <th><a href="@(MpSortUrl("kpercent"))">Ratio@(MpMark("kpercent"))</a></th>
+          <th style="text-align:right"><a href="@(MpSortUrl("deaths"))">Deaths@(MpMark("deaths"))</a></th>
+          <th style="text-align:right"><a href="@(MpSortUrl("dpercent"))">%@(MpMark("dpercent"))</a></th>
+          <th><a href="@(MpSortUrl("dpercent"))">Ratio@(MpMark("dpercent"))</a></th>
+          <th style="text-align:right"><a href="@(MpSortUrl("kpd"))">K:D@(MpMark("kpd"))</a></th>
+          <th style="text-align:right"><a href="@(MpSortUrl("headshots"))">Headshots@(MpMark("headshots"))</a></th>
+          <th style="text-align:right"><a href="@(MpSortUrl("hpercent"))">%@(MpMark("hpercent"))</a></th>
+          <th><a href="@(MpSortUrl("hpercent"))">Ratio@(MpMark("hpercent"))</a></th>
+          <th style="text-align:right"><a href="@(MpSortUrl("hpk"))">HS:K@(MpMark("hpk"))</a></th>
+        </tr>
+      </thead>
+      <tbody>
+        @{int mpRank = 1; bool mpBg = false;}
+        @foreach (var m in Model.MapPerformance)
+        {
+          string mpRow = mpBg ? "bg2" : "bg1"; mpBg = !mpBg;
+          string mpAlt = mpBg ? "bg2" : "bg1";
+          double mpKpct = Math.Round((double)m.Kills  / mpRealKills  * 100, 2);
+          double mpDpct = Math.Round((double)m.Deaths / mpRealDeaths * 100, 2);
+          double mpHpct = Math.Round((double)m.Headshots / mpRealHS  * 100, 2);
+          double mpKpd  = m.Deaths == 0 ? m.Kills : Math.Round((double)m.Kills / m.Deaths, 2);
+          double mpHpk  = m.Kills  == 0 ? 0       : Math.Round((double)m.Headshots / m.Kills, 2);
+          <tr>
+            <td class="@mpRow" style="text-align:right">@mpRank</td>
+            <td class="@mpAlt">@m.Map</td>
+            <td class="@mpRow" style="text-align:right">@m.Kills.ToString("N0")</td>
+            <td class="@mpAlt" style="text-align:right">@(mpKpct.ToString("F2"))%</td>
+            <td class="@mpRow"><meter min="0" max="100" low="25" high="50" optimum="75" value="@(mpKpct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))"></meter></td>
+            <td class="@mpAlt" style="text-align:right">@m.Deaths.ToString("N0")</td>
+            <td class="@mpRow" style="text-align:right">@(mpDpct.ToString("F2"))%</td>
+            <td class="@mpAlt"><meter min="0" max="100" low="25" high="50" optimum="75" value="@(mpDpct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))"></meter></td>
+            <td class="@mpRow" style="text-align:right">@mpKpd.ToString("F2")</td>
+            <td class="@mpAlt" style="text-align:right">@m.Headshots.ToString("N0")</td>
+            <td class="@mpRow" style="text-align:right">@(mpHpct.ToString("F2"))%</td>
+            <td class="@mpAlt"><meter min="0" max="100" low="25" high="50" optimum="75" value="@(mpHpct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))"></meter></td>
+            <td class="@mpRow" style="text-align:right">@(m.Kills == 0 ? "-" : mpHpk.ToString("F2"))</td>
+          </tr>
+          mpRank++;
+        }
+      </tbody>
+    </table>
+    <br />
+  }
+
+  @* ── Server Activity ── *@
+  @if (Model.ServerPerformance.Any())
+  {
+    long spRealKills = Model.RealStats.RealKills      > 0 ? Model.RealStats.RealKills      : 1;
+    long spRealHS    = Model.RealStats.RealHeadshots  > 0 ? Model.RealStats.RealHeadshots  : 1;
+    <h2>Server Activity *</h2>
+    <table class="data-table">
+      <thead>
+        <tr class="data-table-head">
+          <th>Rank</th>
+          <th><a href="@(SpSortUrl("server"))">Server@(SpMark("server"))</a></th>
+          <th style="text-align:right"><a href="@(SpSortUrl("kills"))">Kills@(SpMark("kills"))</a></th>
+          <th style="text-align:right"><a href="@(SpSortUrl("kpercent"))">%@(SpMark("kpercent"))</a></th>
+          <th><a href="@(SpSortUrl("kpercent"))">Ratio@(SpMark("kpercent"))</a></th>
+          <th style="text-align:right"><a href="@(SpSortUrl("deaths"))">Deaths@(SpMark("deaths"))</a></th>
+          <th style="text-align:right"><a href="@(SpSortUrl("kpd"))">K:D@(SpMark("kpd"))</a></th>
+          <th style="text-align:right"><a href="@(SpSortUrl("headshots"))">Headshots@(SpMark("headshots"))</a></th>
+          <th><a href="@(SpSortUrl("hpercent"))">Ratio@(SpMark("hpercent"))</a></th>
+          <th style="text-align:right"><a href="@(SpSortUrl("hpercent"))">%@(SpMark("hpercent"))</a></th>
+          <th style="text-align:right"><a href="@(SpSortUrl("hpk"))">HS:K@(SpMark("hpk"))</a></th>
+        </tr>
+      </thead>
+      <tbody>
+        @{int spRank = 1; bool spBg = false;}
+        @foreach (var s in Model.ServerPerformance)
+        {
+          string spRow = spBg ? "bg2" : "bg1"; spBg = !spBg;
+          string spAlt = spBg ? "bg2" : "bg1";
+          double spKpct = Math.Round((double)s.Kills     / spRealKills * 100, 2);
+          double spHpct = Math.Round((double)s.Headshots / spRealHS    * 100, 2);
+          double spKpd  = s.Deaths == 0 ? s.Kills : Math.Round((double)s.Kills / s.Deaths, 2);
+          double spHpk  = s.Kills  == 0 ? 0       : Math.Round((double)s.Headshots / s.Kills, 2);
+          <tr>
+            <td class="@spRow" style="text-align:right">@spRank</td>
+            <td class="@spAlt">@s.ServerName</td>
+            <td class="@spRow" style="text-align:right">@s.Kills.ToString("N0")</td>
+            <td class="@spAlt" style="text-align:right">@(spKpct.ToString("F2"))%</td>
+            <td class="@spRow"><meter min="0" max="100" low="25" high="50" optimum="75" value="@(spKpct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))"></meter></td>
+            <td class="@spAlt" style="text-align:right">@s.Deaths.ToString("N0")</td>
+            <td class="@spRow" style="text-align:right">@spKpd.ToString("F2")</td>
+            <td class="@spAlt" style="text-align:right">@s.Headshots.ToString("N0")</td>
+            <td class="@spRow"><meter min="0" max="100" low="25" high="50" optimum="75" value="@(spHpct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))"></meter></td>
+            <td class="@spAlt" style="text-align:right">@(spHpct.ToString("F2"))%</td>
+            <td class="@spRow" style="text-align:right">@(s.Kills == 0 ? "-" : spHpk.ToString("F2"))</td>
+          </tr>
+          spRank++;
+        }
+      </tbody>
+    </table>
+    <br />
+  }
+
+  @if (!Model.MapPerformance.Any() && !Model.ServerPerformance.Any())
+  {
+    <p>No map or server data available.</p>
+  }
 </div>
 
 <div id="tab-kills" class="tab-panel" style="display:none;">

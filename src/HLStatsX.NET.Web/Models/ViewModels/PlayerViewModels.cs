@@ -38,7 +38,11 @@ public record PlayerProfileViewModel
     public required FavoriteWeapon? FavoriteWeapon { get; init; }
     public required IReadOnlyList<KillStatRow> KillStats { get; init; }
     public required IReadOnlyList<MapStatRow> MapPerformance { get; init; }
+    public required string MapSortBy { get; init; }
+    public required bool MapDesc { get; init; }
     public required IReadOnlyList<ServerStatRow> ServerPerformance { get; init; }
+    public required string ServerSortBy { get; init; }
+    public required bool ServerDesc { get; init; }
     public required IReadOnlyList<WeaponStatRow> WeaponStats { get; init; }
     public required string WeaponUsageSortBy { get; init; }
     public required bool WeaponUsageDesc { get; init; }
