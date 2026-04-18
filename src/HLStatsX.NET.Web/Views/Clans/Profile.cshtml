@@ -130,7 +130,7 @@
   <div class="profile-two-col">
     <section class="profile-card">
       <table class="data-table">
-        <tr class="data-table-head"><td colspan="2">Statistics Summary</td></tr>
+        <tr class="data-table-head"><th colspan="2">Statistics Summary</th></tr>
         <tr class="bg1">
           <td>Clan:</td>
           <td><strong>@Model.Clan.Name</strong></td>
@@ -251,17 +251,17 @@
     <h2>Members</h2>
     <table class="data-table">
       <tr class="data-table-head">
-        <td style="text-align:right;">Rank</td>
-        <td><a href="@(MemberSortUrl("name"))">Name@(MemberMark("name"))</a></td>
-        <td style="text-align:center;"><a href="@(MemberSortUrl("mmrank"))">Rank@(MemberMark("mmrank"))</a></td>
-        <td style="text-align:right;"><a href="@(MemberSortUrl("skill"))">Points@(MemberMark("skill"))</a></td>
-        <td style="text-align:right;">Activity</td>
-        <td style="text-align:right;"><a href="@(MemberSortUrl("time"))">Time@(MemberMark("time"))</a></td>
-        <td style="text-align:right;"><a href="@(MemberSortUrl("kills"))">Kills@(MemberMark("kills"))</a></td>
-        <td>Clan Kills</td>
-        <td style="text-align:right;">%</td>
-        <td style="text-align:right;"><a href="@(MemberSortUrl("deaths"))">Deaths@(MemberMark("deaths"))</a></td>
-        <td style="text-align:right;"><a href="@(MemberSortUrl("kpd"))">K/D@(MemberMark("kpd"))</a></td>
+        <th style="text-align:right;">Rank</th>
+        <th><a href="@(MemberSortUrl("name"))">Name@(MemberMark("name"))</a></th>
+        <th style="text-align:center;"><a href="@(MemberSortUrl("mmrank"))">Rank@(MemberMark("mmrank"))</a></th>
+        <th style="text-align:right;"><a href="@(MemberSortUrl("skill"))">Points@(MemberMark("skill"))</a></th>
+        <th style="text-align:right;">Activity</th>
+        <th style="text-align:right;"><a href="@(MemberSortUrl("time"))">Time@(MemberMark("time"))</a></th>
+        <th style="text-align:right;"><a href="@(MemberSortUrl("kills"))">Kills@(MemberMark("kills"))</a></th>
+        <th>Clan Kills</th>
+        <th style="text-align:right;">%</th>
+        <th style="text-align:right;"><a href="@(MemberSortUrl("deaths"))">Deaths@(MemberMark("deaths"))</a></th>
+        <th style="text-align:right;"><a href="@(MemberSortUrl("kpd"))">K/D@(MemberMark("kpd"))</a></th>
       </tr>
       @{int rowNum = 0; int pageOffset = (Model.Members.Page - 1) * Model.Members.PageSize;}
       @foreach (var m in Model.Members.Items)
@@ -325,14 +325,14 @@
     <h2>Weapon Usage *</h2>
     <table class="data-table">
       <tr class="data-table-head">
-        <td style="text-align:right;">Rank</td>
-        <td><a href="@(WeaponSortUrl("name"))">Weapon@(WeaponMark("name"))</a></td>
-        <td style="text-align:right;"><a href="@(WeaponSortUrl("modifier"))">Points Modifier@(WeaponMark("modifier"))</a></td>
-        <td style="text-align:right;"><a href="@(WeaponSortUrl("kills"))">Kills@(WeaponMark("kills"))</a></td>
-        <td style="text-align:right;"><a href="@(WeaponSortUrl("killpct"))">% of Kills@(WeaponMark("killpct"))</a></td>
-        <td style="text-align:right;"><a href="@(WeaponSortUrl("headshots"))">Headshots@(WeaponMark("headshots"))</a></td>
-        <td style="text-align:right;"><a href="@(WeaponSortUrl("hspct"))">% of Headshots@(WeaponMark("hspct"))</a></td>
-        <td style="text-align:right;"><a href="@(WeaponSortUrl("hsperkill"))">HS/Kill@(WeaponMark("hsperkill"))</a></td>
+        <th style="text-align:right;">Rank</th>
+        <th><a href="@(WeaponSortUrl("name"))">Weapon@(WeaponMark("name"))</a></th>
+        <th style="text-align:right;"><a href="@(WeaponSortUrl("modifier"))">Points Modifier@(WeaponMark("modifier"))</a></th>
+        <th style="text-align:right;"><a href="@(WeaponSortUrl("kills"))">Kills@(WeaponMark("kills"))</a></th>
+        <th style="text-align:right;"><a href="@(WeaponSortUrl("killpct"))">% of Kills@(WeaponMark("killpct"))</a></th>
+        <th style="text-align:right;"><a href="@(WeaponSortUrl("headshots"))">Headshots@(WeaponMark("headshots"))</a></th>
+        <th style="text-align:right;"><a href="@(WeaponSortUrl("hspct"))">% of Headshots@(WeaponMark("hspct"))</a></th>
+        <th style="text-align:right;"><a href="@(WeaponSortUrl("hsperkill"))">HS/Kill@(WeaponMark("hsperkill"))</a></th>
       </tr>
       @{rowNum = 0;}
       @foreach (var w in Model.WeaponUsage)
@@ -373,15 +373,15 @@
     <h2>Map Performance *</h2>
     <table class="data-table">
       <tr class="data-table-head">
-        <td style="text-align:right;">Rank</td>
-        <td><a href="@(MapSortUrl("map"))">Map@(MapMark("map"))</a></td>
-        <td style="text-align:right;"><a href="@(MapSortUrl("kills"))">Kills@(MapMark("kills"))</a></td>
-        <td style="text-align:right;"><a href="@(MapSortUrl("killpct"))">% of Kills@(MapMark("killpct"))</a></td>
-        <td style="text-align:right;"><a href="@(MapSortUrl("deaths"))">Deaths@(MapMark("deaths"))</a></td>
-        <td style="text-align:right;"><a href="@(MapSortUrl("kd"))">K/D@(MapMark("kd"))</a></td>
-        <td style="text-align:right;"><a href="@(MapSortUrl("headshots"))">Headshots@(MapMark("headshots"))</a></td>
-        <td style="text-align:right;"><a href="@(MapSortUrl("hspct"))">% of HS@(MapMark("hspct"))</a></td>
-        <td style="text-align:right;"><a href="@(MapSortUrl("hsperkill"))">HS/Kill@(MapMark("hsperkill"))</a></td>
+        <th style="text-align:right;">Rank</th>
+        <th><a href="@(MapSortUrl("map"))">Map@(MapMark("map"))</a></th>
+        <th style="text-align:right;"><a href="@(MapSortUrl("kills"))">Kills@(MapMark("kills"))</a></th>
+        <th style="text-align:right;"><a href="@(MapSortUrl("killpct"))">% of Kills@(MapMark("killpct"))</a></th>
+        <th style="text-align:right;"><a href="@(MapSortUrl("deaths"))">Deaths@(MapMark("deaths"))</a></th>
+        <th style="text-align:right;"><a href="@(MapSortUrl("kd"))">K/D@(MapMark("kd"))</a></th>
+        <th style="text-align:right;"><a href="@(MapSortUrl("headshots"))">Headshots@(MapMark("headshots"))</a></th>
+        <th style="text-align:right;"><a href="@(MapSortUrl("hspct"))">% of HS@(MapMark("hspct"))</a></th>
+        <th style="text-align:right;"><a href="@(MapSortUrl("hsperkill"))">HS/Kill@(MapMark("hsperkill"))</a></th>
       </tr>
       @{rowNum = 0;}
       @foreach (var m in Model.MapPerformance)
@@ -422,10 +422,10 @@
     <h2>Player Actions *</h2>
     <table class="data-table">
       <tr class="data-table-head">
-        <td style="text-align:right;">Rank</td>
-        <td><a href="@(ActionSortUrl("desc"))">Action@(ActionMark("desc"))</a></td>
-        <td style="text-align:right;"><a href="@(ActionSortUrl("count"))">Achieved@(ActionMark("count"))</a></td>
-        <td style="text-align:right;"><a href="@(ActionSortUrl("bonus"))">Points Bonus@(ActionMark("bonus"))</a></td>
+        <th style="text-align:right;">Rank</th>
+        <th><a href="@(ActionSortUrl("desc"))">Action@(ActionMark("desc"))</a></th>
+        <th style="text-align:right;"><a href="@(ActionSortUrl("count"))">Achieved@(ActionMark("count"))</a></th>
+        <th style="text-align:right;"><a href="@(ActionSortUrl("bonus"))">Points Bonus@(ActionMark("bonus"))</a></th>
       </tr>
       @{rowNum = 0;}
       @foreach (var a in Model.Actions)
@@ -448,10 +448,10 @@
     <h2>Victims of Player Actions *</h2>
     <table class="data-table">
       <tr class="data-table-head">
-        <td style="text-align:right;">Rank</td>
-        <td><a href="@(VictimSortUrl("desc"))">Action@(VictimMark("desc"))</a></td>
-        <td style="text-align:right;"><a href="@(VictimSortUrl("count"))">Times Victimised@(VictimMark("count"))</a></td>
-        <td style="text-align:right;"><a href="@(VictimSortUrl("bonus"))">Points Bonus@(VictimMark("bonus"))</a></td>
+        <th style="text-align:right;">Rank</th>
+        <th><a href="@(VictimSortUrl("desc"))">Action@(VictimMark("desc"))</a></th>
+        <th style="text-align:right;"><a href="@(VictimSortUrl("count"))">Times Victimised@(VictimMark("count"))</a></th>
+        <th style="text-align:right;"><a href="@(VictimSortUrl("bonus"))">Points Bonus@(VictimMark("bonus"))</a></th>
       </tr>
       @{rowNum = 0;}
       @foreach (var a in Model.ActionVictims)
@@ -474,11 +474,11 @@
     <h2>Team Selection *</h2>
     <table class="data-table">
       <tr class="data-table-head">
-        <td style="text-align:right;">Rank</td>
-        <td><a href="@(TeamSortUrl("team"))">Team@(TeamMark("team"))</a></td>
-        <td style="text-align:right;"><a href="@(TeamSortUrl("joined"))">Joined@(TeamMark("joined"))</a></td>
-        <td>Ratio</td>
-        <td style="text-align:right;"><a href="@(TeamSortUrl("percent"))">%@(TeamMark("percent"))</a></td>
+        <th style="text-align:right;">Rank</th>
+        <th><a href="@(TeamSortUrl("team"))">Team@(TeamMark("team"))</a></th>
+        <th style="text-align:right;"><a href="@(TeamSortUrl("joined"))">Joined@(TeamMark("joined"))</a></th>
+        <th>Ratio</th>
+        <th style="text-align:right;"><a href="@(TeamSortUrl("percent"))">%@(TeamMark("percent"))</a></th>
       </tr>
       @{rowNum = 0;}
       @foreach (var t in Model.Teams)
@@ -502,14 +502,14 @@
     <h2>Role Selection *</h2>
     <table class="data-table">
       <tr class="data-table-head">
-        <td style="text-align:right;">Rank</td>
-        <td><a href="@(RoleSortUrl("role"))">Role@(RoleMark("role"))</a></td>
-        <td style="text-align:right;"><a href="@(RoleSortUrl("joined"))">Joined@(RoleMark("joined"))</a></td>
-        <td style="text-align:right;"><a href="@(RoleSortUrl("percent"))">%@(RoleMark("percent"))</a></td>
-        <td>Ratio</td>
-        <td style="text-align:right;"><a href="@(RoleSortUrl("kills"))">Kills@(RoleMark("kills"))</a></td>
-        <td style="text-align:right;"><a href="@(RoleSortUrl("deaths"))">Deaths@(RoleMark("deaths"))</a></td>
-        <td style="text-align:right;"><a href="@(RoleSortUrl("kd"))">K:D@(RoleMark("kd"))</a></td>
+        <th style="text-align:right;">Rank</th>
+        <th><a href="@(RoleSortUrl("role"))">Role@(RoleMark("role"))</a></th>
+        <th style="text-align:right;"><a href="@(RoleSortUrl("joined"))">Joined@(RoleMark("joined"))</a></th>
+        <th style="text-align:right;"><a href="@(RoleSortUrl("percent"))">%@(RoleMark("percent"))</a></th>
+        <th>Ratio</th>
+        <th style="text-align:right;"><a href="@(RoleSortUrl("kills"))">Kills@(RoleMark("kills"))</a></th>
+        <th style="text-align:right;"><a href="@(RoleSortUrl("deaths"))">Deaths@(RoleMark("deaths"))</a></th>
+        <th style="text-align:right;"><a href="@(RoleSortUrl("kd"))">K:D@(RoleMark("kd"))</a></th>
       </tr>
       @{rowNum = 0;}
       @foreach (var r in Model.Roles)
