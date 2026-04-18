@@ -89,7 +89,7 @@ public class PlayersController : Controller
         string wtSort = "hits",  bool wtDesc = true,
         string mpSort  = "kpd",    bool mpDesc  = true,
         string spSort  = "kills",  bool spDesc  = true,
-        string ksSort  = "kills",  bool ksDesc  = true,
+        string ksSort  = "kills",  bool ksDesc  = true,  int ksLimit = 0,
         string paSort  = "count",  bool paDesc  = true,
         string pavSort = "count",  bool pavDesc = true,
         string tsSort  = "joined", bool tsDesc  = true,
@@ -124,7 +124,7 @@ public class PlayersController : Controller
         var favServerTask     = _players.GetFavoriteServerAsync(id, ct);
         var favMapTask        = _players.GetFavoriteMapAsync(id, ct);
         var favWeaponTask     = _players.GetFavoriteWeaponAsync(id, ct);
-        var killStatsTask     = _players.GetKillStatsAsync(id, ct);
+        var killStatsTask     = _players.GetKillStatsAsync(id, ksLimit, ct);
         var mapPerfTask       = _players.GetMapPerformanceAsync(id, ct);
         var serverPerfTask    = _players.GetServerPerformanceAsync(id, ct);
         var weaponStatsTask   = _players.GetWeaponStatsAsync(id, game, ct);
@@ -173,6 +173,7 @@ public class PlayersController : Controller
             KillStats           = SortKillStats(killStatsTask.Result, ksSort, ksDesc),
             KillStatsSortBy     = ksSort,
             KillStatsDesc       = ksDesc,
+            KillLimit           = ksLimit,
             MapPerformance      = SortMapPerformance(mapPerfTask.Result, mpSort, mpDesc),
             MapSortBy           = mpSort,
             MapDesc             = mpDesc,

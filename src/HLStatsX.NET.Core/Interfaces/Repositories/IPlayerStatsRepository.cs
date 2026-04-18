@@ -17,7 +17,7 @@ public interface IPlayerStatsRepository
     Task<FavoriteWeapon?> GetFavoriteWeaponAsync(int playerId, CancellationToken ct = default);
     Task<Rank?> GetNextRankAsync(string game, int kills, CancellationToken ct = default);
     Task<IReadOnlyList<RibbonDisplay>> GetRibbonsWithStatusAsync(int playerId, string game, CancellationToken ct = default);
-    Task<IReadOnlyList<KillStatRow>> GetKillStatsAsync(int playerId, CancellationToken ct = default);
+    Task<IReadOnlyList<KillStatRow>> GetKillStatsAsync(int playerId, int killLimit = 0, CancellationToken ct = default);
     Task<IReadOnlyList<MapStatRow>> GetMapPerformanceAsync(int playerId, CancellationToken ct = default);
     Task<IReadOnlyList<ServerStatRow>> GetServerPerformanceAsync(int playerId, CancellationToken ct = default);
     Task<IReadOnlyList<WeaponStatRow>> GetWeaponStatsAsync(int playerId, string game, CancellationToken ct = default);

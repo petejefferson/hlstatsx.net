@@ -73,7 +73,7 @@ public class PlayersControllerTests
     {
         _playerServiceMock.Setup(s => s.GetPlayerAsync(999, default)).ReturnsAsync((Player?)null);
 
-        var result = await _controller.Profile(999, default);
+        var result = await _controller.Profile(999, ct: default);
 
         result.Should().BeOfType<NotFoundResult>();
     }
@@ -96,7 +96,7 @@ public class PlayersControllerTests
         _playerServiceMock.Setup(s => s.GetFavoriteServerAsync(1, default)).ReturnsAsync((FavoriteServer?)null);
         _playerServiceMock.Setup(s => s.GetFavoriteMapAsync(1, default)).ReturnsAsync((string?)null);
         _playerServiceMock.Setup(s => s.GetFavoriteWeaponAsync(1, default)).ReturnsAsync((FavoriteWeapon?)null);
-        _playerServiceMock.Setup(s => s.GetKillStatsAsync(1, default)).ReturnsAsync(Array.Empty<KillStatRow>());
+        _playerServiceMock.Setup(s => s.GetKillStatsAsync(1, 0, default)).ReturnsAsync(Array.Empty<KillStatRow>());
         _playerServiceMock.Setup(s => s.GetMapPerformanceAsync(1, default)).ReturnsAsync(Array.Empty<MapStatRow>());
         _playerServiceMock.Setup(s => s.GetServerPerformanceAsync(1, default)).ReturnsAsync(Array.Empty<ServerStatRow>());
         _playerServiceMock.Setup(s => s.GetWeaponStatsAsync(1, "cstrike", default)).ReturnsAsync(Array.Empty<WeaponStatRow>());
@@ -112,7 +112,7 @@ public class PlayersControllerTests
         _awardServiceMock.Setup(s => s.GetRankForPlayerAsync(1, "cstrike", 500, default)).ReturnsAsync((Rank?)null);
         _awardServiceMock.Setup(s => s.GetRanksAsync("cstrike", default)).ReturnsAsync(Array.Empty<Rank>());
 
-        var result = await _controller.Profile(1, default);
+        var result = await _controller.Profile(1, ct: default);
 
         var viewResult = result.Should().BeOfType<ViewResult>().Subject;
         var model = viewResult.Model.Should().BeOfType<PlayerProfileViewModel>().Subject;

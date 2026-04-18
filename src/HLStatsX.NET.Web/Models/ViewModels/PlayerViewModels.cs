@@ -39,6 +39,7 @@ public record PlayerProfileViewModel
     public required IReadOnlyList<KillStatRow> KillStats { get; init; }
     public required string KillStatsSortBy { get; init; }
     public required bool KillStatsDesc { get; init; }
+    public required int KillLimit { get; init; }
     public required IReadOnlyList<MapStatRow> MapPerformance { get; init; }
     public required string MapSortBy { get; init; }
     public required bool MapDesc { get; init; }

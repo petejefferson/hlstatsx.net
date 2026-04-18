@@ -192,16 +192,15 @@ public class PlayerStatsRepository : IPlayerStatsRepository
         return int.TryParse(val, out var days) ? days : 90;
     }
 
-    public async Task<IReadOnlyList<KillStatRow>> GetKillStatsAsync(int playerId, CancellationToken ct = default)
+    public async Task<IReadOnlyList<KillStatRow>> GetKillStatsAsync(int playerId, int killLimit = 0, CancellationToken ct = default)
     {
         await using var db = _factory.CreateDbContext();
 
-        // Apply HAVING in SQL so we only materialise opponents with 5+ kills, not the full grouped set.
         var killsList = await db.EventFrags
             .Where(f => f.KillerId == playerId)
             .GroupBy(f => f.VictimId)
             .Select(g => new { VictimId = g.Key, Kills = g.LongCount(), Headshots = g.LongCount(f => f.Headshot) })
-            .Where(x => x.Kills >= 5)
+            .Where(x => x.Kills >= killLimit)
             .ToListAsync(ct);
 
         if (killsList.Count == 0) return Array.Empty<KillStatRow>();

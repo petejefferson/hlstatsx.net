@@ -99,8 +99,8 @@ public class PlayerService : IPlayerService
     public Task<IReadOnlyList<RibbonDisplay>> GetRibbonsWithStatusAsync(int playerId, string game, CancellationToken ct = default) =>
         _stats.GetRibbonsWithStatusAsync(playerId, game, ct);
 
-    public Task<IReadOnlyList<KillStatRow>> GetKillStatsAsync(int playerId, CancellationToken ct = default) =>
-        _stats.GetKillStatsAsync(playerId, ct);
+    public Task<IReadOnlyList<KillStatRow>> GetKillStatsAsync(int playerId, int killLimit = 0, CancellationToken ct = default) =>
+        _stats.GetKillStatsAsync(playerId, killLimit, ct);
 
     public Task<IReadOnlyList<MapStatRow>> GetMapPerformanceAsync(int playerId, CancellationToken ct = default) =>
         _stats.GetMapPerformanceAsync(playerId, ct);

@@ -382,19 +382,6 @@
 
 <div id="tab-teams" class="tab-panel" style="display:none;">
 @{
-    object TeamsRouteBase() => new {
-        id = Model.Player.PlayerId,
-        paSort  = Model.PlayerActionSortBy,       paDesc  = Model.PlayerActionDesc,
-        pavSort = Model.PlayerActionVictimSortBy, pavDesc = Model.PlayerActionVictimDesc,
-        tsSort  = Model.TeamSortBy,               tsDesc  = Model.TeamDesc,
-        rsSort  = Model.RoleSortBy,               rsDesc  = Model.RoleDesc,
-        ksSort  = Model.KillStatsSortBy,          ksDesc  = Model.KillStatsDesc,
-        mpSort  = Model.MapSortBy,                mpDesc  = Model.MapDesc,
-        spSort  = Model.ServerSortBy,             spDesc  = Model.ServerDesc,
-        wuSort  = Model.WeaponUsageSortBy,        wuDesc  = Model.WeaponUsageDesc,
-        wsSort  = Model.WeaponStatsmeSortBy,      wsDesc  = Model.WeaponStatsmeDesc,
-        wtSort  = Model.WeaponTargetSortBy,       wtDesc  = Model.WeaponTargetDesc,
-    };
     string PaSortUrl(string field)
     {
         bool nextDesc = Model.PlayerActionSortBy == field ? !Model.PlayerActionDesc : true;
@@ -403,7 +390,7 @@
             pavSort = Model.PlayerActionVictimSortBy,     pavDesc = Model.PlayerActionVictimDesc,
             tsSort  = Model.TeamSortBy,                   tsDesc  = Model.TeamDesc,
             rsSort  = Model.RoleSortBy,                   rsDesc  = Model.RoleDesc,
-            ksSort  = Model.KillStatsSortBy,              ksDesc  = Model.KillStatsDesc,
+            ksSort  = Model.KillStatsSortBy,              ksDesc  = Model.KillStatsDesc,  ksLimit = Model.KillLimit,
             mpSort  = Model.MapSortBy,                    mpDesc  = Model.MapDesc,
             spSort  = Model.ServerSortBy,                 spDesc  = Model.ServerDesc,
             wuSort  = Model.WeaponUsageSortBy,            wuDesc  = Model.WeaponUsageDesc,
@@ -420,7 +407,7 @@
             pavSort = field,                              pavDesc = nextDesc,
             tsSort  = Model.TeamSortBy,                   tsDesc  = Model.TeamDesc,
             rsSort  = Model.RoleSortBy,                   rsDesc  = Model.RoleDesc,
-            ksSort  = Model.KillStatsSortBy,              ksDesc  = Model.KillStatsDesc,
+            ksSort  = Model.KillStatsSortBy,              ksDesc  = Model.KillStatsDesc,  ksLimit = Model.KillLimit,
             mpSort  = Model.MapSortBy,                    mpDesc  = Model.MapDesc,
             spSort  = Model.ServerSortBy,                 spDesc  = Model.ServerDesc,
             wuSort  = Model.WeaponUsageSortBy,            wuDesc  = Model.WeaponUsageDesc,
@@ -437,7 +424,7 @@
             pavSort = Model.PlayerActionVictimSortBy,     pavDesc = Model.PlayerActionVictimDesc,
             tsSort  = field,                              tsDesc  = nextDesc,
             rsSort  = Model.RoleSortBy,                   rsDesc  = Model.RoleDesc,
-            ksSort  = Model.KillStatsSortBy,              ksDesc  = Model.KillStatsDesc,
+            ksSort  = Model.KillStatsSortBy,              ksDesc  = Model.KillStatsDesc,  ksLimit = Model.KillLimit,
             mpSort  = Model.MapSortBy,                    mpDesc  = Model.MapDesc,
             spSort  = Model.ServerSortBy,                 spDesc  = Model.ServerDesc,
             wuSort  = Model.WeaponUsageSortBy,            wuDesc  = Model.WeaponUsageDesc,
@@ -454,7 +441,7 @@
             pavSort = Model.PlayerActionVictimSortBy,     pavDesc = Model.PlayerActionVictimDesc,
             tsSort  = Model.TeamSortBy,                   tsDesc  = Model.TeamDesc,
             rsSort  = field,                              rsDesc  = nextDesc,
-            ksSort  = Model.KillStatsSortBy,              ksDesc  = Model.KillStatsDesc,
+            ksSort  = Model.KillStatsSortBy,              ksDesc  = Model.KillStatsDesc,  ksLimit = Model.KillLimit,
             mpSort  = Model.MapSortBy,                    mpDesc  = Model.MapDesc,
             spSort  = Model.ServerSortBy,                 spDesc  = Model.ServerDesc,
             wuSort  = Model.WeaponUsageSortBy,            wuDesc  = Model.WeaponUsageDesc,
@@ -988,19 +975,26 @@
     {
         bool nextDesc = Model.KillStatsSortBy == field ? !Model.KillStatsDesc : true;
         return Url.Action("Profile", new { id = Model.Player.PlayerId,
-            ksSort = field, ksDesc = nextDesc,
+            ksSort = field, ksDesc = nextDesc, ksLimit = Model.KillLimit,
             mpSort = Model.MapSortBy,           mpDesc = Model.MapDesc,
             spSort = Model.ServerSortBy,        spDesc = Model.ServerDesc,
             wuSort = Model.WeaponUsageSortBy,   wuDesc = Model.WeaponUsageDesc,
             wsSort = Model.WeaponStatsmeSortBy, wsDesc = Model.WeaponStatsmeDesc,
             wtSort = Model.WeaponTargetSortBy,  wtDesc = Model.WeaponTargetDesc })! + "#tab-kills";
     }
+    string KsLimitUrl(int limit) => Url.Action("Profile", new { id = Model.Player.PlayerId,
+        ksSort = Model.KillStatsSortBy, ksDesc = Model.KillStatsDesc, ksLimit = limit,
+        mpSort = Model.MapSortBy,           mpDesc = Model.MapDesc,
+        spSort = Model.ServerSortBy,        spDesc = Model.ServerDesc,
+        wuSort = Model.WeaponUsageSortBy,   wuDesc = Model.WeaponUsageDesc,
+        wsSort = Model.WeaponStatsmeSortBy, wsDesc = Model.WeaponStatsmeDesc,
+        wtSort = Model.WeaponTargetSortBy,  wtDesc = Model.WeaponTargetDesc })! + "#tab-kills";
     string KsMark(string field) => Model.KillStatsSortBy == field ? (Model.KillStatsDesc ? " ▼" : " ▲") : "";
 }
   <h2>Player Kill Statistics *</h2>
   @if (!Model.KillStats.Any())
   {
-    <p>No kill stat data available (minimum 5 kills against a single player).</p>
+    <p>No kill stat data available.</p>
   }
   else
   {
@@ -1065,6 +1059,26 @@
         }
       </tbody>
     </table>
+    <br />
+    <div class="subblock">
+      <strong>&bull;</strong> Show only victims this person has killed
+      <select onchange="window.location=this.options[this.selectedIndex].value">
+        @for (int j = 0; j <= 15; j++)
+        {
+          string ksOptUrl = KsLimitUrl(j);
+          bool ksOptSel = Model.KillLimit == j;
+          if (ksOptSel)
+          {
+            <option value="@ksOptUrl" selected="selected">@j</option>
+          }
+          else
+          {
+            <option value="@ksOptUrl">@j</option>
+          }
+        }
+      </select>
+      or more times
+    </div>
     <br />
   }
 </div>
