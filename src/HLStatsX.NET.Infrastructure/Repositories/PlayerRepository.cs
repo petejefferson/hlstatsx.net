@@ -76,7 +76,7 @@ public class PlayerRepository : IPlayerRepository
         await using var db = _factory.CreateDbContext();
         return await db.PlayerNames
             .Where(n => n.PlayerId == playerId)
-            .OrderByDescending(n => n.Numuses)
+            .OrderByDescending(n => n.LastUse)
             .ToListAsync(ct);
     }
 

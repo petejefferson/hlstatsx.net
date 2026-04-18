@@ -28,6 +28,8 @@ public record PlayerProfileViewModel
     public required Rank? NextRank { get; init; }
     public required IReadOnlyList<Rank> PastRanks { get; init; }
     public required IReadOnlyList<PlayerName> Aliases { get; init; }
+    public required string AliasSortBy { get; init; }
+    public required bool AliasDesc { get; init; }
     public required IReadOnlyList<PlayerAward> Awards { get; init; }
     public required IReadOnlyList<RibbonDisplay> AllRibbons { get; init; }
     public required RealStats RealStats { get; init; }

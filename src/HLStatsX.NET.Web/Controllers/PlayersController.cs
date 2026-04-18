@@ -94,6 +94,7 @@ public class PlayersController : Controller
         string pavSort = "count",  bool pavDesc = true,
         string tsSort  = "joined", bool tsDesc  = true,
         string rsSort  = "joined", bool rsDesc  = true,
+        string alSort  = "lastuse", bool alDesc  = true,
         CancellationToken ct = default)
     {
         var player = await _players.GetPlayerAsync(id, ct);
@@ -161,7 +162,9 @@ public class PlayersController : Controller
             CurrentRank         = rankEntity,
             NextRank            = nextRankTask.Result,
             PastRanks           = pastRanks,
-            Aliases             = aliasesTask.Result,
+            Aliases             = SortAliases(aliasesTask.Result, alSort, alDesc),
+            AliasSortBy         = alSort,
+            AliasDesc           = alDesc,
             Awards              = awardsTask.Result,
             AllRibbons          = allRibbonsTask.Result,
             RealStats           = realStatsTask.Result,
@@ -348,6 +351,25 @@ public class PlayersController : Controller
             "hpk"     => desc ? rows.OrderByDescending(s => s.Kills > 0 ? (double)s.Headshots / s.Kills : 0)
                                : rows.OrderBy(s => s.Kills > 0 ? (double)s.Headshots / s.Kills : 0),
             _         => desc ? rows.OrderByDescending(s => s.Kills)       : rows.OrderBy(s => s.Kills),
+        };
+        return ordered.ToList();
+    }
+
+    private static IReadOnlyList<PlayerName> SortAliases(IReadOnlyList<PlayerName> rows, string sortBy, bool desc)
+    {
+        IOrderedEnumerable<PlayerName> ordered = sortBy switch
+        {
+            "name"      => desc ? rows.OrderByDescending(n => n.Name)           : rows.OrderBy(n => n.Name),
+            "time"      => desc ? rows.OrderByDescending(n => n.ConnectionTime) : rows.OrderBy(n => n.ConnectionTime),
+            "kills"     => desc ? rows.OrderByDescending(n => n.Kills)          : rows.OrderBy(n => n.Kills),
+            "deaths"    => desc ? rows.OrderByDescending(n => n.Deaths)         : rows.OrderBy(n => n.Deaths),
+            "kd"        => desc ? rows.OrderByDescending(n => n.KdRatio)        : rows.OrderBy(n => n.KdRatio),
+            "headshots" => desc ? rows.OrderByDescending(n => n.Headshots)      : rows.OrderBy(n => n.Headshots),
+            "hsk"       => desc ? rows.OrderByDescending(n => n.HsKRatio)       : rows.OrderBy(n => n.HsKRatio),
+            "suicides"  => desc ? rows.OrderByDescending(n => n.Suicides)       : rows.OrderBy(n => n.Suicides),
+            "accuracy"  => desc ? rows.OrderByDescending(n => n.Accuracy)       : rows.OrderBy(n => n.Accuracy),
+            _           => desc ? rows.OrderByDescending(n => n.LastUse ?? DateTime.MinValue)
+                                : rows.OrderBy(n => n.LastUse ?? DateTime.MinValue),
         };
         return ordered.ToList();
     }

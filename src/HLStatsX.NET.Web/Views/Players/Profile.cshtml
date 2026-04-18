@@ -334,34 +334,52 @@
   </div>
   }
 
-  @if (Model.Aliases.Count > 1)
+@{
+    string AlSortUrl(string field)
+    {
+        bool nextDesc = Model.AliasSortBy == field ? !Model.AliasDesc : true;
+        return Url.Action("Profile", new { id = Model.Player.PlayerId,
+            alSort = field, alDesc = nextDesc })! + "#tab-general";
+    }
+    string AlMark(string field) => Model.AliasSortBy == field ? (Model.AliasDesc ? " ▼" : " ▲") : "";
+}
+@if (Model.Aliases.Count > 1)
   {
   <h2>Aliases</h2>
-  <table class="stats-table sortable">
+  <table class="data-table">
     <thead>
-      <tr>
-        <th>Rank</th><th>Name</th><th>Time</th><th>Last Use</th>
-        <th>Kills</th><th>Deaths</th><th>K:D</th>
-        <th>Headshots</th><th>HS:K</th><th>Suicides</th><th>Accuracy</th>
+      <tr class="data-table-head">
+        <th style="text-align:right">Rank</th>
+        <th><a href="@(AlSortUrl("name"))">Name@(AlMark("name"))</a></th>
+        <th style="text-align:right"><a href="@(AlSortUrl("time"))">Time@(AlMark("time"))</a></th>
+        <th style="text-align:right"><a href="@(AlSortUrl("lastuse"))">Last Use@(AlMark("lastuse"))</a></th>
+        <th style="text-align:right"><a href="@(AlSortUrl("kills"))">Kills@(AlMark("kills"))</a></th>
+        <th style="text-align:right"><a href="@(AlSortUrl("deaths"))">Deaths@(AlMark("deaths"))</a></th>
+        <th style="text-align:right"><a href="@(AlSortUrl("kd"))">K:D@(AlMark("kd"))</a></th>
+        <th style="text-align:right"><a href="@(AlSortUrl("headshots"))">Headshots@(AlMark("headshots"))</a></th>
+        <th style="text-align:right"><a href="@(AlSortUrl("hsk"))">HS:K@(AlMark("hsk"))</a></th>
+        <th style="text-align:right"><a href="@(AlSortUrl("suicides"))">Suicides@(AlMark("suicides"))</a></th>
+        <th style="text-align:right"><a href="@(AlSortUrl("accuracy"))">Accuracy@(AlMark("accuracy"))</a></th>
       </tr>
     </thead>
     <tbody>
-      @{ int aliasRank = 0; }
+      @{ int aliasRank = 0; bool alAlt = false; }
       @foreach (var a in Model.Aliases)
       {
+        string alRow = (alAlt = !alAlt) ? "bg1" : "bg2";
         aliasRank++;
         <tr>
-          <td>@aliasRank</td>
-          <td>@a.Name</td>
-          <td>@RazorHelpers.FormatTimeFull(a.ConnectionTime)</td>
-          <td>@(a.LastUse.HasValue ? a.LastUse.Value.ToString("yyyy-MM-dd") : "-")</td>
-          <td>@a.Kills.ToString("N0")</td>
-          <td>@a.Deaths.ToString("N0")</td>
-          <td>@a.KdRatio</td>
-          <td>@a.Headshots.ToString("N0")</td>
-          <td>@a.HsKRatio</td>
-          <td>@a.Suicides.ToString("N0")</td>
-          <td>@a.Accuracy%</td>
+          <td class="@alRow" style="text-align:right">@aliasRank</td>
+          <td class="@alRow">@a.Name</td>
+          <td class="@alRow" style="text-align:right">@RazorHelpers.FormatTimeFull(a.ConnectionTime)</td>
+          <td class="@alRow" style="text-align:right">@(a.LastUse.HasValue ? a.LastUse.Value.ToString("yyyy-MM-dd") : "-")</td>
+          <td class="@alRow" style="text-align:right">@a.Kills.ToString("N0")</td>
+          <td class="@alRow" style="text-align:right">@a.Deaths.ToString("N0")</td>
+          <td class="@alRow" style="text-align:right">@a.KdRatio</td>
+          <td class="@alRow" style="text-align:right">@a.Headshots.ToString("N0")</td>
+          <td class="@alRow" style="text-align:right">@a.HsKRatio</td>
+          <td class="@alRow" style="text-align:right">@a.Suicides.ToString("N0")</td>
+          <td class="@alRow" style="text-align:right">@a.Accuracy%</td>
         </tr>
       }
     </tbody>
