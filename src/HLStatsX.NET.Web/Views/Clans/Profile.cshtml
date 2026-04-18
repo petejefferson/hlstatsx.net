@@ -521,9 +521,8 @@
           <td>
             <img src="/hlstatsimg/games/@(Model.Game)/roles/@(Uri.EscapeDataString(r.RoleCode)).png"
                  alt="@r.RoleName" title="@r.RoleName"
-                 style="vertical-align:middle;max-height:20px;"
                  onerror="this.style.display='none'" />
-            @r.RoleName
+            <b>@r.RoleName</b>
           </td>
           <td style="text-align:right;">@r.JoinCount.ToString("N0") times</td>
           <td style="text-align:right;">@r.Percent.ToString("F2")%</td>
