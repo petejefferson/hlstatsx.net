@@ -8,7 +8,8 @@ public record ClanLeaderboardViewModel(
     string Game,
     string SortBy,
     bool Descending,
-    int MinMembers
+    int MinMembers,
+    int TotalClans
 );
 
 public record ClanProfileViewModel(

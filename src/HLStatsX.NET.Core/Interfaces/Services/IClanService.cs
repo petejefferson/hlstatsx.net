@@ -7,6 +7,7 @@ public interface IClanService
 {
     Task<Clan?> GetClanAsync(int clanId, CancellationToken ct = default);
     Task<PagedResult<ClanLeaderboardRow>> GetLeaderboardAsync(string game, int page, int pageSize, string sortBy = "skill", bool desc = true, int minMembers = 3, CancellationToken ct = default);
+    Task<int> GetTotalCountAsync(string game, CancellationToken ct = default);
     Task<IReadOnlyList<Player>> GetMembersAsync(int clanId, CancellationToken ct = default);
     Task<PagedResult<Clan>> SearchClansAsync(string query, string game, int page, int pageSize, CancellationToken ct = default);
     Task<IReadOnlyList<Clan>> GetClansByCountryAsync(string countryCode, string game, CancellationToken ct = default);

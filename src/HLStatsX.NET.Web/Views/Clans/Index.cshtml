@@ -22,23 +22,13 @@
 
 <h1>Clan Rankings &mdash; @Model.Game</h1>
 
-<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap; gap:0.5rem;">
+<div style="margin-bottom:0.5rem;">
     <form method="get" asp-controller="Search" asp-action="Index" style="display:flex; align-items:center; gap:0.4rem;">
         <input type="hidden" name="game" value="@Model.Game" />
         <input type="hidden" name="st" value="clan" />
         <strong>&bull;</strong> Find a clan:
         <input type="text" name="q" size="20" maxlength="64" class="form-text" placeholder="Clan name&hellip;" />
         <button type="submit" class="btn-small">Search</button>
-    </form>
-
-    <form method="get" asp-action="Index" style="display:flex; align-items:center; gap:0.4rem;">
-        <input type="hidden" name="game"    value="@Model.Game" />
-        <input type="hidden" name="sortBy"  value="@Model.SortBy" />
-        <input type="hidden" name="desc"    value="@Model.Descending.ToString().ToLower()" />
-        <strong>&bull;</strong> Show clans with at least
-        <input type="number" name="minMembers" min="1" size="4" value="@Model.MinMembers" class="form-text" style="width:4rem;" />
-        members
-        <button type="submit" class="btn-small">Apply</button>
     </form>
 </div>
 
@@ -50,6 +40,7 @@
             <th style="text-align:left;">Tag</th>
             <th style="text-align:right;"><a href="@(SortUrl("skill"))">Avg. Points@(Mark("skill"))</a></th>
             <th style="text-align:right;"><a href="@(SortUrl("members"))">Members@(Mark("members"))</a></th>
+            <th style="text-align:center;"><a href="@(SortUrl("activity"))">Activity@(Mark("activity"))</a></th>
             <th style="text-align:right;"><a href="@(SortUrl("kills"))">Kills@(Mark("kills"))</a></th>
             <th style="text-align:right;"><a href="@(SortUrl("deaths"))">Deaths@(Mark("deaths"))</a></th>
             <th style="text-align:right;">K:D</th>
@@ -67,6 +58,7 @@
                 <td>@clan.Tag</td>
                 <td style="text-align:right;">@clan.AvgSkill.ToString("N0")</td>
                 <td style="text-align:right;">@clan.MemberCount</td>
+                <td style="text-align:center;"><meter min="0" max="100" low="25" high="50" optimum="75" value="@clan.AvgActivity" title="@clan.AvgActivity%"></meter></td>
                 <td style="text-align:right;">@clan.TotalKills.ToString("N0")</td>
                 <td style="text-align:right;">@clan.TotalDeaths.ToString("N0")</td>
                 <td style="text-align:right;">@clan.KillDeathRatio</td>
@@ -78,3 +70,15 @@
 </table>
 
 <partial name="_Pagination" model="@PaginationModel.From(Model.Clans, p => Url.Action("Index", new { game = Model.Game, sortBy = Model.SortBy, desc = Model.Descending, minMembers = Model.MinMembers, page = p })!)" />
+
+<div style="margin-top:0.5rem;">
+    <form method="get" asp-action="Index" style="display:flex; align-items:center; gap:0.4rem;">
+        <input type="hidden" name="game"    value="@Model.Game" />
+        <input type="hidden" name="sortBy"  value="@Model.SortBy" />
+        <input type="hidden" name="desc"    value="@Model.Descending.ToString().ToLower()" />
+        <strong>&bull;</strong> Show only clans with
+        <input type="number" name="minMembers" min="1" size="4" value="@Model.MinMembers" class="form-text" style="width:4rem;" />
+        or more members from a total of <strong>@Model.TotalClans.ToString("N0")</strong> clans
+        <button type="submit" class="btn-small">Apply</button>
+    </form>
+</div>

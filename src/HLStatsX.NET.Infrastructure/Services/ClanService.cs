@@ -17,6 +17,9 @@ public class ClanService : IClanService
     public Task<PagedResult<ClanLeaderboardRow>> GetLeaderboardAsync(string game, int page, int pageSize, string sortBy = "skill", bool desc = true, int minMembers = 3, CancellationToken ct = default) =>
         _clans.GetRankingsAsync(game, page, pageSize, sortBy, desc, minMembers, ct);
 
+    public Task<int> GetTotalCountAsync(string game, CancellationToken ct = default) =>
+        _clans.GetTotalCountAsync(game, ct);
+
     public Task<IReadOnlyList<Player>> GetMembersAsync(int clanId, CancellationToken ct = default) =>
         _clans.GetMembersAsync(clanId, ct);
 

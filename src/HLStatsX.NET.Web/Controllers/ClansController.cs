@@ -19,8 +19,10 @@ public class ClansController : Controller
     {
         game ??= _config["HLStatsX:DefaultGame"] ?? "cstrike";
         int pageSize = _config.GetValue<int>("HLStatsX:DefaultPageSize", 50);
-        var result = await _clans.GetLeaderboardAsync(game, page, pageSize, sortBy, desc, minMembers, ct);
-        return View(new ClanLeaderboardViewModel(result, game, sortBy, desc, minMembers));
+        var leaderboardTask = _clans.GetLeaderboardAsync(game, page, pageSize, sortBy, desc, minMembers, ct);
+        var totalTask = _clans.GetTotalCountAsync(game, ct);
+        await Task.WhenAll(leaderboardTask, totalTask);
+        return View(new ClanLeaderboardViewModel(leaderboardTask.Result, game, sortBy, desc, minMembers, totalTask.Result));
     }
 
     public async Task<IActionResult> Profile(
