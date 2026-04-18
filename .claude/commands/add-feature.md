@@ -28,6 +28,7 @@ Start at Core (entities/interfaces), then Infrastructure (repository), then Web 
 
 ## Step 4 — Apply the standard patterns
 - Pagination: use `PagedResult<T>` and the `_Pagination` partial
+- Meter/bar graphs: always use `<meter min="0" max="100" low="25" high="50" optimum="75" value="...">` — all five attributes required for the green/yellow/red colour gradient (CSS is global in `site.css`; no inline colour styles)
 - Sortable columns: **every table must be sortable** — all data columns (except Rank and bar-graph ratio columns) must be clickable sort links using `SortUrl(field)` / `Mark(field)` local functions with `@(expr)` explicit syntax
 - Rank column: **every table must have a `Rank` column as its first column** — header `<td style="text-align:right;">Rank</td>`, data cell `<td style="text-align:right;">@rowNum</td>` using a sequential loop counter; never use "#" as the header
 - Async: all methods must be `async Task<T>` with `CancellationToken ct = default`

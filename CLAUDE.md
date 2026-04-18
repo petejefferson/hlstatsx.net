@@ -114,6 +114,8 @@ Every list page uses local Razor functions:
 
 Use `@(SortUrl("field"))` and `@(Mark("field"))` — explicit `@(expr)` is required inside HTML attributes.
 
+**Meter (bar graph) elements** must always use `<meter min="0" max="100" low="25" high="50" optimum="75" value="...">`. All five attributes are required — omitting `low`/`high`/`optimum` disables the green/yellow/red colour gradient. The colour CSS (green `#86CC00`, yellow `#FFDB1A`, red `#CC4600`) lives in `wwwroot/css/site.css` and applies globally; do not add inline colour styles to individual meters.
+
 **Every table must have a `Rank` column as its first column.** Header: `<td style="text-align:right;">Rank</td>`. Data cell: `<td style="text-align:right;">@rowNum</td>` using a sequential loop counter. The header text is always "Rank" — never "#" or any other label.
 
 **Every table must have sortable columns.** All data columns (except Rank and bar-graph ratio columns) must be clickable sort links using `SortUrl`/`Mark`. This applies to every table on every page — leaderboards, profile sub-tables, detail pages, etc.

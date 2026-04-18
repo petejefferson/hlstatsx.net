@@ -393,3 +393,41 @@ select[name="rankType"] {
 .stats-overview .stat-card { background: var(--surface); border: 1px solid var(--border); padding: 0.75rem; text-align: center; }
 .stats-overview .stat-card h3 { font-size: 0.8rem; color: var(--muted); }
 .stats-overview .stat-card p  { font-size: 1.6rem; font-weight: 700; color: var(--highlight); }
+
+/* ============================================================
+   METER (bar graph) — matches PHP hlstats.css exactly
+   ============================================================ */
+meter {
+    background: #EEE;
+    box-shadow: 0 2px 3px rgba(0,0,0,0.2) inset;
+    border-radius: 3px;
+}
+meter::-webkit-meter-bar {
+    background: #EEE;
+    box-shadow: 0 2px 3px rgba(0,0,0,0.2) inset;
+    border-radius: 3px;
+}
+meter::-webkit-meter-optimum-value {
+    background: #86CC00;
+    border-radius: 3px;
+}
+meter::-webkit-meter-suboptimum-value {
+    background: #FFDB1A;
+    border-radius: 3px;
+}
+meter::-webkit-meter-even-less-good-value {
+    background: #CC4600;
+    border-radius: 3px;
+}
+meter::-moz-meter-bar {
+    border-radius: 3px;
+}
+meter:-moz-meter-optimum::-moz-meter-bar {
+    background: #86CC00;
+}
+meter:-moz-meter-sub-optimum::-moz-meter-bar {
+    background: #FFDB1A;
+}
+meter:-moz-meter-sub-sub-optimum::-moz-meter-bar {
+    background: #CC4600;
+}

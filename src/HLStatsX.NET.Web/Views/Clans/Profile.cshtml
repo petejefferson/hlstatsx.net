@@ -302,12 +302,12 @@
           </td>
           <td style="text-align:right;">@m.Skill.ToString("N0")</td>
           <td style="text-align:right;">
-            <meter min="0" max="100" value="@m.ActivityScore" style="width:60px;"></meter>
+            <meter min="0" max="100" low="25" high="50" optimum="75" value="@m.ActivityScore" style="width:60px;"></meter>
             @m.ActivityScore%
           </td>
           <td style="text-align:right;">@FormatTime(m.ConnectionTime)</td>
           <td style="text-align:right;">@m.Kills.ToString("N0")</td>
-          <td><meter min="0" max="100" value="@m.ClanKillPercent.ToString("F0")" style="width:80px;"></meter></td>
+          <td><meter min="0" max="100" low="25" high="50" optimum="75" value="@m.ClanKillPercent.ToString("F0")" style="width:80px;"></meter></td>
           <td style="text-align:right;">@m.ClanKillPercent.ToString("F2")%</td>
           <td style="text-align:right;">@m.Deaths.ToString("N0")</td>
           <td style="text-align:right;">@m.KillDeathRatio.ToString("F2")</td>
@@ -499,7 +499,7 @@
           <td style="text-align:right;">@rowNum</td>
           <td>@t.TeamName</td>
           <td style="text-align:right;">@t.JoinCount.ToString("N0") times</td>
-          <td><meter min="0" max="100" value="@t.Percent.ToString("F0")" style="width:100px;"></meter></td>
+          <td><meter min="0" max="100" low="25" high="50" optimum="75" value="@t.Percent.ToString("F0")" style="width:100px;"></meter></td>
           <td style="text-align:right;">@t.Percent.ToString("F2")%</td>
         </tr>
       }
@@ -537,7 +537,7 @@
           </td>
           <td style="text-align:right;">@r.JoinCount.ToString("N0") times</td>
           <td style="text-align:right;">@r.Percent.ToString("F2")%</td>
-          <td><meter min="0" max="100" value="@r.Percent.ToString("F0")" style="width:100px;"></meter></td>
+          <td><meter min="0" max="100" low="25" high="50" optimum="75" value="@r.Percent.ToString("F0")" style="width:100px;"></meter></td>
           <td style="text-align:right;">@r.Kills.ToString("N0")</td>
           <td style="text-align:right;">@r.Deaths.ToString("N0")</td>
           <td style="text-align:right;">@r.KillDeathRatio.ToString("F2")</td>

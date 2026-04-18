@@ -151,7 +151,7 @@
                 <td style="text-align:right;">@FormatTime(m.ConnectionTime)</td>
                 <td style="text-align:right;">@m.Kills.ToString("N0")</td>
                 <td style="text-align:center;">
-                    <meter min="0" max="100" value="@m.KillPercent" title="@m.KillPercent.ToString("F2")%"></meter>
+                    <meter min="0" max="100" low="25" high="50" optimum="75" value="@m.KillPercent" title="@m.KillPercent.ToString("F2")%"></meter>
                 </td>
                 <td style="text-align:right;">@m.KillPercent.ToString("F2")%</td>
                 <td style="text-align:right;">@m.Deaths.ToString("N0")</td>
