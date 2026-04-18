@@ -171,8 +171,7 @@ footer {
     text-decoration: none;
     white-space: nowrap;
 }
-.data-table-head th a:hover,
-.stats-table thead th a:hover { text-decoration: underline; }
+
 .bg1 { background: var(--surface); }
 .bg2 { background: var(--surface-alt); }
 .data-table tbody tr:hover { background: #e8f4f8; }
