@@ -83,7 +83,11 @@ public class PlayersController : Controller
         return (DateTime.MinValue, DateTime.MaxValue);
     }
 
-    public async Task<IActionResult> Profile(int id, CancellationToken ct)
+    public async Task<IActionResult> Profile(int id,
+        string wuSort = "kills", bool wuDesc = true,
+        string wsSort = "kills", bool wsDesc = true,
+        string wtSort = "hits",  bool wtDesc = true,
+        CancellationToken ct = default)
     {
         var player = await _players.GetPlayerAsync(id, ct);
         if (player is null) return NotFound();
@@ -117,6 +121,8 @@ public class PlayersController : Controller
         var mapPerfTask       = _players.GetMapPerformanceAsync(id, ct);
         var serverPerfTask    = _players.GetServerPerformanceAsync(id, ct);
         var weaponStatsTask   = _players.GetWeaponStatsAsync(id, game, ct);
+        var weaponStatsmeTask = _players.GetWeaponStatsmeAsync(id, game, ct);
+        var weaponTargetsTask = _players.GetWeaponTargetsAsync(id, game, ct);
         var teamSelTask       = _players.GetTeamSelectionAsync(id, game, ct);
         var roleSelTask       = _players.GetRoleSelectionAsync(id, game, ct);
         var playerActionsTask = _players.GetPlayerActionsAsync(id, ct);
@@ -130,7 +136,8 @@ public class PlayersController : Controller
             aliasesTask, awardsTask, allRibbonsTask, realStatsTask,
             pingTask, lastConnectTask, favServerTask, favMapTask,
             favWeaponTask, killStatsTask, mapPerfTask, serverPerfTask,
-            weaponStatsTask, teamSelTask, roleSelTask,
+            weaponStatsTask, weaponStatsmeTask, weaponTargetsTask,
+            teamSelTask, roleSelTask,
             playerActionsTask, actionVictimsTask, trendTask, globalAwardsTask, deleteDaysTask);
 
         var rankEntity = rankEntityTask.Result;
@@ -159,7 +166,15 @@ public class PlayersController : Controller
             KillStats           = killStatsTask.Result,
             MapPerformance      = mapPerfTask.Result,
             ServerPerformance   = serverPerfTask.Result,
-            WeaponStats         = weaponStatsTask.Result,
+            WeaponStats         = SortWeaponUsage(weaponStatsTask.Result, wuSort, wuDesc),
+            WeaponUsageSortBy   = wuSort,
+            WeaponUsageDesc     = wuDesc,
+            WeaponStatsme       = SortWeaponStatsme(weaponStatsmeTask.Result, wsSort, wsDesc),
+            WeaponStatsmeSortBy = wsSort,
+            WeaponStatsmeDesc   = wsDesc,
+            WeaponTargets       = SortWeaponTargets(weaponTargetsTask.Result, wtSort, wtDesc),
+            WeaponTargetSortBy  = wtSort,
+            WeaponTargetDesc    = wtDesc,
             TeamSelection       = teamSelTask.Result,
             RoleSelection       = roleSelTask.Result,
             PlayerActions       = playerActionsTask.Result,
@@ -170,6 +185,58 @@ public class PlayersController : Controller
             HideBotPlayers      = _config.GetValue<bool>("HLStatsX:HideBotPlayers", true),
             DeleteDays          = deleteDaysTask.Result
         });
+    }
+
+    private static IReadOnlyList<WeaponStatRow> SortWeaponUsage(IReadOnlyList<WeaponStatRow> rows, string sortBy, bool desc)
+    {
+        IOrderedEnumerable<WeaponStatRow> ordered = sortBy switch
+        {
+            "weapon"   => desc ? rows.OrderByDescending(w => w.WeaponName) : rows.OrderBy(w => w.WeaponName),
+            "modifier" => desc ? rows.OrderByDescending(w => w.Modifier)   : rows.OrderBy(w => w.Modifier),
+            "headshots" or "hpercent" => desc ? rows.OrderByDescending(w => w.Headshots) : rows.OrderBy(w => w.Headshots),
+            "hpk"      => desc ? rows.OrderByDescending(w => w.Kills > 0 ? (double)w.Headshots / w.Kills : 0)
+                                : rows.OrderBy(w => w.Kills > 0 ? (double)w.Headshots / w.Kills : 0),
+            _          => desc ? rows.OrderByDescending(w => w.Kills) : rows.OrderBy(w => w.Kills),
+        };
+        return ordered.ToList();
+    }
+
+    private static IReadOnlyList<WeaponStatsmeRow> SortWeaponStatsme(IReadOnlyList<WeaponStatsmeRow> rows, string sortBy, bool desc)
+    {
+        IOrderedEnumerable<WeaponStatsmeRow> ordered = sortBy switch
+        {
+            "weapon"   => desc ? rows.OrderByDescending(w => w.WeaponName)    : rows.OrderBy(w => w.WeaponName),
+            "shots"    => desc ? rows.OrderByDescending(w => w.Shots)         : rows.OrderBy(w => w.Shots),
+            "hits"     => desc ? rows.OrderByDescending(w => w.Hits)          : rows.OrderBy(w => w.Hits),
+            "damage"   => desc ? rows.OrderByDescending(w => w.Damage)        : rows.OrderBy(w => w.Damage),
+            "headshots" => desc ? rows.OrderByDescending(w => w.Headshots)    : rows.OrderBy(w => w.Headshots),
+            "kdr"      => desc ? rows.OrderByDescending(w => w.Kdr)           : rows.OrderBy(w => w.Kdr),
+            "accuracy" => desc ? rows.OrderByDescending(w => w.Accuracy)      : rows.OrderBy(w => w.Accuracy),
+            "dph"      => desc ? rows.OrderByDescending(w => w.DamagePerHit)  : rows.OrderBy(w => w.DamagePerHit),
+            "spk"      => desc ? rows.OrderByDescending(w => w.ShotsPerKill)  : rows.OrderBy(w => w.ShotsPerKill),
+            _          => desc ? rows.OrderByDescending(w => w.Kills)         : rows.OrderBy(w => w.Kills),
+        };
+        return ordered.ToList();
+    }
+
+    private static IReadOnlyList<WeaponTargetRow> SortWeaponTargets(IReadOnlyList<WeaponTargetRow> rows, string sortBy, bool desc)
+    {
+        IOrderedEnumerable<WeaponTargetRow> ordered = sortBy switch
+        {
+            "weapon"   => desc ? rows.OrderByDescending(w => w.WeaponName) : rows.OrderBy(w => w.WeaponName),
+            "head"     => desc ? rows.OrderByDescending(w => w.Head)       : rows.OrderBy(w => w.Head),
+            "chest"    => desc ? rows.OrderByDescending(w => w.Chest)      : rows.OrderBy(w => w.Chest),
+            "stomach"  => desc ? rows.OrderByDescending(w => w.Stomach)    : rows.OrderBy(w => w.Stomach),
+            "leftarm"  => desc ? rows.OrderByDescending(w => w.LeftArm)    : rows.OrderBy(w => w.LeftArm),
+            "rightarm" => desc ? rows.OrderByDescending(w => w.RightArm)   : rows.OrderBy(w => w.RightArm),
+            "leftleg"  => desc ? rows.OrderByDescending(w => w.LeftLeg)    : rows.OrderBy(w => w.LeftLeg),
+            "rightleg" => desc ? rows.OrderByDescending(w => w.RightLeg)   : rows.OrderBy(w => w.RightLeg),
+            "left"     => desc ? rows.OrderByDescending(w => w.LeftPct)    : rows.OrderBy(w => w.LeftPct),
+            "middle"   => desc ? rows.OrderByDescending(w => w.MiddlePct)  : rows.OrderBy(w => w.MiddlePct),
+            "right"    => desc ? rows.OrderByDescending(w => w.RightPct)   : rows.OrderBy(w => w.RightPct),
+            _          => desc ? rows.OrderByDescending(w => w.Hits)       : rows.OrderBy(w => w.Hits),
+        };
+        return ordered.ToList();
     }
 
     public async Task<IActionResult> Avatar(long steam64, CancellationToken ct)

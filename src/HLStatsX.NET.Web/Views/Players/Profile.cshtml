@@ -497,38 +497,222 @@
 </div>
 
 <div id="tab-weapons" class="tab-panel" style="display:none;">
-  <h2>Weapon Usage *</h2>
-  @if (!Model.WeaponStats.Any())
+@{
+    string WuSortUrl(string field)
+    {
+        bool nextDesc = Model.WeaponUsageSortBy == field ? !Model.WeaponUsageDesc : true;
+        return Url.Action("Profile", new { id = Model.Player.PlayerId,
+            wuSort = field, wuDesc = nextDesc,
+            wsSort = Model.WeaponStatsmeSortBy, wsDesc = Model.WeaponStatsmeDesc,
+            wtSort = Model.WeaponTargetSortBy,  wtDesc = Model.WeaponTargetDesc })! + "#tab-weapons";
+    }
+    string WuMark(string field) => Model.WeaponUsageSortBy == field ? (Model.WeaponUsageDesc ? " ▼" : " ▲") : "";
+
+    string WsSortUrl(string field)
+    {
+        bool nextDesc = Model.WeaponStatsmeSortBy == field ? !Model.WeaponStatsmeDesc : true;
+        return Url.Action("Profile", new { id = Model.Player.PlayerId,
+            wuSort = Model.WeaponUsageSortBy, wuDesc = Model.WeaponUsageDesc,
+            wsSort = field, wsDesc = nextDesc,
+            wtSort = Model.WeaponTargetSortBy,  wtDesc = Model.WeaponTargetDesc })! + "#tab-weapons";
+    }
+    string WsMark(string field) => Model.WeaponStatsmeSortBy == field ? (Model.WeaponStatsmeDesc ? " ▼" : " ▲") : "";
+
+    string WtSortUrl(string field)
+    {
+        bool nextDesc = Model.WeaponTargetSortBy == field ? !Model.WeaponTargetDesc : true;
+        return Url.Action("Profile", new { id = Model.Player.PlayerId,
+            wuSort = Model.WeaponUsageSortBy, wuDesc = Model.WeaponUsageDesc,
+            wsSort = Model.WeaponStatsmeSortBy, wsDesc = Model.WeaponStatsmeDesc,
+            wtSort = field, wtDesc = nextDesc })! + "#tab-weapons";
+    }
+    string WtMark(string field) => Model.WeaponTargetSortBy == field ? (Model.WeaponTargetDesc ? " ▼" : " ▲") : "";
+}
+
+  @* ── Weapon Usage ── *@
+  @if (Model.WeaponStats.Any())
   {
-    <p>No weapon data available.</p>
-  }
-  else
-  {
-    long totalKills = Model.WeaponStats.Sum(w => w.Kills);
-    long totalHeadshots = Model.WeaponStats.Sum(w => w.Headshots);
-    <table class="stats-table">
+    long wuRealKills = Model.RealStats.RealKills > 0 ? Model.RealStats.RealKills : 1;
+    long wuRealHS    = Model.RealStats.RealHeadshots > 0 ? Model.RealStats.RealHeadshots : 1;
+    <h2>Weapon Usage *</h2>
+    <table class="data-table">
       <thead>
-        <tr>
-          <th>Weapon</th><th>Modifier</th>
-          <th>Kills</th><th>%</th>
-          <th>Headshots</th><th>%</th><th>HS:K</th>
+        <tr class="data-table-head">
+          <th>Rank</th>
+          <th><a href="@(WuSortUrl("weapon"))">Weapon@(WuMark("weapon"))</a></th>
+          <th style="text-align:right"><a href="@(WuSortUrl("modifier"))">Modifier@(WuMark("modifier"))</a></th>
+          <th style="text-align:right"><a href="@(WuSortUrl("kills"))">Kills@(WuMark("kills"))</a></th>
+          <th style="text-align:right"><a href="@(WuSortUrl("kpercent"))">%@(WuMark("kpercent"))</a></th>
+          <th><a href="@(WuSortUrl("kpercent"))">Ratio@(WuMark("kpercent"))</a></th>
+          <th style="text-align:right"><a href="@(WuSortUrl("headshots"))">Headshots@(WuMark("headshots"))</a></th>
+          <th style="text-align:right"><a href="@(WuSortUrl("hpercent"))">%@(WuMark("hpercent"))</a></th>
+          <th><a href="@(WuSortUrl("hpercent"))">Ratio@(WuMark("hpercent"))</a></th>
+          <th style="text-align:right"><a href="@(WuSortUrl("hpk"))">HS:K@(WuMark("hpk"))</a></th>
         </tr>
       </thead>
       <tbody>
+        @{int wuRank = 1; bool wuBg = false;}
         @foreach (var w in Model.WeaponStats)
         {
+          string wuRow = wuBg ? "bg2" : "bg1"; wuBg = !wuBg;
+          string wuAlt = wuBg ? "bg2" : "bg1";
+          double kpct = Math.Round((double)w.Kills / wuRealKills * 100, 2);
+          double hpct = Math.Round((double)w.Headshots / wuRealHS * 100, 2);
+          double hpk  = w.Kills > 0 ? Math.Round((double)w.Headshots / w.Kills, 2) : 0;
+          string imgSrc = $"/hlstatsimg/games/{Model.Player.Game}/weapons/{w.WeaponCode.ToLower()}.gif";
           <tr>
-            <td>@w.WeaponName</td>
-            <td>@w.Modifier.ToString("F2")</td>
-            <td>@w.Kills.ToString("N0")</td>
-            <td>@(totalKills > 0 ? $"{(double)w.Kills / totalKills * 100:F2}%" : "-")</td>
-            <td>@w.Headshots.ToString("N0")</td>
-            <td>@(totalHeadshots > 0 ? $"{(double)w.Headshots / totalHeadshots * 100:F2}%" : "-")</td>
-            <td>@(w.Kills > 0 ? $"{(double)w.Headshots / w.Kills:F2}" : "-")</td>
+            <td class="@wuRow" style="text-align:right">@wuRank</td>
+            <td class="@wuAlt" style="text-align:center">
+              @if (w.WeaponId.HasValue)
+              {
+                <a asp-controller="Weapons" asp-action="Detail" asp-route-id="@w.WeaponId">
+                  <img src="@imgSrc" width="90" height="17" alt="@w.WeaponName" title="@w.WeaponName" />
+                </a>
+              }
+              else
+              {
+                <img src="@imgSrc" width="90" height="17" alt="@w.WeaponName" title="@w.WeaponName" />
+              }
+            </td>
+            <td class="@wuRow" style="text-align:right">@w.Modifier.ToString("F2")</td>
+            <td class="@wuAlt" style="text-align:right">@w.Kills.ToString("N0")</td>
+            <td class="@wuRow" style="text-align:right">@(kpct.ToString("F2"))%</td>
+            <td class="@wuAlt"><meter min="0" max="100" low="25" high="50" optimum="75" value="@(kpct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))"></meter></td>
+            <td class="@wuRow" style="text-align:right">@w.Headshots.ToString("N0")</td>
+            <td class="@wuAlt" style="text-align:right">@(hpct.ToString("F2"))%</td>
+            <td class="@wuRow"><meter min="0" max="100" low="25" high="50" optimum="75" value="@(hpct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))"></meter></td>
+            <td class="@wuAlt" style="text-align:right">@(hpk.ToString("F2"))</td>
           </tr>
+          wuRank++;
         }
       </tbody>
     </table>
+    <br />
+  }
+
+  @* ── Weapon Statistics (StatsMe) ── *@
+  @if (Model.WeaponStatsme.Any())
+  {
+    <h2>Weapon Statistics *</h2>
+    <table class="data-table">
+      <thead>
+        <tr class="data-table-head">
+          <th>Rank</th>
+          <th><a href="@(WsSortUrl("weapon"))">Weapon@(WsMark("weapon"))</a></th>
+          <th style="text-align:right"><a href="@(WsSortUrl("shots"))">Shots@(WsMark("shots"))</a></th>
+          <th style="text-align:right"><a href="@(WsSortUrl("hits"))">Hits@(WsMark("hits"))</a></th>
+          <th style="text-align:right"><a href="@(WsSortUrl("damage"))">Damage@(WsMark("damage"))</a></th>
+          <th style="text-align:right"><a href="@(WsSortUrl("headshots"))">Headshots@(WsMark("headshots"))</a></th>
+          <th style="text-align:right"><a href="@(WsSortUrl("kills"))">Kills@(WsMark("kills"))</a></th>
+          <th style="text-align:right"><a href="@(WsSortUrl("kdr"))">K:D@(WsMark("kdr"))</a></th>
+          <th style="text-align:right"><a href="@(WsSortUrl("accuracy"))">Accuracy@(WsMark("accuracy"))</a></th>
+          <th style="text-align:right"><a href="@(WsSortUrl("dph"))">Dmg/Hit@(WsMark("dph"))</a></th>
+          <th style="text-align:right"><a href="@(WsSortUrl("spk"))">Shots/Kill@(WsMark("spk"))</a></th>
+        </tr>
+      </thead>
+      <tbody>
+        @{int wsRank = 1; bool wsBg = false;}
+        @foreach (var w in Model.WeaponStatsme)
+        {
+          string wsRow = wsBg ? "bg2" : "bg1"; wsBg = !wsBg;
+          string wsAlt = wsBg ? "bg2" : "bg1";
+          string wsImg = $"/hlstatsimg/games/{Model.Player.Game}/weapons/{w.WeaponCode.ToLower()}.gif";
+          <tr>
+            <td class="@wsRow" style="text-align:right">@wsRank</td>
+            <td class="@wsAlt" style="text-align:center">
+              @if (w.WeaponId.HasValue)
+              {
+                <a asp-controller="Weapons" asp-action="Detail" asp-route-id="@w.WeaponId">
+                  <img src="@wsImg" width="90" height="17" alt="@w.WeaponName" title="@w.WeaponName" />
+                </a>
+              }
+              else
+              {
+                <img src="@wsImg" width="90" height="17" alt="@w.WeaponName" title="@w.WeaponName" />
+              }
+            </td>
+            <td class="@wsRow" style="text-align:right">@w.Shots.ToString("N0")</td>
+            <td class="@wsAlt" style="text-align:right">@w.Hits.ToString("N0")</td>
+            <td class="@wsRow" style="text-align:right">@w.Damage.ToString("N0")</td>
+            <td class="@wsAlt" style="text-align:right">@w.Headshots.ToString("N0")</td>
+            <td class="@wsRow" style="text-align:right">@w.Kills.ToString("N0")</td>
+            <td class="@wsAlt" style="text-align:right">@w.Kdr.ToString("F2")</td>
+            <td class="@wsRow" style="text-align:right">@(w.Accuracy.ToString("F1"))%</td>
+            <td class="@wsAlt" style="text-align:right">@w.DamagePerHit.ToString("F1")</td>
+            <td class="@wsRow" style="text-align:right">@w.ShotsPerKill.ToString("F1")</td>
+          </tr>
+          wsRank++;
+        }
+      </tbody>
+    </table>
+    <br />
+  }
+
+  @* ── Weapon Targets (StatsMe2) ── *@
+  @if (Model.WeaponTargets.Any())
+  {
+    <h2>Weapon Targets *</h2>
+    <table class="data-table">
+      <thead>
+        <tr class="data-table-head">
+          <th>Rank</th>
+          <th><a href="@(WtSortUrl("weapon"))">Weapon@(WtMark("weapon"))</a></th>
+          <th style="text-align:right"><a href="@(WtSortUrl("hits"))">Hits@(WtMark("hits"))</a></th>
+          <th style="text-align:right"><a href="@(WtSortUrl("head"))">Head@(WtMark("head"))</a></th>
+          <th style="text-align:right"><a href="@(WtSortUrl("chest"))">Chest@(WtMark("chest"))</a></th>
+          <th style="text-align:right"><a href="@(WtSortUrl("stomach"))">Stomach@(WtMark("stomach"))</a></th>
+          <th style="text-align:right"><a href="@(WtSortUrl("leftarm"))">Left Arm@(WtMark("leftarm"))</a></th>
+          <th style="text-align:right"><a href="@(WtSortUrl("rightarm"))">Right Arm@(WtMark("rightarm"))</a></th>
+          <th style="text-align:right"><a href="@(WtSortUrl("leftleg"))">Left Leg@(WtMark("leftleg"))</a></th>
+          <th style="text-align:right"><a href="@(WtSortUrl("rightleg"))">Right Leg@(WtMark("rightleg"))</a></th>
+          <th style="text-align:right"><a href="@(WtSortUrl("left"))">Left %@(WtMark("left"))</a></th>
+          <th style="text-align:right"><a href="@(WtSortUrl("middle"))">Middle %@(WtMark("middle"))</a></th>
+          <th style="text-align:right"><a href="@(WtSortUrl("right"))">Right %@(WtMark("right"))</a></th>
+        </tr>
+      </thead>
+      <tbody>
+        @{int wtRank = 1; bool wtBg = false;}
+        @foreach (var w in Model.WeaponTargets)
+        {
+          string wtRow = wtBg ? "bg2" : "bg1"; wtBg = !wtBg;
+          string wtAlt = wtBg ? "bg2" : "bg1";
+          string wtImg = $"/hlstatsimg/games/{Model.Player.Game}/weapons/{w.WeaponCode.ToLower()}.gif";
+          <tr>
+            <td class="@wtRow" style="text-align:right">@wtRank</td>
+            <td class="@wtAlt" style="text-align:center">
+              @if (w.WeaponId.HasValue)
+              {
+                <a asp-controller="Weapons" asp-action="Detail" asp-route-id="@w.WeaponId">
+                  <img src="@wtImg" width="90" height="17" alt="@w.WeaponName" title="@w.WeaponName" />
+                </a>
+              }
+              else
+              {
+                <img src="@wtImg" width="90" height="17" alt="@w.WeaponName" title="@w.WeaponName" />
+              }
+            </td>
+            <td class="@wtRow" style="text-align:right">@w.Hits.ToString("N0")</td>
+            <td class="@wtAlt" style="text-align:right">@w.Head.ToString("N0")</td>
+            <td class="@wtRow" style="text-align:right">@w.Chest.ToString("N0")</td>
+            <td class="@wtAlt" style="text-align:right">@w.Stomach.ToString("N0")</td>
+            <td class="@wtRow" style="text-align:right">@w.LeftArm.ToString("N0")</td>
+            <td class="@wtAlt" style="text-align:right">@w.RightArm.ToString("N0")</td>
+            <td class="@wtRow" style="text-align:right">@w.LeftLeg.ToString("N0")</td>
+            <td class="@wtAlt" style="text-align:right">@w.RightLeg.ToString("N0")</td>
+            <td class="@wtRow" style="text-align:right">@(w.LeftPct.ToString("F1"))%</td>
+            <td class="@wtAlt" style="text-align:right">@(w.MiddlePct.ToString("F1"))%</td>
+            <td class="@wtRow" style="text-align:right">@(w.RightPct.ToString("F1"))%</td>
+          </tr>
+          wtRank++;
+        }
+      </tbody>
+    </table>
+    <br />
+  }
+
+  @if (!Model.WeaponStats.Any() && !Model.WeaponStatsme.Any() && !Model.WeaponTargets.Any())
+  {
+    <p>No weapon data available.</p>
   }
 </div>
 

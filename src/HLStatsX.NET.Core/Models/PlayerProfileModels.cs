@@ -22,7 +22,18 @@ public record ServerStatRow(
     int ServerId, string ServerName, long Kills, long Deaths, long Headshots);
 
 public record WeaponStatRow(
-    string WeaponCode, string WeaponName, float Modifier, long Kills, long Headshots);
+    string WeaponCode, string WeaponName, float Modifier, long Kills, long Headshots, int? WeaponId = null);
+
+public record WeaponStatsmeRow(
+    string WeaponCode, string WeaponName, int? WeaponId,
+    long Shots, long Hits, long Damage, long Headshots, long Kills, long Deaths,
+    double Kdr, double Accuracy, double DamagePerHit, double ShotsPerKill);
+
+public record WeaponTargetRow(
+    string WeaponCode, string WeaponName, int? WeaponId,
+    long Hits, long Head, long Chest, long Stomach,
+    long LeftArm, long RightArm, long LeftLeg, long RightLeg,
+    double LeftPct, double MiddlePct, double RightPct);
 
 public record TeamStatRow(
     string TeamCode, string TeamName, int JoinCount, int TotalJoins);

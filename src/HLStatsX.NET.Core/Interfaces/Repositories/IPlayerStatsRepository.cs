@@ -21,6 +21,8 @@ public interface IPlayerStatsRepository
     Task<IReadOnlyList<MapStatRow>> GetMapPerformanceAsync(int playerId, CancellationToken ct = default);
     Task<IReadOnlyList<ServerStatRow>> GetServerPerformanceAsync(int playerId, CancellationToken ct = default);
     Task<IReadOnlyList<WeaponStatRow>> GetWeaponStatsAsync(int playerId, string game, CancellationToken ct = default);
+    Task<IReadOnlyList<WeaponStatsmeRow>> GetWeaponStatsmeAsync(int playerId, string game, CancellationToken ct = default);
+    Task<IReadOnlyList<WeaponTargetRow>> GetWeaponTargetsAsync(int playerId, string game, CancellationToken ct = default);
     Task<IReadOnlyList<TeamStatRow>> GetTeamSelectionAsync(int playerId, string game, CancellationToken ct = default);
     Task<IReadOnlyList<RoleStatRow>> GetRoleSelectionAsync(int playerId, string game, CancellationToken ct = default);
     Task<IReadOnlyList<ActionStatRow>> GetPlayerActionsAsync(int playerId, CancellationToken ct = default);

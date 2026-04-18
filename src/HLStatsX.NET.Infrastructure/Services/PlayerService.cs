@@ -111,6 +111,12 @@ public class PlayerService : IPlayerService
     public Task<IReadOnlyList<WeaponStatRow>> GetWeaponStatsAsync(int playerId, string game, CancellationToken ct = default) =>
         _stats.GetWeaponStatsAsync(playerId, game, ct);
 
+    public Task<IReadOnlyList<WeaponStatsmeRow>> GetWeaponStatsmeAsync(int playerId, string game, CancellationToken ct = default) =>
+        _stats.GetWeaponStatsmeAsync(playerId, game, ct);
+
+    public Task<IReadOnlyList<WeaponTargetRow>> GetWeaponTargetsAsync(int playerId, string game, CancellationToken ct = default) =>
+        _stats.GetWeaponTargetsAsync(playerId, game, ct);
+
     public Task<IReadOnlyList<TeamStatRow>> GetTeamSelectionAsync(int playerId, string game, CancellationToken ct = default) =>
         _stats.GetTeamSelectionAsync(playerId, game, ct);
 

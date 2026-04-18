@@ -40,6 +40,14 @@ public record PlayerProfileViewModel
     public required IReadOnlyList<MapStatRow> MapPerformance { get; init; }
     public required IReadOnlyList<ServerStatRow> ServerPerformance { get; init; }
     public required IReadOnlyList<WeaponStatRow> WeaponStats { get; init; }
+    public required string WeaponUsageSortBy { get; init; }
+    public required bool WeaponUsageDesc { get; init; }
+    public required IReadOnlyList<WeaponStatsmeRow> WeaponStatsme { get; init; }
+    public required string WeaponStatsmeSortBy { get; init; }
+    public required bool WeaponStatsmeDesc { get; init; }
+    public required IReadOnlyList<WeaponTargetRow> WeaponTargets { get; init; }
+    public required string WeaponTargetSortBy { get; init; }
+    public required bool WeaponTargetDesc { get; init; }
     public required IReadOnlyList<TeamStatRow> TeamSelection { get; init; }
     public required IReadOnlyList<RoleStatRow> RoleSelection { get; init; }
     public required IReadOnlyList<ActionStatRow> PlayerActions { get; init; }

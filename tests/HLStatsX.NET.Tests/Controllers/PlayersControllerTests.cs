@@ -100,6 +100,8 @@ public class PlayersControllerTests
         _playerServiceMock.Setup(s => s.GetMapPerformanceAsync(1, default)).ReturnsAsync(Array.Empty<MapStatRow>());
         _playerServiceMock.Setup(s => s.GetServerPerformanceAsync(1, default)).ReturnsAsync(Array.Empty<ServerStatRow>());
         _playerServiceMock.Setup(s => s.GetWeaponStatsAsync(1, "cstrike", default)).ReturnsAsync(Array.Empty<WeaponStatRow>());
+        _playerServiceMock.Setup(s => s.GetWeaponStatsmeAsync(1, "cstrike", default)).ReturnsAsync(Array.Empty<WeaponStatsmeRow>());
+        _playerServiceMock.Setup(s => s.GetWeaponTargetsAsync(1, "cstrike", default)).ReturnsAsync(Array.Empty<WeaponTargetRow>());
         _playerServiceMock.Setup(s => s.GetTeamSelectionAsync(1, "cstrike", default)).ReturnsAsync(Array.Empty<TeamStatRow>());
         _playerServiceMock.Setup(s => s.GetRoleSelectionAsync(1, "cstrike", default)).ReturnsAsync(Array.Empty<RoleStatRow>());
         _playerServiceMock.Setup(s => s.GetPlayerActionsAsync(1, default)).ReturnsAsync(Array.Empty<ActionStatRow>());

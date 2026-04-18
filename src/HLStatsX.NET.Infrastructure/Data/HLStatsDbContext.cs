@@ -46,6 +46,8 @@ public class HLStatsDbContext : DbContext
     public DbSet<EventChangeRole> EventChangeRoles => Set<EventChangeRole>();
     public DbSet<EventPlayerAction> EventPlayerActions => Set<EventPlayerAction>();
     public DbSet<EventPlayerPlayerAction> EventPlayerPlayerActions => Set<EventPlayerPlayerAction>();
+    public DbSet<EventStatsme> EventStatsme => Set<EventStatsme>();
+    public DbSet<EventStatsme2> EventStatsme2 => Set<EventStatsme2>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
