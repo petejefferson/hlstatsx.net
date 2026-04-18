@@ -31,13 +31,12 @@
             <tbody>
                 @{
                     int pageOffset = (Model.Players.Page - 1) * Model.Players.PageSize;
-                    bool bg = false;
+                    bool alt = false;
                 }
                 @foreach (var p in Model.Players.Items)
                 {
                     pageOffset++;
-                    string rowClass = bg ? "bg2" : "bg1";
-                    bg = !bg;
+                    string rowClass = (alt = !alt) ? "bg1" : "bg2";
                     string? flagFile = string.IsNullOrEmpty(p.Flag) ? null : p.Flag.ToLowerInvariant();
                     <tr class="@rowClass">
                         <td style="text-align:right;">@pageOffset</td>

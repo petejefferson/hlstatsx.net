@@ -3,16 +3,6 @@
 @{
     ViewData["Title"] = $"{Model.Clan.Tag} — {Model.Clan.Name}";
 
-    string FormatTime(long seconds)
-    {
-        var ts = TimeSpan.FromSeconds(seconds);
-        var parts = new List<string>();
-        if (ts.Days    > 0) parts.Add($"{ts.Days} day{(ts.Days != 1 ? "s" : "")}");
-        if (ts.Hours   > 0) parts.Add($"{ts.Hours} hour{(ts.Hours != 1 ? "s" : "")}");
-        if (ts.Minutes > 0) parts.Add($"{ts.Minutes} minute{(ts.Minutes != 1 ? "s" : "")}");
-        return parts.Count > 0 ? string.Join(", ", parts) : "0 minutes";
-    }
-
     string MemberSortUrl(string field)
     {
         bool nextDesc = Model.MembersSortBy == field ? !Model.MembersDescending : true;
@@ -158,7 +148,7 @@
         <tr class="bg1">
           <td>Activity:</td>
           <td>
-            <meter min="0" max="100" low="25" high="50" optimum="75" value="@Model.Summary.AvgActivity" style="width:120px;"></meter>
+            <activity-meter value="@Model.Summary.AvgActivity" style="width:120px;" />
             @Model.Summary.AvgActivity.ToString("F2")%
           </td>
         </tr>
@@ -204,14 +194,14 @@
         </tr>
         <tr class="bg1">
           <td>Total Connection Time:</td>
-          <td>@FormatTime(Model.Summary.TotalConnectionTime)</td>
+          <td>@RazorHelpers.FormatTimeFull(Model.Summary.TotalConnectionTime)</td>
         </tr>
         <tr class="bg2">
           <td>Avg. Connection Time:</td>
           <td>
             @if (Model.Summary.ActiveMemberCount > 0 && Model.Summary.TotalConnectionTime > 0)
             {
-              @FormatTime(Model.Summary.TotalConnectionTime / Model.Summary.ActiveMemberCount)
+              @RazorHelpers.FormatTimeFull(Model.Summary.TotalConnectionTime / Model.Summary.ActiveMemberCount)
             }
             else { <text>-</text> }
           </td>
@@ -302,12 +292,12 @@
           </td>
           <td style="text-align:right;">@m.Skill.ToString("N0")</td>
           <td style="text-align:right;">
-            <meter min="0" max="100" low="25" high="50" optimum="75" value="@m.ActivityScore" style="width:60px;"></meter>
+            <activity-meter value="@m.ActivityScore" style="width:60px;" />
             @m.ActivityScore%
           </td>
-          <td style="text-align:right;">@FormatTime(m.ConnectionTime)</td>
+          <td style="text-align:right;">@RazorHelpers.FormatTimeFull(m.ConnectionTime)</td>
           <td style="text-align:right;">@m.Kills.ToString("N0")</td>
-          <td><meter min="0" max="100" low="25" high="50" optimum="75" value="@m.ClanKillPercent.ToString("F0")" style="width:80px;"></meter></td>
+          <td><activity-meter value="@m.ClanKillPercent" style="width:80px;" /></td>
           <td style="text-align:right;">@m.ClanKillPercent.ToString("F2")%</td>
           <td style="text-align:right;">@m.Deaths.ToString("N0")</td>
           <td style="text-align:right;">@m.KillDeathRatio.ToString("F2")</td>
@@ -499,7 +489,7 @@
           <td style="text-align:right;">@rowNum</td>
           <td>@t.TeamName</td>
           <td style="text-align:right;">@t.JoinCount.ToString("N0") times</td>
-          <td><meter min="0" max="100" low="25" high="50" optimum="75" value="@t.Percent.ToString("F0")" style="width:100px;"></meter></td>
+          <td><activity-meter value="@t.Percent" style="width:100px;" /></td>
           <td style="text-align:right;">@t.Percent.ToString("F2")%</td>
         </tr>
       }
@@ -537,7 +527,7 @@
           </td>
           <td style="text-align:right;">@r.JoinCount.ToString("N0") times</td>
           <td style="text-align:right;">@r.Percent.ToString("F2")%</td>
-          <td><meter min="0" max="100" low="25" high="50" optimum="75" value="@r.Percent.ToString("F0")" style="width:100px;"></meter></td>
+          <td><activity-meter value="@r.Percent" style="width:100px;" /></td>
           <td style="text-align:right;">@r.Kills.ToString("N0")</td>
           <td style="text-align:right;">@r.Deaths.ToString("N0")</td>
           <td style="text-align:right;">@r.KillDeathRatio.ToString("F2")</td>

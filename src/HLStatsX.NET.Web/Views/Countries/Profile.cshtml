@@ -2,16 +2,6 @@
 @{
     ViewData["Title"] = Model.Profile.Name + " — Country";
 
-    string FormatTime(long seconds)
-    {
-        var ts = TimeSpan.FromSeconds(seconds);
-        var parts = new List<string>();
-        if (ts.Days > 0)    parts.Add($"{ts.Days}d");
-        if (ts.Hours > 0)   parts.Add($"{ts.Hours}h");
-        if (ts.Minutes > 0) parts.Add($"{ts.Minutes}m");
-        return parts.Count > 0 ? string.Join(" ", parts) : "0m";
-    }
-
     string SortUrl(string field)
     {
         bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
@@ -40,7 +30,7 @@
             <tr class="bg2">
                 <td>Activity:</td>
                 <td>
-                    <meter min="0" max="100" low="25" high="50" optimum="75" value="@Model.Profile.AvgActivity"></meter>
+                    <activity-meter value="@Model.Profile.AvgActivity" />
                     @Model.Profile.AvgActivity.ToString("F2")%
                 </td>
             </tr>
@@ -95,7 +85,7 @@
                 <td>
                     @if (Model.Profile.TotalConnectionTime > 0)
                     {
-                        @FormatTime(Model.Profile.AvgConnectionTime)
+                        @RazorHelpers.FormatTime(Model.Profile.AvgConnectionTime)
                     }
                     else
                     {
@@ -105,7 +95,7 @@
             </tr>
             <tr class="bg1">
                 <td>Total Connection Time:</td>
-                <td>@FormatTime(Model.Profile.TotalConnectionTime)</td>
+                <td>@RazorHelpers.FormatTime(Model.Profile.TotalConnectionTime)</td>
             </tr>
         </table>
     </div>
@@ -134,10 +124,10 @@
         </tr>
     </thead>
     <tbody>
-        @{ int row = 0; }
+        @{ bool alt = false; }
         @foreach (var m in Model.Members.Items)
         {
-            string rowClass = row % 2 == 0 ? "bg1" : "bg2";
+            string rowClass = (alt = !alt) ? "bg1" : "bg2";
             var memberFlag = string.IsNullOrEmpty(m.Flag) ? "0" : m.Flag.ToLowerInvariant();
             <tr class="@rowClass">
                 <td>
@@ -146,18 +136,17 @@
                 </td>
                 <td style="text-align:right;">@m.Skill.ToString("N0")</td>
                 <td style="text-align:center;">
-                    <meter min="0" max="100" low="25" high="50" optimum="75" value="@m.Activity" title="@m.Activity.ToString("F2")%"></meter>
+                    <activity-meter value="@m.Activity" title="@m.Activity.ToString("F2")%" />
                 </td>
-                <td style="text-align:right;">@FormatTime(m.ConnectionTime)</td>
+                <td style="text-align:right;">@RazorHelpers.FormatTime(m.ConnectionTime)</td>
                 <td style="text-align:right;">@m.Kills.ToString("N0")</td>
                 <td style="text-align:center;">
-                    <meter min="0" max="100" low="25" high="50" optimum="75" value="@m.KillPercent" title="@m.KillPercent.ToString("F2")%"></meter>
+                    <activity-meter value="@m.KillPercent" title="@m.KillPercent.ToString("F2")%" />
                 </td>
                 <td style="text-align:right;">@m.KillPercent.ToString("F2")%</td>
                 <td style="text-align:right;">@m.Deaths.ToString("N0")</td>
                 <td style="text-align:right;">@m.KillDeathRatio.ToString("F2")</td>
             </tr>
-            row++;
         }
         @if (!Model.Members.Items.Any())
         {

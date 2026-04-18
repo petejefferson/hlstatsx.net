@@ -2,16 +2,6 @@
 @{
     ViewData["Title"] = "Player Rankings";
 
-    string FormatTime(int seconds)
-    {
-        var ts = TimeSpan.FromSeconds(seconds);
-        var parts = new List<string>();
-        if (ts.Days > 0)    parts.Add($"{ts.Days}d");
-        if (ts.Hours > 0)   parts.Add($"{ts.Hours}h");
-        if (ts.Minutes > 0) parts.Add($"{ts.Minutes}m");
-        return parts.Count > 0 ? string.Join(" ", parts) : "0m";
-    }
-
     string SortUrl(string field)
     {
         bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
@@ -69,13 +59,13 @@
         </tr>
     </thead>
     <tbody>
-        @{ int startRank = (Model.Players.Page - 1) * Model.Players.PageSize + 1; int row = 0; }
+        @{ int startRank = (Model.Players.Page - 1) * Model.Players.PageSize + 1; bool alt = false; }
         @foreach (var player in Model.Players.Items)
         {
             var flagFile = string.IsNullOrEmpty(player.Flag)    ? "0" : player.Flag.ToLowerInvariant();
             var flagAlt  = string.IsNullOrEmpty(player.Country) ? ""  : player.Country;
             var armyRank = Model.GetArmyRank(player.AllTimeKills);
-            <tr class="@(row % 2 == 0 ? "bg1" : "bg2")">
+            <tr class="@((alt = !alt) ? "bg1" : "bg2")">
                 <td style="text-align:center;">@startRank</td>
                 <td style="text-align:left;">
                     <img src="/hlstatsimg/flags/@(flagFile).gif" alt="@flagAlt" title="@flagAlt" />&nbsp;
@@ -100,9 +90,9 @@
                 </td>
                 <td style="text-align:right;">@player.Points.ToString("N0")</td>
                 <td style="text-align:center;">
-                    <meter min="0" max="100" low="25" high="50" optimum="75" value="@player.ActivityScore" title="@player.ActivityScore%"></meter>
+                    <activity-meter value="@player.ActivityScore" title="@player.ActivityScore%" />
                 </td>
-                <td style="text-align:right;">@FormatTime(player.ConnectionTime)</td>
+                <td style="text-align:right;">@RazorHelpers.FormatTime(player.ConnectionTime)</td>
                 <td style="text-align:right;">@player.Kills.ToString("N0")</td>
                 <td style="text-align:right;">@player.Deaths.ToString("N0")</td>
                 <td style="text-align:right;">@player.KillDeathRatio.ToString("F2")</td>
@@ -111,7 +101,6 @@
                 <td style="text-align:right;">@(Model.IsHistorical ? "N/A" : player.Accuracy.ToString("F1") + "%")</td>
             </tr>
             startRank++;
-            row++;
         }
     </tbody>
 </table>

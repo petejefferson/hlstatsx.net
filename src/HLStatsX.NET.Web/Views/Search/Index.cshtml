@@ -80,13 +80,14 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @{ int row = 0; }
+                    @{ int row = 0; bool alt = false; }
                     @foreach (var p in Model.Players)
                     {
                         var flagFile = string.IsNullOrEmpty(p.Flag)    ? "0" : p.Flag.ToLowerInvariant();
                         var flagAlt  = string.IsNullOrEmpty(p.Country) ? ""  : p.Country;
-                        <tr class="@(row % 2 == 0 ? "bg1" : "bg2")">
-                            <td style="text-align:center;">@(Model.PageSize * (Model.Page - 1) + row + 1)</td>
+                        row++;
+                        <tr class="@((alt = !alt) ? "bg1" : "bg2")">
+                            <td style="text-align:center;">@(Model.PageSize * (Model.Page - 1) + row)</td>
                             <td>
                                 <img src="/hlstatsimg/flags/@(flagFile).gif" alt="@flagAlt" title="@flagAlt" />&nbsp;
                                 @{
@@ -103,7 +104,6 @@
                             </td>
                             <td>@p.Game</td>
                         </tr>
-                        row++;
                     }
                 </tbody>
             </table>
@@ -132,12 +132,12 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @{ int uidRow = 0; }
+                    @{ bool altUid = false; }
                     @foreach (var u in Model.UniqueIds)
                     {
                         var flagFile = string.IsNullOrEmpty(u.Flag)    ? "0" : u.Flag.ToLowerInvariant();
                         var flagAlt  = string.IsNullOrEmpty(u.Country) ? ""  : u.Country;
-                        <tr class="@(uidRow % 2 == 0 ? "bg1" : "bg2")">
+                        <tr class="@((altUid = !altUid) ? "bg1" : "bg2")">
                             <td>@u.UniqueId</td>
                             <td>
                                 <img src="/hlstatsimg/flags/@(flagFile).gif" alt="@flagAlt" title="@flagAlt" />&nbsp;
@@ -146,7 +146,6 @@
                             <td>@u.GameName</td>
                             <td style="text-align:center;">@u.PlayerId</td>
                         </tr>
-                        uidRow++;
                     }
                 </tbody>
             </table>
@@ -174,16 +173,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @{ int clanRow = 0; }
+                    @{ int clanRow = 0; bool altClan = false; }
                     @foreach (var c in Model.Clans)
                     {
-                        <tr class="@(clanRow % 2 == 0 ? "bg1" : "bg2")">
-                            <td style="text-align:center;">@(clanRow + 1)</td>
+                        clanRow++;
+                        <tr class="@((altClan = !altClan) ? "bg1" : "bg2")">
+                            <td style="text-align:center;">@clanRow</td>
                             <td>@c.Tag</td>
                             <td><a asp-controller="Clans" asp-action="Profile" asp-route-id="@c.ClanId">@c.Name</a></td>
                             <td>@(gameNames.GetValueOrDefault(c.Game, c.Game))</td>
                         </tr>
-                        clanRow++;
                     }
                 </tbody>
             </table>

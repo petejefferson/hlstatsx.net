@@ -51,10 +51,10 @@
                 </td>
                 <td class="@rowClass" style="text-align:right">@m.Kills.ToString("N0")</td>
                 <td class="@(bg ? "bg1" : "bg2")" style="text-align:right">@(kpct.ToString("F2"))%</td>
-                <td class="@rowClass"><meter min="0" max="100" low="25" high="50" optimum="75" value="@kpct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)"></meter></td>
+                <td class="@rowClass"><activity-meter value="@kpct" /></td>
                 <td class="@(bg ? "bg1" : "bg2")" style="text-align:right">@m.Headshots.ToString("N0")</td>
                 <td class="@rowClass" style="text-align:right">@(hpct.ToString("F2"))%</td>
-                <td class="@(bg ? "bg1" : "bg2")"><meter min="0" max="100" low="25" high="50" optimum="75" value="@hpct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)"></meter></td>
+                <td class="@(bg ? "bg1" : "bg2")"><activity-meter value="@hpct" /></td>
                 <td class="@rowClass" style="text-align:right">@hpk.ToString("F2")</td>
             </tr>
             rank++;

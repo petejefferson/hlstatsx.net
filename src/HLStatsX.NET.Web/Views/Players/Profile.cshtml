@@ -3,16 +3,6 @@
 @{
     ViewData["Title"] = Model.Player.LastName;
 
-    string FormatTime(int seconds)
-    {
-        var ts = TimeSpan.FromSeconds(seconds);
-        var parts = new List<string>();
-        if (ts.Days > 0) parts.Add($"{ts.Days} day{(ts.Days != 1 ? "s" : "")}");
-        if (ts.Hours > 0) parts.Add($"{ts.Hours} hour{(ts.Hours != 1 ? "s" : "")}");
-        if (ts.Minutes > 0) parts.Add($"{ts.Minutes} minute{(ts.Minutes != 1 ? "s" : "")}");
-        return parts.Count > 0 ? string.Join(", ", parts) : "0 minutes";
-    }
-
     var scheme       = Context.Request.Scheme;
     var sigAbsUrl    = Url.Action("Sig",     "Players", new { id = Model.Player.PlayerId }, scheme)!;
     var profileAbsUrl = Url.Action("Profile", "Players", new { id = Model.Player.PlayerId }, scheme)!;
@@ -120,7 +110,7 @@
         </tr>
         <tr class="bg1">
           <td>Connection Time:</td>
-          <td>@FormatTime(Model.Player.ConnectionTime)</td>
+          <td>@RazorHelpers.FormatTimeFull(Model.Player.ConnectionTime)</td>
         </tr>
         <tr class="bg2">
           <td>Average Ping:*</td>
@@ -156,7 +146,7 @@
         <tr>
           <th>Activity</th>
           <td>
-            <meter min="0" max="100" low="25" high="50" optimum="75" value="@Model.Player.ActivityScore"></meter>
+            <activity-meter value="@Model.Player.ActivityScore" />
             @Model.Player.ActivityScore%
           </td>
         </tr>
@@ -256,7 +246,7 @@
               <td style="width:60%;">
                 @if (Model.NextRank != null)
                 {
-                  <meter min="0" max="100" low="25" high="50" optimum="75" value="@Model.RankPercent" style="width:100%;"></meter>
+                  <activity-meter value="@Model.RankPercent" style="width:100%;" />
                 }
               </td>
               <td style="width:40%;">
@@ -363,7 +353,7 @@
         <tr>
           <td>@aliasRank</td>
           <td>@a.Name</td>
-          <td>@FormatTime(a.ConnectionTime)</td>
+          <td>@RazorHelpers.FormatTimeFull(a.ConnectionTime)</td>
           <td>@(a.LastUse.HasValue ? a.LastUse.Value.ToString("yyyy-MM-dd") : "-")</td>
           <td>@a.Kills.ToString("N0")</td>
           <td>@a.Deaths.ToString("N0")</td>
@@ -545,7 +535,7 @@
             <td class="@teamAlt">@t.TeamName</td>
             <td class="@teamRow" style="text-align:right">@t.JoinCount times</td>
             <td class="@teamAlt" style="text-align:right">@pct.ToString("F2")%</td>
-            <td class="@teamRow"><meter min="0" max="100" low="25" high="50" optimum="75" value="@(pct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))"></meter></td>
+            <td class="@teamRow"><activity-meter value="@pct" /></td>
           </tr>
           teamRank++;
         }
@@ -593,7 +583,7 @@
             </td>
             <td class="@roleRow" style="text-align:right">@r.JoinCount times</td>
             <td class="@roleAlt" style="text-align:right">@(rolePct > 0 ? $"{rolePct:F2}%" : "-")</td>
-            <td class="@roleRow"><meter min="0" max="100" low="25" high="50" optimum="75" value="@(rolePct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))"></meter></td>
+            <td class="@roleRow"><activity-meter value="@rolePct" /></td>
             <td class="@roleAlt" style="text-align:right">@r.Kills.ToString("N0")</td>
             <td class="@roleRow" style="text-align:right">@r.Deaths.ToString("N0")</td>
             <td class="@roleAlt" style="text-align:right">@(r.Deaths == 0 ? r.Kills.ToString("N0") : $"{(double)r.Kills / r.Deaths:F2}")</td>
@@ -687,10 +677,10 @@
             <td class="@wuRow" style="text-align:right">@w.Modifier.ToString("F2")</td>
             <td class="@wuAlt" style="text-align:right">@w.Kills.ToString("N0")</td>
             <td class="@wuRow" style="text-align:right">@(kpct.ToString("F2"))%</td>
-            <td class="@wuAlt"><meter min="0" max="100" low="25" high="50" optimum="75" value="@(kpct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))"></meter></td>
+            <td class="@wuAlt"><activity-meter value="@kpct" /></td>
             <td class="@wuRow" style="text-align:right">@w.Headshots.ToString("N0")</td>
             <td class="@wuAlt" style="text-align:right">@(hpct.ToString("F2"))%</td>
-            <td class="@wuRow"><meter min="0" max="100" low="25" high="50" optimum="75" value="@(hpct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))"></meter></td>
+            <td class="@wuRow"><activity-meter value="@hpct" /></td>
             <td class="@wuAlt" style="text-align:right">@(hpk.ToString("F2"))</td>
           </tr>
           wuRank++;
@@ -894,14 +884,14 @@
             <td class="@mpAlt">@m.Map</td>
             <td class="@mpRow" style="text-align:right">@m.Kills.ToString("N0")</td>
             <td class="@mpAlt" style="text-align:right">@(mpKpct.ToString("F2"))%</td>
-            <td class="@mpRow"><meter min="0" max="100" low="25" high="50" optimum="75" value="@(mpKpct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))"></meter></td>
+            <td class="@mpRow"><activity-meter value="@mpKpct" /></td>
             <td class="@mpAlt" style="text-align:right">@m.Deaths.ToString("N0")</td>
             <td class="@mpRow" style="text-align:right">@(mpDpct.ToString("F2"))%</td>
-            <td class="@mpAlt"><meter min="0" max="100" low="25" high="50" optimum="75" value="@(mpDpct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))"></meter></td>
+            <td class="@mpAlt"><activity-meter value="@mpDpct" /></td>
             <td class="@mpRow" style="text-align:right">@mpKpd.ToString("F2")</td>
             <td class="@mpAlt" style="text-align:right">@m.Headshots.ToString("N0")</td>
             <td class="@mpRow" style="text-align:right">@(mpHpct.ToString("F2"))%</td>
-            <td class="@mpAlt"><meter min="0" max="100" low="25" high="50" optimum="75" value="@(mpHpct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))"></meter></td>
+            <td class="@mpAlt"><activity-meter value="@mpHpct" /></td>
             <td class="@mpRow" style="text-align:right">@(m.Kills == 0 ? "-" : mpHpk.ToString("F2"))</td>
           </tr>
           mpRank++;
@@ -948,11 +938,11 @@
             <td class="@spAlt">@s.ServerName</td>
             <td class="@spRow" style="text-align:right">@s.Kills.ToString("N0")</td>
             <td class="@spAlt" style="text-align:right">@(spKpct.ToString("F2"))%</td>
-            <td class="@spRow"><meter min="0" max="100" low="25" high="50" optimum="75" value="@(spKpct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))"></meter></td>
+            <td class="@spRow"><activity-meter value="@spKpct" /></td>
             <td class="@spAlt" style="text-align:right">@s.Deaths.ToString("N0")</td>
             <td class="@spRow" style="text-align:right">@spKpd.ToString("F2")</td>
             <td class="@spAlt" style="text-align:right">@s.Headshots.ToString("N0")</td>
-            <td class="@spRow"><meter min="0" max="100" low="25" high="50" optimum="75" value="@(spHpct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))"></meter></td>
+            <td class="@spRow"><activity-meter value="@spHpct" /></td>
             <td class="@spAlt" style="text-align:right">@(spHpct.ToString("F2"))%</td>
             <td class="@spRow" style="text-align:right">@(s.Kills == 0 ? "-" : spHpk.ToString("F2"))</td>
           </tr>
@@ -1051,14 +1041,14 @@
             </td>
             <td class="@ksRow" style="text-align:right">@k.Kills.ToString("N0")</td>
             <td class="@ksAlt" style="text-align:right">@(ksKpct.ToString("F2"))%</td>
-            <td class="@ksRow"><meter min="0" max="100" low="25" high="50" optimum="75" value="@(ksKpct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))"></meter></td>
+            <td class="@ksRow"><activity-meter value="@ksKpct" /></td>
             <td class="@ksAlt" style="text-align:right">@k.Deaths.ToString("N0")</td>
             <td class="@ksRow" style="text-align:right">@(ksDpct.ToString("F2"))%</td>
-            <td class="@ksAlt"><meter min="0" max="100" low="25" high="50" optimum="75" value="@(ksDpct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))"></meter></td>
+            <td class="@ksAlt"><activity-meter value="@ksDpct" /></td>
             <td class="@ksRow" style="text-align:right">@ksKpd.ToString("F2")</td>
             <td class="@ksAlt" style="text-align:right">@k.Headshots.ToString("N0")</td>
             <td class="@ksRow" style="text-align:right">@(ksHpct.ToString("F2"))%</td>
-            <td class="@ksAlt"><meter min="0" max="100" low="25" high="50" optimum="75" value="@(ksHpct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))"></meter></td>
+            <td class="@ksAlt"><activity-meter value="@ksHpct" /></td>
             <td class="@ksRow" style="text-align:right">@(k.Kills == 0 ? "-" : ksHpk.ToString("F2"))</td>
           </tr>
           ksRank++;
