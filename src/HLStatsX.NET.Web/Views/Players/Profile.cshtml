@@ -45,15 +45,7 @@
             bool isBot = steamUniqueId?.StartsWith("BOT", StringComparison.OrdinalIgnoreCase) == true;
         }
         <tr class="data-table-head">
-          <td style="vertical-align:top;">Player Profile</td>
-          <td id="player_avatar" rowspan="5" style="text-align:center;vertical-align:middle;padding:8px;width:170px;">
-            @if (Model.Steam64Id.HasValue)
-            {
-              <img src="@(Url.Action("Avatar", "Players", new { steam64 = Model.Steam64Id.Value }))"
-                   style="height:158px;width:158px;" alt="Steam Community Avatar"
-                   onerror="this.style.display='none'" />
-            }
-          </td>
+          <td colspan="2">Player Profile</td>
         </tr>
         <tr class="bg1">
           <td>
@@ -62,6 +54,14 @@
               <img src="/hlstatsimg/flags/@(Model.Player.Flag.ToLower()).gif" alt="@Model.Player.Country" title="@Model.Player.Country" style="vertical-align:middle;" />
             }
             <strong>@Model.Player.LastName</strong>
+          </td>
+          <td id="player_avatar" rowspan="4" style="text-align:center;vertical-align:middle;padding:8px;width:170px;">
+            @if (Model.Steam64Id.HasValue)
+            {
+              <img src="@(Url.Action("Avatar", "Players", new { steam64 = Model.Steam64Id.Value }))"
+                   style="height:158px;width:158px;" alt="Steam Community Avatar"
+                   onerror="this.style.display='none'" />
+            }
           </td>
         </tr>
         <tr class="bg2">
@@ -115,7 +115,7 @@
           </td>
         </tr>
         <tr class="bg2">
-          <td>Last Connect:</td>
+          <td>Last Connect:*</td>
           <td>@(Model.LastConnect.HasValue ? Model.LastConnect.Value.ToString("ddd. MMM. d, yyyy @ HH:mm:ss") : "(Unknown)")</td>
         </tr>
         <tr class="bg1">
@@ -123,25 +123,25 @@
           <td>@FormatTime(Model.Player.ConnectionTime)</td>
         </tr>
         <tr class="bg2">
-          <td>Average Ping:</td>
+          <td>Average Ping:*</td>
           <td>
             @if (Model.Ping != null) { <text>@Model.Ping.AvgPing ms (Latency: @Model.Ping.AvgLatency ms)</text> }
             else { <text>-</text> }
           </td>
         </tr>
         <tr class="bg1">
-          <td>Favorite Server:</td>
+          <td>Favorite Server:*</td>
           <td>
             @if (Model.FavoriteServer != null) { <a asp-controller="Servers" asp-action="Detail" asp-route-id="@Model.FavoriteServer.ServerId">@Model.FavoriteServer.ServerName</a> }
             else { <text>-</text> }
           </td>
         </tr>
         <tr class="bg2">
-          <td>Favorite Map:</td>
+          <td>Favorite Map:*</td>
           <td>@(Model.FavoriteMap ?? "-")</td>
         </tr>
         <tr class="bg1">
-          <td>Favorite Weapon:</td>
+          <td>Favorite Weapon:*</td>
           <td>
             @if (Model.FavoriteWeapon != null) { <text>@Model.FavoriteWeapon.WeaponName</text> }
             else { <text>-</text> }
@@ -151,8 +151,8 @@
     </section>
 
     <section class="profile-stats-summary">
-      <h2>Statistics Summary</h2>
       <table class="stats-table">
+        <thead><tr class="data-table-head"><td>Statistics Summary</td></tr></thead>
         <tr>
           <th>Activity</th>
           <td>
@@ -185,7 +185,6 @@
         <a asp-action="History" asp-route-id="@Model.Player.PlayerId">Events</a> |
         <a asp-action="Awards" asp-route-id="@Model.Player.PlayerId">Awards (@Model.Awards.Count)</a>
       </p>
-      <p><small>* = from recent event records</small></p>
     </section>
   </div>
 
@@ -344,6 +343,7 @@
     </div>
   </div>
   }
+
 
 </div>
 
@@ -635,6 +635,11 @@
     </tbody>
   </table>
 }
+
+<div style="clear:both;padding-top:12px;display:flex;justify-content:space-between;">
+  <div>Items marked &ldquo;*&rdquo; above are generated from the last @Model.DeleteDays days.</div>
+  <div>Go to: <a asp-controller="Players" asp-action="Index" asp-route-game="@Model.Player.Game">Player Rankings</a></div>
+</div>
 
 @section Scripts {
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>

@@ -128,4 +128,7 @@ public class PlayerService : IPlayerService
 
     public Task<IReadOnlyList<GlobalAwardRow>> GetGlobalAwardsAsync(int playerId, string game, CancellationToken ct = default) =>
         _stats.GetGlobalAwardsAsync(playerId, game, ct);
+
+    public Task<int> GetDeleteDaysAsync(CancellationToken ct = default) =>
+        _stats.GetDeleteDaysAsync(ct);
 }

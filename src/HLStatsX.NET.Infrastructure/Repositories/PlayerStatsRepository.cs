@@ -182,6 +182,16 @@ public class PlayerStatsRepository : IPlayerStatsRepository
             .ToListAsync(ct);
     }
 
+    public async Task<int> GetDeleteDaysAsync(CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        var val = await db.Options
+            .Where(o => o.KeyName == "DeleteDays")
+            .Select(o => o.Value)
+            .FirstOrDefaultAsync(ct);
+        return int.TryParse(val, out var days) ? days : 90;
+    }
+
     public async Task<IReadOnlyList<KillStatRow>> GetKillStatsAsync(int playerId, CancellationToken ct = default)
     {
         await using var db = _factory.CreateDbContext();

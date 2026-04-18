@@ -26,4 +26,5 @@ public interface IPlayerStatsRepository
     Task<IReadOnlyList<ActionStatRow>> GetPlayerActionsAsync(int playerId, CancellationToken ct = default);
     Task<IReadOnlyList<ActionStatRow>> GetPlayerActionVictimsAsync(int playerId, CancellationToken ct = default);
     Task<IReadOnlyList<GlobalAwardRow>> GetGlobalAwardsAsync(int playerId, string game, CancellationToken ct = default);
+    Task<int> GetDeleteDaysAsync(CancellationToken ct = default);
 }

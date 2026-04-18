@@ -123,6 +123,7 @@ public class PlayersController : Controller
         var actionVictimsTask = _players.GetPlayerActionVictimsAsync(id, ct);
         var trendTask         = _players.GetTrendDataAsync(id, 30, ct);
         var globalAwardsTask  = _players.GetGlobalAwardsAsync(id, game, ct);
+        var deleteDaysTask    = _players.GetDeleteDaysAsync(ct);
 
         await Task.WhenAll(
             rankTask, rankEntityTask, nextRankTask, allRanksTask,
@@ -130,7 +131,7 @@ public class PlayersController : Controller
             pingTask, lastConnectTask, favServerTask, favMapTask,
             favWeaponTask, killStatsTask, mapPerfTask, serverPerfTask,
             weaponStatsTask, teamSelTask, roleSelTask,
-            playerActionsTask, actionVictimsTask, trendTask, globalAwardsTask);
+            playerActionsTask, actionVictimsTask, trendTask, globalAwardsTask, deleteDaysTask);
 
         var rankEntity = rankEntityTask.Result;
         var allRanks   = allRanksTask.Result;
@@ -166,7 +167,8 @@ public class PlayersController : Controller
             TrendData           = trendTask.Result,
             GlobalAwards        = globalAwardsTask.Result,
             Steam64Id           = steam64Id,
-            HideBotPlayers      = _config.GetValue<bool>("HLStatsX:HideBotPlayers", true)
+            HideBotPlayers      = _config.GetValue<bool>("HLStatsX:HideBotPlayers", true),
+            DeleteDays          = deleteDaysTask.Result
         });
     }
 

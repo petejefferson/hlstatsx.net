@@ -106,6 +106,7 @@ public class PlayersControllerTests
         _playerServiceMock.Setup(s => s.GetPlayerActionVictimsAsync(1, default)).ReturnsAsync(Array.Empty<ActionStatRow>());
         _playerServiceMock.Setup(s => s.GetTrendDataAsync(1, 30, default)).ReturnsAsync(Array.Empty<TrendPoint>());
         _playerServiceMock.Setup(s => s.GetGlobalAwardsAsync(1, "cstrike", default)).ReturnsAsync(Array.Empty<GlobalAwardRow>());
+        _playerServiceMock.Setup(s => s.GetDeleteDaysAsync(default)).ReturnsAsync(90);
         _awardServiceMock.Setup(s => s.GetRankForPlayerAsync(1, "cstrike", 500, default)).ReturnsAsync((Rank?)null);
         _awardServiceMock.Setup(s => s.GetRanksAsync("cstrike", default)).ReturnsAsync(Array.Empty<Rank>());
 

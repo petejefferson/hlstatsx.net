@@ -48,6 +48,7 @@ public record PlayerProfileViewModel
     public required IReadOnlyList<GlobalAwardRow> GlobalAwards { get; init; }
     public long? Steam64Id { get; init; }
     public bool HideBotPlayers { get; init; }
+    public int DeleteDays { get; init; }
 
     public double RankPercent => CurrentRank is null || NextRank is null ? 0
         : NextRank.MinKills == CurrentRank.MinKills ? 100
