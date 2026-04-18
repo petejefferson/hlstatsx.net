@@ -87,9 +87,13 @@ public class PlayersController : Controller
         string wuSort = "kills", bool wuDesc = true,
         string wsSort = "kills", bool wsDesc = true,
         string wtSort = "hits",  bool wtDesc = true,
-        string mpSort = "kpd",    bool mpDesc = true,
-        string spSort = "kills",  bool spDesc = true,
-        string ksSort = "kills",  bool ksDesc = true,
+        string mpSort  = "kpd",    bool mpDesc  = true,
+        string spSort  = "kills",  bool spDesc  = true,
+        string ksSort  = "kills",  bool ksDesc  = true,
+        string paSort  = "count",  bool paDesc  = true,
+        string pavSort = "count",  bool pavDesc = true,
+        string tsSort  = "joined", bool tsDesc  = true,
+        string rsSort  = "joined", bool rsDesc  = true,
         CancellationToken ct = default)
     {
         var player = await _players.GetPlayerAsync(id, ct);
@@ -184,10 +188,18 @@ public class PlayersController : Controller
             WeaponTargets       = SortWeaponTargets(weaponTargetsTask.Result, wtSort, wtDesc),
             WeaponTargetSortBy  = wtSort,
             WeaponTargetDesc    = wtDesc,
-            TeamSelection       = teamSelTask.Result,
-            RoleSelection       = roleSelTask.Result,
-            PlayerActions       = playerActionsTask.Result,
-            PlayerActionVictims = actionVictimsTask.Result,
+            TeamSelection            = SortTeamSelection(teamSelTask.Result, tsSort, tsDesc),
+            TeamSortBy               = tsSort,
+            TeamDesc                 = tsDesc,
+            RoleSelection            = SortRoleSelection(roleSelTask.Result, rsSort, rsDesc),
+            RoleSortBy               = rsSort,
+            RoleDesc                 = rsDesc,
+            PlayerActions            = SortActions(playerActionsTask.Result, paSort, paDesc),
+            PlayerActionSortBy       = paSort,
+            PlayerActionDesc         = paDesc,
+            PlayerActionVictims      = SortActions(actionVictimsTask.Result, pavSort, pavDesc),
+            PlayerActionVictimSortBy = pavSort,
+            PlayerActionVictimDesc   = pavDesc,
             TrendData           = trendTask.Result,
             GlobalAwards        = globalAwardsTask.Result,
             Steam64Id           = steam64Id,
@@ -260,6 +272,41 @@ public class PlayersController : Controller
             "hpk"     => desc ? rows.OrderByDescending(k => k.Kills > 0 ? (double)k.Headshots / k.Kills : 0)
                                : rows.OrderBy(k => k.Kills > 0 ? (double)k.Headshots / k.Kills : 0),
             _         => desc ? rows.OrderByDescending(k => k.Kills) : rows.OrderBy(k => k.Kills),
+        };
+        return ordered.ToList();
+    }
+
+    private static IReadOnlyList<ActionStatRow> SortActions(IReadOnlyList<ActionStatRow> rows, string sortBy, bool desc)
+    {
+        IOrderedEnumerable<ActionStatRow> ordered = sortBy switch
+        {
+            "action" => desc ? rows.OrderByDescending(a => a.Description) : rows.OrderBy(a => a.Description),
+            "points" => desc ? rows.OrderByDescending(a => a.AccumulatedPoints) : rows.OrderBy(a => a.AccumulatedPoints),
+            _        => desc ? rows.OrderByDescending(a => a.Count) : rows.OrderBy(a => a.Count),
+        };
+        return ordered.ToList();
+    }
+
+    private static IReadOnlyList<TeamStatRow> SortTeamSelection(IReadOnlyList<TeamStatRow> rows, string sortBy, bool desc)
+    {
+        IOrderedEnumerable<TeamStatRow> ordered = sortBy switch
+        {
+            "team" => desc ? rows.OrderByDescending(t => t.TeamName) : rows.OrderBy(t => t.TeamName),
+            _      => desc ? rows.OrderByDescending(t => t.JoinCount) : rows.OrderBy(t => t.JoinCount),
+        };
+        return ordered.ToList();
+    }
+
+    private static IReadOnlyList<RoleStatRow> SortRoleSelection(IReadOnlyList<RoleStatRow> rows, string sortBy, bool desc)
+    {
+        IOrderedEnumerable<RoleStatRow> ordered = sortBy switch
+        {
+            "role"   => desc ? rows.OrderByDescending(r => r.RoleName) : rows.OrderBy(r => r.RoleName),
+            "kills"  => desc ? rows.OrderByDescending(r => r.Kills)    : rows.OrderBy(r => r.Kills),
+            "deaths" => desc ? rows.OrderByDescending(r => r.Deaths)   : rows.OrderBy(r => r.Deaths),
+            "kpd"    => desc ? rows.OrderByDescending(r => r.Deaths == 0 ? (double)r.Kills : (double)r.Kills / r.Deaths)
+                              : rows.OrderBy(r => r.Deaths == 0 ? (double)r.Kills : (double)r.Kills / r.Deaths),
+            _        => desc ? rows.OrderByDescending(r => r.JoinCount) : rows.OrderBy(r => r.JoinCount),
         };
         return ordered.ToList();
     }

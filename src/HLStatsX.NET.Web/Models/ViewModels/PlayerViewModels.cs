@@ -55,9 +55,17 @@ public record PlayerProfileViewModel
     public required string WeaponTargetSortBy { get; init; }
     public required bool WeaponTargetDesc { get; init; }
     public required IReadOnlyList<TeamStatRow> TeamSelection { get; init; }
+    public required string TeamSortBy { get; init; }
+    public required bool TeamDesc { get; init; }
     public required IReadOnlyList<RoleStatRow> RoleSelection { get; init; }
+    public required string RoleSortBy { get; init; }
+    public required bool RoleDesc { get; init; }
     public required IReadOnlyList<ActionStatRow> PlayerActions { get; init; }
+    public required string PlayerActionSortBy { get; init; }
+    public required bool PlayerActionDesc { get; init; }
     public required IReadOnlyList<ActionStatRow> PlayerActionVictims { get; init; }
+    public required string PlayerActionVictimSortBy { get; init; }
+    public required bool PlayerActionVictimDesc { get; init; }
     public required IReadOnlyList<TrendPoint> TrendData { get; init; }
     public required IReadOnlyList<GlobalAwardRow> GlobalAwards { get; init; }
     public long? Steam64Id { get; init; }

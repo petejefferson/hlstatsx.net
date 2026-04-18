@@ -381,119 +381,242 @@
 </div>
 
 <div id="tab-teams" class="tab-panel" style="display:none;">
+@{
+    object TeamsRouteBase() => new {
+        id = Model.Player.PlayerId,
+        paSort  = Model.PlayerActionSortBy,       paDesc  = Model.PlayerActionDesc,
+        pavSort = Model.PlayerActionVictimSortBy, pavDesc = Model.PlayerActionVictimDesc,
+        tsSort  = Model.TeamSortBy,               tsDesc  = Model.TeamDesc,
+        rsSort  = Model.RoleSortBy,               rsDesc  = Model.RoleDesc,
+        ksSort  = Model.KillStatsSortBy,          ksDesc  = Model.KillStatsDesc,
+        mpSort  = Model.MapSortBy,                mpDesc  = Model.MapDesc,
+        spSort  = Model.ServerSortBy,             spDesc  = Model.ServerDesc,
+        wuSort  = Model.WeaponUsageSortBy,        wuDesc  = Model.WeaponUsageDesc,
+        wsSort  = Model.WeaponStatsmeSortBy,      wsDesc  = Model.WeaponStatsmeDesc,
+        wtSort  = Model.WeaponTargetSortBy,       wtDesc  = Model.WeaponTargetDesc,
+    };
+    string PaSortUrl(string field)
+    {
+        bool nextDesc = Model.PlayerActionSortBy == field ? !Model.PlayerActionDesc : true;
+        return Url.Action("Profile", new { id = Model.Player.PlayerId,
+            paSort  = field,                              paDesc  = nextDesc,
+            pavSort = Model.PlayerActionVictimSortBy,     pavDesc = Model.PlayerActionVictimDesc,
+            tsSort  = Model.TeamSortBy,                   tsDesc  = Model.TeamDesc,
+            rsSort  = Model.RoleSortBy,                   rsDesc  = Model.RoleDesc,
+            ksSort  = Model.KillStatsSortBy,              ksDesc  = Model.KillStatsDesc,
+            mpSort  = Model.MapSortBy,                    mpDesc  = Model.MapDesc,
+            spSort  = Model.ServerSortBy,                 spDesc  = Model.ServerDesc,
+            wuSort  = Model.WeaponUsageSortBy,            wuDesc  = Model.WeaponUsageDesc,
+            wsSort  = Model.WeaponStatsmeSortBy,          wsDesc  = Model.WeaponStatsmeDesc,
+            wtSort  = Model.WeaponTargetSortBy,           wtDesc  = Model.WeaponTargetDesc })! + "#tab-teams";
+    }
+    string PaMark(string field) => Model.PlayerActionSortBy == field ? (Model.PlayerActionDesc ? " ▼" : " ▲") : "";
+
+    string PavSortUrl(string field)
+    {
+        bool nextDesc = Model.PlayerActionVictimSortBy == field ? !Model.PlayerActionVictimDesc : true;
+        return Url.Action("Profile", new { id = Model.Player.PlayerId,
+            paSort  = Model.PlayerActionSortBy,           paDesc  = Model.PlayerActionDesc,
+            pavSort = field,                              pavDesc = nextDesc,
+            tsSort  = Model.TeamSortBy,                   tsDesc  = Model.TeamDesc,
+            rsSort  = Model.RoleSortBy,                   rsDesc  = Model.RoleDesc,
+            ksSort  = Model.KillStatsSortBy,              ksDesc  = Model.KillStatsDesc,
+            mpSort  = Model.MapSortBy,                    mpDesc  = Model.MapDesc,
+            spSort  = Model.ServerSortBy,                 spDesc  = Model.ServerDesc,
+            wuSort  = Model.WeaponUsageSortBy,            wuDesc  = Model.WeaponUsageDesc,
+            wsSort  = Model.WeaponStatsmeSortBy,          wsDesc  = Model.WeaponStatsmeDesc,
+            wtSort  = Model.WeaponTargetSortBy,           wtDesc  = Model.WeaponTargetDesc })! + "#tab-teams";
+    }
+    string PavMark(string field) => Model.PlayerActionVictimSortBy == field ? (Model.PlayerActionVictimDesc ? " ▼" : " ▲") : "";
+
+    string TsSortUrl(string field)
+    {
+        bool nextDesc = Model.TeamSortBy == field ? !Model.TeamDesc : true;
+        return Url.Action("Profile", new { id = Model.Player.PlayerId,
+            paSort  = Model.PlayerActionSortBy,           paDesc  = Model.PlayerActionDesc,
+            pavSort = Model.PlayerActionVictimSortBy,     pavDesc = Model.PlayerActionVictimDesc,
+            tsSort  = field,                              tsDesc  = nextDesc,
+            rsSort  = Model.RoleSortBy,                   rsDesc  = Model.RoleDesc,
+            ksSort  = Model.KillStatsSortBy,              ksDesc  = Model.KillStatsDesc,
+            mpSort  = Model.MapSortBy,                    mpDesc  = Model.MapDesc,
+            spSort  = Model.ServerSortBy,                 spDesc  = Model.ServerDesc,
+            wuSort  = Model.WeaponUsageSortBy,            wuDesc  = Model.WeaponUsageDesc,
+            wsSort  = Model.WeaponStatsmeSortBy,          wsDesc  = Model.WeaponStatsmeDesc,
+            wtSort  = Model.WeaponTargetSortBy,           wtDesc  = Model.WeaponTargetDesc })! + "#tab-teams";
+    }
+    string TsMark(string field) => Model.TeamSortBy == field ? (Model.TeamDesc ? " ▼" : " ▲") : "";
+
+    string RsSortUrl(string field)
+    {
+        bool nextDesc = Model.RoleSortBy == field ? !Model.RoleDesc : true;
+        return Url.Action("Profile", new { id = Model.Player.PlayerId,
+            paSort  = Model.PlayerActionSortBy,           paDesc  = Model.PlayerActionDesc,
+            pavSort = Model.PlayerActionVictimSortBy,     pavDesc = Model.PlayerActionVictimDesc,
+            tsSort  = Model.TeamSortBy,                   tsDesc  = Model.TeamDesc,
+            rsSort  = field,                              rsDesc  = nextDesc,
+            ksSort  = Model.KillStatsSortBy,              ksDesc  = Model.KillStatsDesc,
+            mpSort  = Model.MapSortBy,                    mpDesc  = Model.MapDesc,
+            spSort  = Model.ServerSortBy,                 spDesc  = Model.ServerDesc,
+            wuSort  = Model.WeaponUsageSortBy,            wuDesc  = Model.WeaponUsageDesc,
+            wsSort  = Model.WeaponStatsmeSortBy,          wsDesc  = Model.WeaponStatsmeDesc,
+            wtSort  = Model.WeaponTargetSortBy,           wtDesc  = Model.WeaponTargetDesc })! + "#tab-teams";
+    }
+    string RsMark(string field) => Model.RoleSortBy == field ? (Model.RoleDesc ? " ▼" : " ▲") : "";
+}
+
+  @* ── Player Actions ── *@
   @if (Model.PlayerActions.Any())
   {
-  <div class="profile-section">
-    <h2>Player Actions *</h2>
-    <table class="stats-table sortable">
-      <thead><tr><th>Rank</th><th>Action</th><th style="text-align:right;">Earned</th><th style="text-align:right;">Accumulated Points</th></tr></thead>
-      <tbody>
-        @{ int paRank = 0; }
-        @foreach (var a in Model.PlayerActions)
-        {
-          paRank++;
-          <tr>
-            <td>@paRank</td>
-            <td>@a.Description</td>
-            <td style="text-align:right;">@a.Count.ToString("N0") times</td>
-            <td style="text-align:right;">@a.AccumulatedPoints.ToString("N0")</td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  </div>
+  <h2>Player Actions *</h2>
+  <table class="data-table">
+    <thead>
+      <tr class="data-table-head">
+        <th>Rank</th>
+        <th><a href="@(PaSortUrl("action"))">Action@(PaMark("action"))</a></th>
+        <th style="text-align:right"><a href="@(PaSortUrl("count"))">Earned@(PaMark("count"))</a></th>
+        <th style="text-align:right"><a href="@(PaSortUrl("points"))">Accumulated Points@(PaMark("points"))</a></th>
+      </tr>
+    </thead>
+    <tbody>
+      @{int paRank = 1; bool paBg = false;}
+      @foreach (var a in Model.PlayerActions)
+      {
+        string paRow = paBg ? "bg2" : "bg1"; paBg = !paBg;
+        string paAlt = paBg ? "bg2" : "bg1";
+        <tr>
+          <td class="@paRow" style="text-align:right">@paRank</td>
+          <td class="@paAlt">@a.Description</td>
+          <td class="@paRow" style="text-align:right">@a.Count.ToString("N0") times</td>
+          <td class="@paAlt" style="text-align:right">@a.AccumulatedPoints.ToString("N0")</td>
+        </tr>
+        paRank++;
+      }
+    </tbody>
+  </table>
+  <br />
   }
 
+  @* ── Victims of Player-Player Actions ── *@
   @if (Model.PlayerActionVictims.Any())
   {
-  <div class="profile-section">
-    <h2>Victims of Player-Player Actions *</h2>
-    <table class="stats-table sortable">
-      <thead><tr><th>Rank</th><th>Action</th><th style="text-align:right;">Earned Against</th><th style="text-align:right;">Accumulated Points</th></tr></thead>
+  <h2>Victims of Player-Player Actions *</h2>
+  <table class="data-table">
+    <thead>
+      <tr class="data-table-head">
+        <th>Rank</th>
+        <th><a href="@(PavSortUrl("action"))">Action@(PavMark("action"))</a></th>
+        <th style="text-align:right"><a href="@(PavSortUrl("count"))">Earned Against@(PavMark("count"))</a></th>
+        <th style="text-align:right"><a href="@(PavSortUrl("points"))">Accumulated Points@(PavMark("points"))</a></th>
+      </tr>
+    </thead>
+    <tbody>
+      @{int pavRank = 1; bool pavBg = false;}
+      @foreach (var a in Model.PlayerActionVictims)
+      {
+        string pavRow = pavBg ? "bg2" : "bg1"; pavBg = !pavBg;
+        string pavAlt = pavBg ? "bg2" : "bg1";
+        <tr>
+          <td class="@pavRow" style="text-align:right">@pavRank</td>
+          <td class="@pavAlt">@a.Description</td>
+          <td class="@pavRow" style="text-align:right">@a.Count.ToString("N0") times</td>
+          <td class="@pavAlt" style="text-align:right">@a.AccumulatedPoints.ToString("N0")</td>
+        </tr>
+        pavRank++;
+      }
+    </tbody>
+  </table>
+  <br />
+  }
+
+  @* ── Team Selection ── *@
+  <h2>Team Selection *</h2>
+  @if (!Model.TeamSelection.Any())
+  {
+    <p>No team data available.</p>
+  }
+  else
+  {
+    <table class="data-table">
+      <thead>
+        <tr class="data-table-head">
+          <th>Rank</th>
+          <th><a href="@(TsSortUrl("team"))">Team@(TsMark("team"))</a></th>
+          <th style="text-align:right"><a href="@(TsSortUrl("joined"))">Joined@(TsMark("joined"))</a></th>
+          <th style="text-align:right">%</th>
+          <th>Ratio</th>
+        </tr>
+      </thead>
       <tbody>
-        @{ int pavRank = 0; }
-        @foreach (var a in Model.PlayerActionVictims)
+        @{int teamRank = 1; bool teamBg = false;}
+        @foreach (var t in Model.TeamSelection)
         {
-          pavRank++;
+          string teamRow = teamBg ? "bg2" : "bg1"; teamBg = !teamBg;
+          string teamAlt = teamBg ? "bg2" : "bg1";
+          double pct = t.TotalJoins > 0 ? (double)t.JoinCount / t.TotalJoins * 100 : 0;
           <tr>
-            <td>@pavRank</td>
-            <td>@a.Description</td>
-            <td style="text-align:right;">@a.Count.ToString("N0") times</td>
-            <td style="text-align:right;">@a.AccumulatedPoints.ToString("N0")</td>
+            <td class="@teamRow" style="text-align:right">@teamRank</td>
+            <td class="@teamAlt">@t.TeamName</td>
+            <td class="@teamRow" style="text-align:right">@t.JoinCount times</td>
+            <td class="@teamAlt" style="text-align:right">@pct.ToString("F2")%</td>
+            <td class="@teamRow"><meter min="0" max="100" low="25" high="50" optimum="75" value="@(pct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))"></meter></td>
           </tr>
+          teamRank++;
         }
       </tbody>
     </table>
-  </div>
+    <br />
   }
 
-  <div>
-    <section>
-      <h2>Team Selection *</h2>
-      @if (!Model.TeamSelection.Any())
-      {
-        <p>No team data available.</p>
-      }
-      else
-      {
-        <table class="stats-table sortable">
-          <thead><tr><th>Rank</th><th>Team</th><th>Joined</th><th>%</th><th>Ratio</th></tr></thead>
-          <tbody>
-            @{ int teamRank = 0; }
-            @foreach (var t in Model.TeamSelection)
-            {
-              double pct = t.TotalJoins > 0 ? (double)t.JoinCount / t.TotalJoins * 100 : 0;
-              teamRank++;
-              <tr>
-                <td>@teamRank</td>
-                <td>@t.TeamName</td>
-                <td>@t.JoinCount times</td>
-                <td>@pct.ToString("F2")%</td>
-                <td><meter min="0" max="100" low="25" high="50" optimum="75" value="@pct.ToString("F0")" style="width:80px;"></meter></td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      }
-    </section>
-    <section>
-      <h2>Role Selection *</h2>
-      @if (!Model.RoleSelection.Any())
-      {
-        <p>No role data available.</p>
-      }
-      else
-      {
-        <table class="stats-table sortable">
-          <thead><tr><th>Rank</th><th>Role</th><th>Joined</th><th>%</th><th>Ratio</th><th>Kills</th><th>Deaths</th><th>K:D</th></tr></thead>
-          <tbody>
-            @{ int roleRank = 0; }
-            @foreach (var r in Model.RoleSelection)
-            {
-              double rolePct = r.TotalJoins > 0 ? (double)r.JoinCount / r.TotalJoins * 100 : 0;
-              roleRank++;
-              <tr>
-                <td>@roleRank</td>
-                <td>
-                  @if (!string.IsNullOrEmpty(r.RoleImage))
-                  {
-                    <img src="/hlstatsimg/games/@(Model.Player.Game)/roles/@(Uri.EscapeDataString(r.RoleImage)).png" alt="@r.RoleCode" />
-                  }
-                  @r.RoleName
-                </td>
-                <td>@r.JoinCount times</td>
-                <td>@(rolePct > 0 ? $"{rolePct:F2}%" : "-")</td>
-                <td><meter min="0" max="100" low="25" high="50" optimum="75" value="@rolePct.ToString("F0")" style="width:80px;"></meter></td>
-                <td>@r.Kills.ToString("N0")</td>
-                <td>@r.Deaths.ToString("N0")</td>
-                <td>@(r.Deaths == 0 ? r.Kills.ToString("N0") : $"{(double)r.Kills / r.Deaths:F2}")</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      }
-    </section>
-  </div>
+  @* ── Role Selection ── *@
+  <h2>Role Selection *</h2>
+  @if (!Model.RoleSelection.Any())
+  {
+    <p>No role data available.</p>
+  }
+  else
+  {
+    <table class="data-table">
+      <thead>
+        <tr class="data-table-head">
+          <th>Rank</th>
+          <th><a href="@(RsSortUrl("role"))">Role@(RsMark("role"))</a></th>
+          <th style="text-align:right"><a href="@(RsSortUrl("joined"))">Joined@(RsMark("joined"))</a></th>
+          <th style="text-align:right">%</th>
+          <th>Ratio</th>
+          <th style="text-align:right"><a href="@(RsSortUrl("kills"))">Kills@(RsMark("kills"))</a></th>
+          <th style="text-align:right"><a href="@(RsSortUrl("deaths"))">Deaths@(RsMark("deaths"))</a></th>
+          <th style="text-align:right"><a href="@(RsSortUrl("kpd"))">K:D@(RsMark("kpd"))</a></th>
+        </tr>
+      </thead>
+      <tbody>
+        @{int roleRank = 1; bool roleBg = false;}
+        @foreach (var r in Model.RoleSelection)
+        {
+          string roleRow = roleBg ? "bg2" : "bg1"; roleBg = !roleBg;
+          string roleAlt = roleBg ? "bg2" : "bg1";
+          double rolePct = r.TotalJoins > 0 ? (double)r.JoinCount / r.TotalJoins * 100 : 0;
+          <tr>
+            <td class="@roleRow" style="text-align:right">@roleRank</td>
+            <td class="@roleAlt">
+              @if (!string.IsNullOrEmpty(r.RoleImage))
+              {
+                <img src="/hlstatsimg/games/@(Model.Player.Game)/roles/@(Uri.EscapeDataString(r.RoleImage)).png" alt="@r.RoleCode" />
+              }
+              @r.RoleName
+            </td>
+            <td class="@roleRow" style="text-align:right">@r.JoinCount times</td>
+            <td class="@roleAlt" style="text-align:right">@(rolePct > 0 ? $"{rolePct:F2}%" : "-")</td>
+            <td class="@roleRow"><meter min="0" max="100" low="25" high="50" optimum="75" value="@(rolePct.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))"></meter></td>
+            <td class="@roleAlt" style="text-align:right">@r.Kills.ToString("N0")</td>
+            <td class="@roleRow" style="text-align:right">@r.Deaths.ToString("N0")</td>
+            <td class="@roleAlt" style="text-align:right">@(r.Deaths == 0 ? r.Kills.ToString("N0") : $"{(double)r.Kills / r.Deaths:F2}")</td>
+          </tr>
+          roleRank++;
+        }
+      </tbody>
+    </table>
+    <br />
+  }
 </div>
 
 <div id="tab-weapons" class="tab-panel" style="display:none;">
