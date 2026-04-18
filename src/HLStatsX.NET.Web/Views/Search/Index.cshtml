@@ -1,13 +1,16 @@
 @model HLStatsX.NET.Core.Models.SearchResults?
+@using HLStatsX.NET.Core.Entities
 @{
     ViewData["Title"] = "Search";
     var query      = Model?.Query ?? ViewData["query"] as string ?? "";
     var game       = ViewData["game"] as string ?? "";
     var st         = ViewData["st"]   as string ?? "";
-    var showPlayers = string.IsNullOrEmpty(st) || st == "player";
-    var showClans   = string.IsNullOrEmpty(st) || st == "clan";
+    var games      = ViewData["Games"] as IReadOnlyList<Game> ?? [];
+    var gameNames  = games.ToDictionary(g => g.Code, g => g.Name);
+    var showPlayers  = string.IsNullOrEmpty(st) || st == "player";
+    var showClans    = string.IsNullOrEmpty(st) || st == "clan";
+    var showUniqueId = string.IsNullOrEmpty(st) || st == "uniqueid";
 
-    // Pre-compute player pagination so it's available in code context
     var playerTotalPages = Model is null ? 0 : (int)Math.Ceiling(Model.TotalPlayers / (double)Model.PageSize);
     var playerPagination = Model is null ? null : new PaginationModel
     {
@@ -20,16 +23,34 @@
 <h1>Find a Player or Clan</h1>
 
 <form method="get" asp-action="Index" style="margin-bottom:1rem;">
-    <input type="hidden" name="game" value="@game" />
-    @if (!string.IsNullOrEmpty(st))
-    {
-        <input type="hidden" name="st" value="@st" />
-    }
     <table class="data-table" style="width:auto;">
         <tr class="bg1">
-            <td style="padding:0.3rem 0.6rem; white-space:nowrap;">Search for:</td>
+            <td style="padding:0.3rem 0.6rem; white-space:nowrap;">Search For:</td>
             <td style="padding:0.3rem 0.6rem;">
                 <input type="text" name="q" size="30" maxlength="128" value="@query" class="form-text" />
+            </td>
+        </tr>
+        <tr class="bg1">
+            <td style="padding:0.3rem 0.6rem; white-space:nowrap;">In:</td>
+            <td style="padding:0.3rem 0.6rem;">
+                <select name="st" class="form-text">
+                    <option value="" selected="@(st == "" ? "selected" : null)">(All)</option>
+                    <option value="player" selected="@(st == "player" ? "selected" : null)">Player Names</option>
+                    <option value="uniqueid" selected="@(st == "uniqueid" ? "selected" : null)">Player Unique IDs</option>
+                    <option value="clan" selected="@(st == "clan" ? "selected" : null)">Clan Names</option>
+                </select>
+            </td>
+        </tr>
+        <tr class="bg1">
+            <td style="padding:0.3rem 0.6rem; white-space:nowrap;">Game:</td>
+            <td style="padding:0.3rem 0.6rem;">
+                <select name="game" class="form-text">
+                    <option value="" selected="@(game == "" ? "selected" : null)">(All)</option>
+                    @foreach (var g in games)
+                    {
+                        <option value="@g.Code" selected="@(game == g.Code ? "selected" : null)">@g.Name</option>
+                    }
+                </select>
             </td>
         </tr>
         <tr class="bg1">
@@ -95,6 +116,48 @@
     </section>
     }
 
+    @if (showUniqueId)
+    {
+    <section style="margin-bottom:1.5rem;">
+        <h3>Player Unique IDs &mdash; @Model.TotalUniqueIds found</h3>
+        @if (Model.UniqueIds.Any())
+        {
+            <table class="data-table">
+                <thead>
+                    <tr class="data-table-head">
+                        <th style="text-align:left;">Unique ID</th>
+                        <th style="text-align:left;">Player</th>
+                        <th style="text-align:left;">Game</th>
+                        <th style="width:4%; text-align:center;">ID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ int uidRow = 0; }
+                    @foreach (var u in Model.UniqueIds)
+                    {
+                        var flagFile = string.IsNullOrEmpty(u.Flag)    ? "0" : u.Flag.ToLowerInvariant();
+                        var flagAlt  = string.IsNullOrEmpty(u.Country) ? ""  : u.Country;
+                        <tr class="@(uidRow % 2 == 0 ? "bg1" : "bg2")">
+                            <td>@u.UniqueId</td>
+                            <td>
+                                <img src="/hlstatsimg/flags/@(flagFile).gif" alt="@flagAlt" title="@flagAlt" />&nbsp;
+                                <a asp-controller="Players" asp-action="Profile" asp-route-id="@u.PlayerId">@u.LastName</a>
+                            </td>
+                            <td>@u.GameName</td>
+                            <td style="text-align:center;">@u.PlayerId</td>
+                        </tr>
+                        uidRow++;
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>No unique IDs found.</p>
+        }
+    </section>
+    }
+
     @if (showClans)
     {
     <section>
@@ -118,7 +181,7 @@
                             <td style="text-align:center;">@(clanRow + 1)</td>
                             <td>@c.Tag</td>
                             <td><a asp-controller="Clans" asp-action="Profile" asp-route-id="@c.ClanId">@c.Name</a></td>
-                            <td>@c.Game</td>
+                            <td>@(gameNames.GetValueOrDefault(c.Game, c.Game))</td>
                         </tr>
                         clanRow++;
                     }

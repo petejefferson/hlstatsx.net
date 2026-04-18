@@ -19,6 +19,7 @@ public interface IPlayerRepository
     Task<IReadOnlyList<PlayerRibbon>> GetRibbonsAsync(int playerId, CancellationToken ct = default);
     Task<int> GetRankAsync(int playerId, string game, CancellationToken ct = default);
     Task<PagedResult<PlayerSearchResult>> SearchAsync(string query, string? game, int page, int pageSize, CancellationToken ct = default);
+    Task<PagedResult<UniqueIdSearchResult>> SearchByUniqueIdAsync(string query, string? game, int page, int pageSize, CancellationToken ct = default);
     Task<IReadOnlyList<Player>> GetBannedAsync(string game, CancellationToken ct = default);
     Task<Player?> GetBySteamIdAsync(string steamId, string game, CancellationToken ct = default);
     Task UpdateAsync(Player player, CancellationToken ct = default);

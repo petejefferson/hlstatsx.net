@@ -11,13 +11,16 @@ public class SearchServiceTests
 {
     private readonly Mock<IPlayerRepository> _playerRepoMock;
     private readonly Mock<IClanRepository> _clanRepoMock;
+    private readonly Mock<IGameRepository> _gameRepoMock;
     private readonly SearchService _service;
 
     public SearchServiceTests()
     {
         _playerRepoMock = new Mock<IPlayerRepository>();
         _clanRepoMock = new Mock<IClanRepository>();
-        _service = new SearchService(_playerRepoMock.Object, _clanRepoMock.Object);
+        _gameRepoMock = new Mock<IGameRepository>();
+        _gameRepoMock.Setup(r => r.GetAllAsync(default)).ReturnsAsync([]);
+        _service = new SearchService(_playerRepoMock.Object, _clanRepoMock.Object, _gameRepoMock.Object);
     }
 
     [Fact]
@@ -32,6 +35,9 @@ public class SearchServiceTests
         _playerRepoMock
             .Setup(r => r.SearchAsync("Frag", "cstrike", 1, 20, default))
             .ReturnsAsync(PagedResult<PlayerSearchResult>.Create(players, 1, 1, 20));
+        _playerRepoMock
+            .Setup(r => r.SearchByUniqueIdAsync("Frag", "cstrike", 1, 20, default))
+            .ReturnsAsync(PagedResult<UniqueIdSearchResult>.Create([], 0, 1, 20));
 
         _clanRepoMock
             .Setup(r => r.SearchAsync("Frag", "cstrike", 1, 20, default))
@@ -51,11 +57,14 @@ public class SearchServiceTests
     {
         _playerRepoMock
             .Setup(r => r.SearchAsync("xyz", "cstrike", 1, 20, default))
-            .ReturnsAsync(PagedResult<PlayerSearchResult>.Create(Array.Empty<PlayerSearchResult>(), 0, 1, 20));
+            .ReturnsAsync(PagedResult<PlayerSearchResult>.Create([], 0, 1, 20));
+        _playerRepoMock
+            .Setup(r => r.SearchByUniqueIdAsync("xyz", "cstrike", 1, 20, default))
+            .ReturnsAsync(PagedResult<UniqueIdSearchResult>.Create([], 0, 1, 20));
 
         _clanRepoMock
             .Setup(r => r.SearchAsync("xyz", "cstrike", 1, 20, default))
-            .ReturnsAsync(PagedResult<Clan>.Create(Array.Empty<Clan>(), 0, 1, 20));
+            .ReturnsAsync(PagedResult<Clan>.Create([], 0, 1, 20));
 
         var result = await _service.SearchAsync("xyz", "cstrike", null);
 

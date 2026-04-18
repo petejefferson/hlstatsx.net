@@ -128,10 +128,12 @@ public class PlayerRepository : IPlayerRepository
         // Search all aliases (PlayerNames) like the PHP site does — not just the current LastName
         var q = from pn in db.PlayerNames
                 join p  in db.Players on pn.PlayerId equals p.PlayerId
+                join g  in db.Games   on p.Game      equals g.Code
                 where EF.Functions.Like(pn.Name, $"%{query}%")
                    && (game == null || p.Game == game)
+                   && g.Hidden != "1"
                 orderby pn.Name
-                select new PlayerSearchResult(p.PlayerId, pn.Name, p.Flag, p.Country, p.Game);
+                select new PlayerSearchResult(p.PlayerId, pn.Name, p.Flag, p.Country, g.Name);
 
         var total = await q.CountAsync(ct);
         var items = await q.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
@@ -147,6 +149,24 @@ public class PlayerRepository : IPlayerRepository
         }
 
         return PagedResult<PlayerSearchResult>.Create(items, total, page, pageSize);
+    }
+
+    public async Task<PagedResult<UniqueIdSearchResult>> SearchByUniqueIdAsync(string query, string? game, int page, int pageSize, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+
+        var q = from u in db.PlayerUniqueIds
+                join p in db.Players on u.PlayerId equals p.PlayerId
+                join g in db.Games on u.Game equals g.Code
+                where g.Hidden != "1"
+                   && EF.Functions.Like(u.UniqueId, $"%{query}%")
+                   && (game == null || u.Game == game)
+                orderby u.UniqueId
+                select new UniqueIdSearchResult(p.PlayerId, u.UniqueId, p.LastName, p.Flag, p.Country, g.Name);
+
+        var total = await q.CountAsync(ct);
+        var items = await q.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+        return PagedResult<UniqueIdSearchResult>.Create(items, total, page, pageSize);
     }
 
     // HLStatsX uses hideranking=1 to "ban"/hide players from rankings

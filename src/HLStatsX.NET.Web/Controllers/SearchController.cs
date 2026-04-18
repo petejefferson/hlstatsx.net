@@ -16,19 +16,17 @@ public class SearchController : Controller
 
     public async Task<IActionResult> Index(string? q, string? game, string? st = null, int page = 1, CancellationToken ct = default)
     {
-        game ??= _config["HLStatsX:DefaultGame"] ?? "cstrike";
+        game ??= "";
         ViewData["game"]  = game;
         ViewData["query"] = q ?? "";
         ViewData["st"]    = st ?? "";
+        ViewData["HideBotPlayers"] = _config.GetValue<bool>("HLStatsX:HideBotPlayers", true);
+        ViewData["Games"] = await _search.GetVisibleGamesAsync(ct);
 
         if (string.IsNullOrWhiteSpace(q))
-        {
-            ViewData["HideBotPlayers"] = _config.GetValue<bool>("HLStatsX:HideBotPlayers", true);
             return View("Index", (object?)null);
-        }
 
-        ViewData["HideBotPlayers"] = _config.GetValue<bool>("HLStatsX:HideBotPlayers", true);
-        var results = await _search.SearchAsync(q, game, st, page, 50, ct);
+        var results = await _search.SearchAsync(q, string.IsNullOrEmpty(game) ? null : game, st, page, 50, ct);
         return View(results);
     }
 }
