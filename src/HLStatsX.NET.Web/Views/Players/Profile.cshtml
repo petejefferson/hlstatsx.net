@@ -390,7 +390,7 @@
             pavSort = Model.PlayerActionVictimSortBy,     pavDesc = Model.PlayerActionVictimDesc,
             tsSort  = Model.TeamSortBy,                   tsDesc  = Model.TeamDesc,
             rsSort  = Model.RoleSortBy,                   rsDesc  = Model.RoleDesc,
-            ksSort  = Model.KillStatsSortBy,              ksDesc  = Model.KillStatsDesc,  ksLimit = Model.KillLimit,
+            ksSort  = Model.KillStatsSortBy,              ksDesc  = Model.KillStatsDesc,  ksLimit = Model.KillLimit,  ksPage = Model.KillStats.Page,
             mpSort  = Model.MapSortBy,                    mpDesc  = Model.MapDesc,
             spSort  = Model.ServerSortBy,                 spDesc  = Model.ServerDesc,
             wuSort  = Model.WeaponUsageSortBy,            wuDesc  = Model.WeaponUsageDesc,
@@ -407,7 +407,7 @@
             pavSort = field,                              pavDesc = nextDesc,
             tsSort  = Model.TeamSortBy,                   tsDesc  = Model.TeamDesc,
             rsSort  = Model.RoleSortBy,                   rsDesc  = Model.RoleDesc,
-            ksSort  = Model.KillStatsSortBy,              ksDesc  = Model.KillStatsDesc,  ksLimit = Model.KillLimit,
+            ksSort  = Model.KillStatsSortBy,              ksDesc  = Model.KillStatsDesc,  ksLimit = Model.KillLimit,  ksPage = Model.KillStats.Page,
             mpSort  = Model.MapSortBy,                    mpDesc  = Model.MapDesc,
             spSort  = Model.ServerSortBy,                 spDesc  = Model.ServerDesc,
             wuSort  = Model.WeaponUsageSortBy,            wuDesc  = Model.WeaponUsageDesc,
@@ -424,7 +424,7 @@
             pavSort = Model.PlayerActionVictimSortBy,     pavDesc = Model.PlayerActionVictimDesc,
             tsSort  = field,                              tsDesc  = nextDesc,
             rsSort  = Model.RoleSortBy,                   rsDesc  = Model.RoleDesc,
-            ksSort  = Model.KillStatsSortBy,              ksDesc  = Model.KillStatsDesc,  ksLimit = Model.KillLimit,
+            ksSort  = Model.KillStatsSortBy,              ksDesc  = Model.KillStatsDesc,  ksLimit = Model.KillLimit,  ksPage = Model.KillStats.Page,
             mpSort  = Model.MapSortBy,                    mpDesc  = Model.MapDesc,
             spSort  = Model.ServerSortBy,                 spDesc  = Model.ServerDesc,
             wuSort  = Model.WeaponUsageSortBy,            wuDesc  = Model.WeaponUsageDesc,
@@ -441,7 +441,7 @@
             pavSort = Model.PlayerActionVictimSortBy,     pavDesc = Model.PlayerActionVictimDesc,
             tsSort  = Model.TeamSortBy,                   tsDesc  = Model.TeamDesc,
             rsSort  = field,                              rsDesc  = nextDesc,
-            ksSort  = Model.KillStatsSortBy,              ksDesc  = Model.KillStatsDesc,  ksLimit = Model.KillLimit,
+            ksSort  = Model.KillStatsSortBy,              ksDesc  = Model.KillStatsDesc,  ksLimit = Model.KillLimit,  ksPage = Model.KillStats.Page,
             mpSort  = Model.MapSortBy,                    mpDesc  = Model.MapDesc,
             spSort  = Model.ServerSortBy,                 spDesc  = Model.ServerDesc,
             wuSort  = Model.WeaponUsageSortBy,            wuDesc  = Model.WeaponUsageDesc,
@@ -975,7 +975,7 @@
     {
         bool nextDesc = Model.KillStatsSortBy == field ? !Model.KillStatsDesc : true;
         return Url.Action("Profile", new { id = Model.Player.PlayerId,
-            ksSort = field, ksDesc = nextDesc, ksLimit = Model.KillLimit,
+            ksSort = field, ksDesc = nextDesc, ksLimit = Model.KillLimit, ksPage = 1,
             mpSort = Model.MapSortBy,           mpDesc = Model.MapDesc,
             spSort = Model.ServerSortBy,        spDesc = Model.ServerDesc,
             wuSort = Model.WeaponUsageSortBy,   wuDesc = Model.WeaponUsageDesc,
@@ -983,7 +983,14 @@
             wtSort = Model.WeaponTargetSortBy,  wtDesc = Model.WeaponTargetDesc })! + "#tab-kills";
     }
     string KsLimitUrl(int limit) => Url.Action("Profile", new { id = Model.Player.PlayerId,
-        ksSort = Model.KillStatsSortBy, ksDesc = Model.KillStatsDesc, ksLimit = limit,
+        ksSort = Model.KillStatsSortBy, ksDesc = Model.KillStatsDesc, ksLimit = limit, ksPage = 1,
+        mpSort = Model.MapSortBy,           mpDesc = Model.MapDesc,
+        spSort = Model.ServerSortBy,        spDesc = Model.ServerDesc,
+        wuSort = Model.WeaponUsageSortBy,   wuDesc = Model.WeaponUsageDesc,
+        wsSort = Model.WeaponStatsmeSortBy, wsDesc = Model.WeaponStatsmeDesc,
+        wtSort = Model.WeaponTargetSortBy,  wtDesc = Model.WeaponTargetDesc })! + "#tab-kills";
+    string KsPageUrl(int page) => Url.Action("Profile", new { id = Model.Player.PlayerId,
+        ksSort = Model.KillStatsSortBy, ksDesc = Model.KillStatsDesc, ksLimit = Model.KillLimit, ksPage = page,
         mpSort = Model.MapSortBy,           mpDesc = Model.MapDesc,
         spSort = Model.ServerSortBy,        spDesc = Model.ServerDesc,
         wuSort = Model.WeaponUsageSortBy,   wuDesc = Model.WeaponUsageDesc,
@@ -992,7 +999,7 @@
     string KsMark(string field) => Model.KillStatsSortBy == field ? (Model.KillStatsDesc ? " ▼" : " ▲") : "";
 }
   <h2>Player Kill Statistics *</h2>
-  @if (!Model.KillStats.Any())
+  @if (Model.KillStats.TotalCount == 0)
   {
     <p>No kill stat data available.</p>
   }
@@ -1000,8 +1007,7 @@
   {
     long ksRealKills  = Model.RealStats.RealKills  > 0 ? Model.RealStats.RealKills  : 1;
     long ksRealDeaths = Model.RealStats.RealDeaths > 0 ? Model.RealStats.RealDeaths : 1;
-    long ksRealHS     = Model.KillStats.Sum(k => k.Headshots);
-    if (ksRealHS == 0) ksRealHS = 1;
+    long ksRealHS     = Model.KillStatsRealHS > 0 ? Model.KillStatsRealHS : 1;
     <table class="data-table">
       <thead>
         <tr class="data-table-head">
@@ -1021,8 +1027,8 @@
         </tr>
       </thead>
       <tbody>
-        @{int ksRank = 1; bool ksBg = false;}
-        @foreach (var k in Model.KillStats)
+        @{int ksRank = (Model.KillStats.Page - 1) * Model.KillStats.PageSize + 1; bool ksBg = false;}
+        @foreach (var k in Model.KillStats.Items)
         {
           string ksRow = ksBg ? "bg2" : "bg1"; ksBg = !ksBg;
           string ksAlt = ksBg ? "bg2" : "bg1";
@@ -1059,6 +1065,7 @@
         }
       </tbody>
     </table>
+    <partial name="_Pagination" model="@PaginationModel.From(Model.KillStats, p => KsPageUrl(p))" />
     <br />
     <div class="subblock">
       <strong>&bull;</strong> Show only victims this person has killed

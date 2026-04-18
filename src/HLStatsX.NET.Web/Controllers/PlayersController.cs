@@ -89,7 +89,7 @@ public class PlayersController : Controller
         string wtSort = "hits",  bool wtDesc = true,
         string mpSort  = "kpd",    bool mpDesc  = true,
         string spSort  = "kills",  bool spDesc  = true,
-        string ksSort  = "kills",  bool ksDesc  = true,  int ksLimit = 0,
+        string ksSort  = "kills",  bool ksDesc  = true,  int ksLimit = 0,  int ksPage = 1,
         string paSort  = "count",  bool paDesc  = true,
         string pavSort = "count",  bool pavDesc = true,
         string tsSort  = "joined", bool tsDesc  = true,
@@ -170,10 +170,11 @@ public class PlayersController : Controller
             FavoriteServer      = favServerTask.Result,
             FavoriteMap         = favMapTask.Result,
             FavoriteWeapon      = favWeaponTask.Result,
-            KillStats           = SortKillStats(killStatsTask.Result, ksSort, ksDesc),
+            KillStats           = ToPagedResult(SortKillStats(killStatsTask.Result, ksSort, ksDesc), ksPage, 50),
             KillStatsSortBy     = ksSort,
             KillStatsDesc       = ksDesc,
             KillLimit           = ksLimit,
+            KillStatsRealHS     = killStatsTask.Result.Sum(k => k.Headshots),
             MapPerformance      = SortMapPerformance(mapPerfTask.Result, mpSort, mpDesc),
             MapSortBy           = mpSort,
             MapDesc             = mpDesc,
@@ -259,6 +260,13 @@ public class PlayersController : Controller
             _          => desc ? rows.OrderByDescending(w => w.Hits)       : rows.OrderBy(w => w.Hits),
         };
         return ordered.ToList();
+    }
+
+    private static PagedResult<T> ToPagedResult<T>(IReadOnlyList<T> rows, int page, int pageSize)
+    {
+        page = Math.Max(1, page);
+        var items = rows.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+        return PagedResult<T>.Create(items, rows.Count, page, pageSize);
     }
 
     private static IReadOnlyList<KillStatRow> SortKillStats(IReadOnlyList<KillStatRow> rows, string sortBy, bool desc)

@@ -36,10 +36,11 @@ public record PlayerProfileViewModel
     public required FavoriteServer? FavoriteServer { get; init; }
     public required string? FavoriteMap { get; init; }
     public required FavoriteWeapon? FavoriteWeapon { get; init; }
-    public required IReadOnlyList<KillStatRow> KillStats { get; init; }
+    public required PagedResult<KillStatRow> KillStats { get; init; }
     public required string KillStatsSortBy { get; init; }
     public required bool KillStatsDesc { get; init; }
     public required int KillLimit { get; init; }
+    public required long KillStatsRealHS { get; init; }
     public required IReadOnlyList<MapStatRow> MapPerformance { get; init; }
     public required string MapSortBy { get; init; }
     public required bool MapDesc { get; init; }

@@ -43,17 +43,29 @@
     var links = tabs.querySelectorAll('.tab-link');
     var panels = document.querySelectorAll('.tab-panel');
 
+    function activateTab(hash) {
+        var target = hash && hash.length > 1 ? hash.substring(1) : null;
+        var panel = target ? document.getElementById(target) : null;
+        if (!panel) return false;
+
+        links.forEach(function (l) { l.classList.remove('active'); });
+        panels.forEach(function (p) { p.classList.remove('active'); p.style.display = 'none'; });
+
+        var link = tabs.querySelector('a[href="' + hash + '"]');
+        if (link) link.classList.add('active');
+        panel.classList.add('active');
+        panel.style.display = 'block';
+        return true;
+    }
+
     links.forEach(function (link) {
         link.addEventListener('click', function (e) {
             e.preventDefault();
-            var target = this.getAttribute('href').substring(1); // strip leading #
-
-            links.forEach(function (l) { l.classList.remove('active'); });
-            panels.forEach(function (p) { p.classList.remove('active'); p.style.display = 'none'; });
-
-            this.classList.add('active');
-            var panel = document.getElementById(target);
-            if (panel) { panel.classList.add('active'); panel.style.display = 'block'; }
+            activateTab(this.getAttribute('href'));
         });
     });
+
+    if (!activateTab(window.location.hash)) {
+        activateTab('#tab-general');
+    }
 }());
