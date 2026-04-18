@@ -69,3 +69,13 @@ public record ClanRoleRow(
     long Kills,
     long Deaths,
     double KillDeathRatio);
+
+public record ClanMemberLocationRow(
+    int PlayerId,
+    string LastName,
+    int Kills,
+    int Deaths,
+    float Lat,
+    float Lng,
+    string? City,
+    string? Country);

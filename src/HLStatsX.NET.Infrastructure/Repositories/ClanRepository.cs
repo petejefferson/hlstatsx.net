@@ -487,4 +487,15 @@ public class ClanRepository : IClanRepository
             })
             .ToList();
     }
+
+    public async Task<IReadOnlyList<ClanMemberLocationRow>> GetMemberLocationsAsync(int clanId, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        return await db.Players
+            .Where(p => p.ClanId == clanId && p.HideRanking == 0 && p.Lat != null && p.Lng != null)
+            .Select(p => new ClanMemberLocationRow(
+                p.PlayerId, p.LastName, p.Kills, p.Deaths,
+                p.Lat!.Value, p.Lng!.Value, p.City, p.Country))
+            .ToListAsync(ct);
+    }
 }

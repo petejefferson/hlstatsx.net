@@ -39,7 +39,9 @@ public record ClanProfileViewModel(
     bool TeamsDescending,
     IReadOnlyList<ClanRoleRow> Roles,
     string RolesSortBy,
-    bool RolesDescending
+    bool RolesDescending,
+    IReadOnlyList<ClanMemberLocationRow> MemberLocations,
+    string? GoogleMapsApiKey
 )
 {
     public string Game => Clan.Game;

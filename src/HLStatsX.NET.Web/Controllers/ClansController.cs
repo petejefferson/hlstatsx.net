@@ -55,10 +55,14 @@ public class ClansController : Controller
         var actionVictimsTask  = _clans.GetActionVictimsAsync(id, ct);
         var teamsTask          = _clans.GetTeamSelectionAsync(id, clan.Game, ct);
         var rolesTask          = _clans.GetRoleSelectionAsync(id, clan.Game, ct);
+        var locationsTask      = _clans.GetMemberLocationsAsync(id, ct);
 
         await Task.WhenAll(
             favServerTask, favMapTask, favWeaponTask, membersTask,
-            weaponsTask, mapsTask, actionsTask, actionVictimsTask, teamsTask, rolesTask);
+            weaponsTask, mapsTask, actionsTask, actionVictimsTask, teamsTask, rolesTask, locationsTask);
+
+        string? googleMapsApiKey = _config["HLStatsX:Maps:GoogleMapsApiKey"];
+        if (string.IsNullOrWhiteSpace(googleMapsApiKey)) googleMapsApiKey = null;
 
         return View(new ClanProfileViewModel(
             clan, summary,
@@ -69,7 +73,8 @@ public class ClansController : Controller
             SortActions(actionsTask.Result, actionsSortBy, actionsDesc), actionsSortBy, actionsDesc,
             SortActions(actionVictimsTask.Result, victimsSortBy, victimsDesc), victimsSortBy, victimsDesc,
             SortTeams(teamsTask.Result, teamsSortBy, teamsDesc), teamsSortBy, teamsDesc,
-            SortRoles(rolesTask.Result, rolesSortBy, rolesDesc), rolesSortBy, rolesDesc));
+            SortRoles(rolesTask.Result, rolesSortBy, rolesDesc), rolesSortBy, rolesDesc,
+            locationsTask.Result, googleMapsApiKey));
     }
 
     private static IReadOnlyList<ClanWeaponRow> SortWeapons(IReadOnlyList<ClanWeaponRow> rows, string sortBy, bool desc)

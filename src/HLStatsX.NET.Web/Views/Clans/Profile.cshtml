@@ -244,6 +244,25 @@
         </tr>
       </table>
     </section>
+
+    @* ══════════════════════════════════════════════════════ PLAYER LOCATIONS *@
+    <section class="profile-card">
+      <table class="data-table">
+        <tr class="data-table-head"><th>Player Locations</th></tr>
+        <tr class="bg1">
+          <td>
+            @if (Model.MemberLocations.Count > 0)
+            {
+              <div id="player-map" style="width:100%;height:300px;"></div>
+            }
+            else
+            {
+              <p style="padding:10px;margin:0;color:#888;">No location data available for clan members.</p>
+            }
+          </td>
+        </tr>
+      </table>
+    </section>
   </div>
 
   @* Members table *@
@@ -547,3 +566,132 @@
 <div style="margin-top:20px;">
   <a asp-controller="Clans" asp-action="Index" asp-route-game="@(Model.Game)">&larr; Clan Rankings</a>
 </div>
+
+@{
+    var hasLocations = Model.MemberLocations.Count > 0;
+    var locJson      = "[]";
+    var centerLat    = "48.8";
+    var centerLng    = "8.5";
+    var centerZoom   = 3;
+
+    if (hasLocations)
+    {
+        var locGroups = Model.MemberLocations
+            .GroupBy(p => (p.Lat, p.Lng))
+            .Select(g => new {
+                lat     = g.Key.Lat,
+                lng     = g.Key.Lng,
+                city    = g.First().City    ?? "",
+                country = g.First().Country ?? "",
+                players = g.Select(p => new { id = p.PlayerId, name = p.LastName, kills = p.Kills, deaths = p.Deaths }).ToList()
+            })
+            .ToList();
+        locJson = System.Text.Json.JsonSerializer.Serialize(locGroups);
+
+        (double lat, double lng, int zoom) mc = (Model.Clan.MapRegion?.ToUpperInvariant() ?? "") switch
+        {
+            "NORTH AMERICA"  => (45.0,  -97.0, 3),
+            "SOUTH AMERICA"  => (-14.8, -61.2, 3),
+            "NORTH EUROPE"   => (62.6,   15.4, 4),
+            "EAST EUROPE"    => (51.9,   31.8, 4),
+            "GERMANY"        => (51.1,   10.1, 5),
+            "FRANCE"         => (47.2,    2.4, 5),
+            "SPAIN"          => (40.3,   -4.0, 5),
+            "UNITED KINGDOM" => (54.0,   -4.3, 5),
+            "DENMARK"        => (56.1,    9.2, 6),
+            "SWEDEN"         => (63.2,   16.3, 4),
+            "NORWAY"         => (65.6,   13.1, 4),
+            "FINLAND"        => (65.1,   26.6, 4),
+            "NETHERLANDS"    => (52.3,    5.4, 7),
+            "BELGIUM"        => (50.7,    4.5, 7),
+            "AUSTRIA"        => (47.7,   14.1, 7),
+            "POLAND"         => (52.1,   19.3, 6),
+            "ITALY"          => (42.6,   12.7, 5),
+            "TURKEY"         => (39.0,   34.9, 6),
+            "RUSSIA"         => (65.7,   98.8, 3),
+            "ASIA"           => (20.4,   95.6, 3),
+            "AUSTRALIA"      => (-26.1, 134.8, 4),
+            "CANADA"         => (60.0,  -97.0, 3),
+            "BRAZIL"         => (-12.0, -53.1, 4),
+            "WORLD"          => (25.0,    8.5, 2),
+            _                => (48.8,    8.5, 3),
+        };
+        centerLat  = mc.lat.ToString("F4", System.Globalization.CultureInfo.InvariantCulture);
+        centerLng  = mc.lng.ToString("F4", System.Globalization.CultureInfo.InvariantCulture);
+        centerZoom = mc.zoom;
+    }
+}
+
+@section Styles {
+    @if (hasLocations && Model.GoogleMapsApiKey == null)
+    {
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+              integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    }
+}
+
+@section Scripts {
+    @if (hasLocations)
+    {
+        @if (Model.GoogleMapsApiKey != null)
+        {
+            <script>
+                var clanLocations = @Html.Raw(locJson);
+                function initClanMap() {
+                    var map = new google.maps.Map(document.getElementById('player-map'), {
+                        center: { lat: @centerLat, lng: @centerLng },
+                        zoom: @centerZoom,
+                        scrollwheel: false,
+                        mapTypeControlOptions: { style: google.maps.MapTypeControlStyle.DROPDOWN_MENU }
+                    });
+                    clanLocations.forEach(function (loc) {
+                        var html = '<table style="min-width:160px;"><tr><td colspan="2" style="font-weight:bold;border-bottom:1px solid #ccc;padding-bottom:4px;">' +
+                            (loc.city ? loc.city + ', ' : '') + loc.country + '</td></tr>';
+                        loc.players.forEach(function (p) {
+                            html += '<tr><td colspan="2"><a href="/Players/Profile/' + p.id + '">' + p.name + '</a></td></tr>' +
+                                    '<tr><td style="color:#888;">K/D:&nbsp;</td><td>' + p.kills + '/' + p.deaths + '</td></tr>';
+                        });
+                        html += '</table>';
+                        var marker = new google.maps.Marker({ position: { lat: loc.lat, lng: loc.lng }, map: map });
+                        var iw = new google.maps.InfoWindow({ content: html });
+                        marker.addListener('click', function () { iw.open(map, marker); });
+                    });
+                }
+            </script>
+            <script src="https://maps.googleapis.com/maps/api/js?key=@(Model.GoogleMapsApiKey)&callback=initClanMap" async defer></script>
+        }
+        else
+        {
+            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+                    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/WLs=" crossorigin=""></script>
+            <script>
+                (function () {
+                    var locations = @Html.Raw(locJson);
+                    var map = L.map('player-map');
+                    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19,
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                    }).addTo(map);
+
+                    var markers = [];
+                    locations.forEach(function (loc) {
+                        var html = '<table style="min-width:160px;"><tr><td colspan="2" style="font-weight:bold;border-bottom:1px solid #ccc;padding-bottom:4px;">' +
+                            (loc.city ? loc.city + ', ' : '') + loc.country + '</td></tr>';
+                        loc.players.forEach(function (p) {
+                            html += '<tr><td colspan="2"><a href="/Players/Profile/' + p.id + '">' + p.name + '</a></td></tr>' +
+                                    '<tr><td style="color:#888;">K/D:&nbsp;</td><td>' + p.kills + '/' + p.deaths + '</td></tr>';
+                        });
+                        html += '</table>';
+                        markers.push(L.marker([loc.lat, loc.lng]).addTo(map).bindPopup(html));
+                    });
+
+                    if (markers.length > 0) {
+                        map.fitBounds(L.featureGroup(markers).getBounds().pad(0.3));
+                    } else {
+                        map.setView([@centerLat, @centerLng], @centerZoom);
+                    }
+                })();
+            </script>
+        }
+    }
+}

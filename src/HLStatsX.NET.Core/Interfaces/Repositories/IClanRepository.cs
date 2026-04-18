@@ -25,4 +25,5 @@ public interface IClanRepository
     Task<IReadOnlyList<ClanActionRow>> GetActionVictimsAsync(int clanId, CancellationToken ct = default);
     Task<IReadOnlyList<ClanTeamRow>> GetTeamSelectionAsync(int clanId, string game, CancellationToken ct = default);
     Task<IReadOnlyList<ClanRoleRow>> GetRoleSelectionAsync(int clanId, string game, CancellationToken ct = default);
+    Task<IReadOnlyList<ClanMemberLocationRow>> GetMemberLocationsAsync(int clanId, CancellationToken ct = default);
 }
