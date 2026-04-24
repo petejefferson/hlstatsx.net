@@ -382,13 +382,16 @@ public class PlayersController : Controller
         return Redirect(avatarUrl);
     }
 
-    public async Task<IActionResult> History(int id, int days = 30, CancellationToken ct = default)
+    public async Task<IActionResult> History(int id, int page = 1, string sortBy = "eventTime", bool desc = true, CancellationToken ct = default)
     {
         var player = await _players.GetPlayerAsync(id, ct);
         if (player is null) return NotFound();
 
-        var history = await _players.GetPlayerHistoryAsync(id, days, ct);
-        return View(new PlayerHistoryViewModel(player, history, days));
+        var eventsTask    = _players.GetPlayerEventHistoryAsync(id, player.Game, page, 50, sortBy, desc, ct);
+        var deleteDaysTask = _players.GetDeleteDaysAsync(ct);
+        await Task.WhenAll(eventsTask, deleteDaysTask);
+
+        return View(new PlayerEventHistoryViewModel(player, eventsTask.Result, page, sortBy, desc, deleteDaysTask.Result));
     }
 
     public async Task<IActionResult> Sessions(int id, int page = 1, string sortBy = "eventTime", bool desc = true, CancellationToken ct = default)

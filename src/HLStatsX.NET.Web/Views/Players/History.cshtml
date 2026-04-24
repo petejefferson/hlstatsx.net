@@ -1,49 +1,50 @@
-@model PlayerHistoryViewModel
+@model PlayerEventHistoryViewModel
 @{
-    ViewData["Title"] = $"{Model.Player.LastName} - History";
+    ViewData["Title"] = $"{Model.Player.LastName} - Event History";
+
+    string SortUrl(string field)
+    {
+        bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
+        return Url.Action("History", new { id = Model.Player.PlayerId, sortBy = field, desc = nextDesc, page = 1 })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
 }
 
-<h1>Skill History &mdash; @Model.Player.LastName</h1>
+<h1>Player Event History (Last @Model.DeleteDays Days) &mdash; @Model.Player.LastName</h1>
 
-<div class="history-filters">
-    <a asp-action="History" asp-route-id="@Model.Player.PlayerId" asp-route-days="7" class="@(Model.Days == 7 ? "active" : "")">7 days</a>
-    <a asp-action="History" asp-route-id="@Model.Player.PlayerId" asp-route-days="30" class="@(Model.Days == 30 ? "active" : "")">30 days</a>
-    <a asp-action="History" asp-route-id="@Model.Player.PlayerId" asp-route-days="90" class="@(Model.Days == 90 ? "active" : "")">90 days</a>
-</div>
-
-@if (Model.History.Any())
+@if (Model.Events.Items.Any())
 {
-    <table class="stats-table">
+    <table class="data-table">
         <thead>
-            <tr>
-                <th>Date</th>
-                <th>Skill</th>
-                <th>Change</th>
-                <th>Kills</th>
-                <th>Deaths</th>
-                <th>Headshots</th>
+            <tr class="data-table-head">
+                <td><a href="@(SortUrl("eventTime"))">Date@(Mark("eventTime"))</a></td>
+                <td style="text-align:center"><a href="@(SortUrl("eventType"))">Type@(Mark("eventType"))</a></td>
+                <td>Description</td>
+                <td>Server</td>
+                <td>Map</td>
             </tr>
         </thead>
         <tbody>
-            @foreach (var h in Model.History.OrderByDescending(x => x.EventTime))
+            @{ bool bg = false; }
+            @foreach (var e in Model.Events.Items)
             {
+                string row = bg ? "bg2" : "bg1"; bg = !bg;
                 <tr>
-                    <td>@h.EventTime.ToString("yyyy-MM-dd HH:mm")</td>
-                    <td>@h.Skill</td>
-                    <td class="@(h.SkillChange >= 0 ? "positive" : "negative")">
-                        @(h.SkillChange >= 0 ? "+" : "")@h.SkillChange
-                    </td>
-                    <td>@h.Kills.ToString("N0")</td>
-                    <td>@h.Deaths.ToString("N0")</td>
-                    <td>@h.Headshots.ToString("N0")</td>
+                    <td class="@row">@e.EventTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                    <td class="@row" style="text-align:center">@e.EventType</td>
+                    <td class="@row">@Html.Raw(e.Description)</td>
+                    <td class="@row">@e.ServerName</td>
+                    <td class="@row">@e.Map</td>
                 </tr>
             }
         </tbody>
     </table>
+
+    <partial name="_Pagination" model="@PaginationModel.From(Model.Events, p => Url.Action("History", new { id = Model.Player.PlayerId, sortBy = Model.SortBy, desc = Model.Descending, page = p })!)" />
 }
 else
 {
-    <p>No history available for the last @Model.Days days.</p>
+    <p>No event history available.</p>
 }
 
-<p><a asp-action="Profile" asp-route-id="@Model.Player.PlayerId">&larr; Back to profile</a></p>
+<p><a asp-action="Profile" asp-route-id="@Model.Player.PlayerId">&larr; Back to @Model.Player.LastName's Statistics</a></p>

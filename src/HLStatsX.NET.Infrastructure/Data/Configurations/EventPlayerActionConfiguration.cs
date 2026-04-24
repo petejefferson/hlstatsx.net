@@ -15,6 +15,8 @@ public class EventPlayerActionConfiguration : IEntityTypeConfiguration<EventPlay
         builder.Property(e => e.PlayerId).HasColumnName("playerId");
         builder.Property(e => e.ActionId).HasColumnName("actionId");
         builder.Property(e => e.Bonus).HasColumnName("bonus");
+        builder.Property(e => e.EventTime).HasColumnName("eventTime");
+        builder.Property(e => e.Map).HasColumnName("map").HasMaxLength(64);
 
         builder.HasIndex(e => e.PlayerId);
         builder.HasIndex(e => e.ActionId);
@@ -33,6 +35,8 @@ public class EventPlayerPlayerActionConfiguration : IEntityTypeConfiguration<Eve
         builder.Property(e => e.VictimId).HasColumnName("victimId");
         builder.Property(e => e.ActionId).HasColumnName("actionId");
         builder.Property(e => e.Bonus).HasColumnName("bonus");
+        builder.Property(e => e.EventTime).HasColumnName("eventTime");
+        builder.Property(e => e.Map).HasColumnName("map").HasMaxLength(64);
 
         builder.HasIndex(e => e.PlayerId);
         builder.HasIndex(e => e.VictimId);

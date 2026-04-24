@@ -8,4 +8,6 @@ public class EventPlayerPlayerAction
     public int VictimId { get; set; }
     public int ActionId { get; set; }
     public int Bonus { get; set; }
+    public DateTime? EventTime { get; set; }
+    public string? Map { get; set; }
 }

@@ -35,6 +35,9 @@ public class PlayerService : IPlayerService
     public Task<IReadOnlyList<PlayerHistory>> GetPlayerHistoryAsync(int playerId, int days = 30, CancellationToken ct = default) =>
         _players.GetHistoryAsync(playerId, days, ct);
 
+    public Task<PagedResult<PlayerEventRow>> GetPlayerEventHistoryAsync(int playerId, string game, int page, int pageSize, string sortBy, bool descending, CancellationToken ct = default) =>
+        _players.GetEventHistoryAsync(playerId, game, page, pageSize, sortBy, descending, ct);
+
     public Task<PagedResult<PlayerSessionRow>> GetPlayerSessionsAsync(int playerId, int page, int pageSize, string sortBy, bool descending, CancellationToken ct = default) =>
         _players.GetSessionsAsync(playerId, page, pageSize, sortBy, descending, ct);
 

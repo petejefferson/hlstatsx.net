@@ -89,6 +89,15 @@ public record PlayerHistoryViewModel(
     int Days
 );
 
+public record PlayerEventHistoryViewModel(
+    Player Player,
+    PagedResult<PlayerEventRow> Events,
+    int Page,
+    string SortBy,
+    bool Descending,
+    int DeleteDays
+);
+
 public record PlayerSessionsViewModel(
     Player Player,
     PagedResult<PlayerSessionRow> Sessions,

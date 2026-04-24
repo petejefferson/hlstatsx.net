@@ -90,6 +90,173 @@ public class PlayerRepository : IPlayerRepository
             .ToListAsync(ct);
     }
 
+    // Private DTO for raw event data before descriptions are built
+    private sealed class RawEvent
+    {
+        public DateTime EventTime { get; set; }
+        public string EventType { get; set; } = "";
+        public int ServerId { get; set; }
+        public string Map { get; set; } = "";
+        public int? LinkedPlayerId { get; set; }
+        public string? Weapon { get; set; }
+        public string? TextData1 { get; set; }
+        public string? TextData2 { get; set; }
+        public int? Bonus { get; set; }
+        public bool IsHeadshot { get; set; }
+    }
+
+    public async Task<PagedResult<PlayerEventRow>> GetEventHistoryAsync(
+        int playerId, string game, int page, int pageSize, string sortBy, bool descending, CancellationToken ct)
+    {
+        await using var db = _factory.CreateDbContext();
+
+        var connects     = await db.EventConnects
+            .Where(e => e.PlayerId == playerId && e.EventTime != null)
+            .Select(e => new RawEvent { EventTime = e.EventTime!.Value, EventType = "Connect", ServerId = e.ServerId, Map = e.Map })
+            .ToListAsync(ct);
+
+        var disconnects  = await db.EventDisconnects
+            .Where(e => e.PlayerId == playerId)
+            .Select(e => new RawEvent { EventTime = e.EventTime, EventType = "Disconnect", ServerId = e.ServerId, Map = e.Map })
+            .ToListAsync(ct);
+
+        var entries      = await db.EventEntries
+            .Where(e => e.PlayerId == playerId && e.EventTime != null)
+            .Select(e => new RawEvent { EventTime = e.EventTime!.Value, EventType = "Entry", ServerId = e.ServerId, Map = e.Map ?? "" })
+            .ToListAsync(ct);
+
+        var kills        = await db.EventFrags
+            .Where(e => e.KillerId == playerId && !e.Headshot)
+            .Select(e => new RawEvent { EventTime = e.EventTime, EventType = "Kill", ServerId = e.ServerId, Map = e.Map, LinkedPlayerId = e.VictimId, Weapon = e.Weapon, IsHeadshot = false })
+            .ToListAsync(ct);
+
+        var hsKills      = await db.EventFrags
+            .Where(e => e.KillerId == playerId && e.Headshot)
+            .Select(e => new RawEvent { EventTime = e.EventTime, EventType = "Kill", ServerId = e.ServerId, Map = e.Map, LinkedPlayerId = e.VictimId, Weapon = e.Weapon, IsHeadshot = true })
+            .ToListAsync(ct);
+
+        var deaths       = await db.EventFrags
+            .Where(e => e.VictimId == playerId)
+            .Select(e => new RawEvent { EventTime = e.EventTime, EventType = "Death", ServerId = e.ServerId, Map = e.Map, LinkedPlayerId = e.KillerId, Weapon = e.Weapon })
+            .ToListAsync(ct);
+
+        var tks          = await db.EventTeamkills
+            .Where(e => e.KillerId == playerId)
+            .Select(e => new RawEvent { EventTime = e.EventTime, EventType = "Team Kill", ServerId = e.ServerId, Map = e.Map, LinkedPlayerId = e.VictimId, Weapon = e.WeaponCode })
+            .ToListAsync(ct);
+
+        var ffs          = await db.EventTeamkills
+            .Where(e => e.VictimId == playerId)
+            .Select(e => new RawEvent { EventTime = e.EventTime, EventType = "Friendly Fire", ServerId = e.ServerId, Map = e.Map, LinkedPlayerId = e.KillerId, Weapon = e.WeaponCode })
+            .ToListAsync(ct);
+
+        var suicides     = await db.EventSuicides
+            .Where(e => e.PlayerId == playerId)
+            .Select(e => new RawEvent { EventTime = e.EventTime, EventType = "Suicide", ServerId = e.ServerId, Map = e.Map, Weapon = e.WeaponCode })
+            .ToListAsync(ct);
+
+        var roles        = await db.EventChangeRoles
+            .Where(e => e.PlayerId == playerId && e.EventTime != null)
+            .Select(e => new RawEvent { EventTime = e.EventTime!.Value, EventType = "Role", ServerId = e.ServerId, Map = e.Map, TextData1 = e.Role })
+            .ToListAsync(ct);
+
+        var teams        = await (
+            from e in db.EventChangeTeams
+            where e.PlayerId == playerId && e.EventTime != null
+            from t in db.Teams.Where(t => t.Code == e.Team && t.Game == game).DefaultIfEmpty()
+            select new RawEvent { EventTime = e.EventTime!.Value, EventType = "Team", ServerId = e.ServerId, Map = e.Map, TextData1 = e.Team, TextData2 = t != null ? t.Name : null }
+        ).ToListAsync(ct);
+
+        var actions      = await (
+            from e in db.EventPlayerActions
+            where e.PlayerId == playerId && e.EventTime != null
+            from a in db.GameActions.Where(a => a.ActionId == e.ActionId && a.Game == game).DefaultIfEmpty()
+            select new RawEvent { EventTime = e.EventTime!.Value, EventType = "Action", ServerId = e.ServerId, Map = e.Map ?? "", TextData1 = a != null ? a.Description : null, Bonus = e.Bonus }
+        ).ToListAsync(ct);
+
+        var ppaInit      = await (
+            from e in db.EventPlayerPlayerActions
+            where e.PlayerId == playerId && e.EventTime != null
+            from a in db.GameActions.Where(a => a.ActionId == e.ActionId && a.Game == game).DefaultIfEmpty()
+            select new RawEvent { EventTime = e.EventTime!.Value, EventType = "Action+", ServerId = e.ServerId, Map = e.Map ?? "", LinkedPlayerId = e.VictimId, TextData1 = a != null ? a.Description : null, Bonus = e.Bonus }
+        ).ToListAsync(ct);
+
+        var ppaVictim    = await (
+            from e in db.EventPlayerPlayerActions
+            where e.VictimId == playerId && e.EventTime != null
+            from a in db.GameActions.Where(a => a.ActionId == e.ActionId && a.Game == game).DefaultIfEmpty()
+            select new RawEvent { EventTime = e.EventTime!.Value, EventType = "Action-", ServerId = e.ServerId, Map = e.Map ?? "", LinkedPlayerId = e.PlayerId, TextData1 = a != null ? a.Description : null }
+        ).ToListAsync(ct);
+
+        var all = connects
+            .Concat(disconnects)
+            .Concat(entries)
+            .Concat(kills)
+            .Concat(hsKills)
+            .Concat(deaths)
+            .Concat(tks)
+            .Concat(ffs)
+            .Concat(suicides)
+            .Concat(roles)
+            .Concat(teams)
+            .Concat(actions)
+            .Concat(ppaInit)
+            .Concat(ppaVictim)
+            .ToList();
+
+        var serverIds = all.Select(e => e.ServerId).Distinct().ToList();
+        var playerIds = all.Where(e => e.LinkedPlayerId.HasValue).Select(e => e.LinkedPlayerId!.Value).Distinct().ToList();
+
+        var serverNames = serverIds.Count > 0
+            ? await db.Servers.Where(s => serverIds.Contains(s.ServerId)).ToDictionaryAsync(s => s.ServerId, s => s.Name, ct)
+            : new Dictionary<int, string>();
+        var playerNames = playerIds.Count > 0
+            ? await db.Players.Where(p => playerIds.Contains(p.PlayerId)).ToDictionaryAsync(p => p.PlayerId, p => p.LastName, ct)
+            : new Dictionary<int, string>();
+
+        string PLink(int id) => $"<a href=\"/Players/{id}\">{playerNames.GetValueOrDefault(id, "Unknown")}</a>";
+        string Srv(int id) => serverNames.GetValueOrDefault(id, "Unknown");
+
+        IEnumerable<RawEvent> sorted = (sortBy, descending) switch
+        {
+            ("eventType", true)  => all.OrderByDescending(e => e.EventType).ThenByDescending(e => e.EventTime),
+            ("eventType", false) => all.OrderBy(e => e.EventType).ThenByDescending(e => e.EventTime),
+            (_,           false) => all.OrderBy(e => e.EventTime),
+            _                    => all.OrderByDescending(e => e.EventTime),
+        };
+
+        var page_items = sorted.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+        var rows = page_items.Select(e =>
+        {
+            string desc = e.EventType switch
+            {
+                "Connect"       => "I connected to the server",
+                "Disconnect"    => "I left the game",
+                "Entry"         => "I entered the game",
+                "Kill"          => e.IsHeadshot
+                                   ? $"I killed {PLink(e.LinkedPlayerId!.Value)} with a headshot from {e.Weapon}"
+                                   : $"I killed {PLink(e.LinkedPlayerId!.Value)} with {e.Weapon}",
+                "Death"         => $"{PLink(e.LinkedPlayerId!.Value)} killed me with {e.Weapon}",
+                "Team Kill"     => $"I killed teammate {PLink(e.LinkedPlayerId!.Value)} with {e.Weapon}",
+                "Friendly Fire" => $"My teammate {PLink(e.LinkedPlayerId!.Value)} killed me with {e.Weapon}",
+                "Suicide"       => $"I committed suicide with \"{e.Weapon}\"",
+                "Role"          => $"I changed role to {e.TextData1}",
+                "Team"          => string.IsNullOrEmpty(e.TextData2)
+                                   ? $"I joined team \"{e.TextData1}\""
+                                   : $"I joined team \"{e.TextData1}\" ({e.TextData2})",
+                "Action"        => $"I received a points bonus of {e.Bonus} for triggering \"{e.TextData1 ?? "Unknown"}\"",
+                "Action+"       => $"I received a points bonus of {e.Bonus} for triggering \"{e.TextData1 ?? "Unknown"}\" against {PLink(e.LinkedPlayerId!.Value)}",
+                "Action-"       => $"{PLink(e.LinkedPlayerId!.Value)} triggered \"{e.TextData1 ?? "Unknown"}\" against me",
+                _               => e.EventType,
+            };
+            string displayType = e.EventType.TrimEnd('+', '-');
+            return new PlayerEventRow(e.EventTime, displayType, desc, Srv(e.ServerId), e.Map);
+        }).ToList();
+
+        return PagedResult<PlayerEventRow>.Create(rows, all.Count, page, pageSize);
+    }
+
     public async Task<PagedResult<PlayerSessionRow>> GetSessionsAsync(
         int playerId, int page, int pageSize, string sortBy, bool descending, CancellationToken ct = default)
     {

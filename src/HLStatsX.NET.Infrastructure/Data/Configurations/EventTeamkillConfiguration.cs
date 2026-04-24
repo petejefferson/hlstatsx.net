@@ -14,7 +14,7 @@ public class EventTeamkillConfiguration : IEntityTypeConfiguration<EventTeamkill
         builder.Property(e => e.ServerId).HasColumnName("serverId");
         builder.Property(e => e.KillerId).HasColumnName("killerId");
         builder.Property(e => e.VictimId).HasColumnName("victimId");
-        builder.Property(e => e.WeaponCode).HasColumnName("weaponCode").HasMaxLength(64);
+        builder.Property(e => e.WeaponCode).HasColumnName("weapon").HasMaxLength(64);
         builder.Property(e => e.Map).HasColumnName("map").HasMaxLength(64);
         builder.Property(e => e.EventTime).HasColumnName("eventTime");
         builder.Property(e => e.Game).HasColumnName("game").HasMaxLength(32);

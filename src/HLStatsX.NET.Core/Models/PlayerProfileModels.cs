@@ -64,3 +64,10 @@ public record PlayerSessionRow(
     int KillStreak);
 
 public record GlobalAwardRow(string AwardType, string Code, string Name);
+
+public record PlayerEventRow(
+    DateTime EventTime,
+    string EventType,
+    string Description,
+    string ServerName,
+    string Map);

@@ -13,7 +13,7 @@ public class EventSuicideConfiguration : IEntityTypeConfiguration<EventSuicide>
         builder.Property(e => e.EventId).HasColumnName("eventId");
         builder.Property(e => e.ServerId).HasColumnName("serverId");
         builder.Property(e => e.PlayerId).HasColumnName("playerId");
-        builder.Property(e => e.WeaponCode).HasColumnName("weaponCode").HasMaxLength(64);
+        builder.Property(e => e.WeaponCode).HasColumnName("weapon").HasMaxLength(64);
         builder.Property(e => e.Map).HasColumnName("map").HasMaxLength(64);
         builder.Property(e => e.EventTime).HasColumnName("eventTime");
         builder.Property(e => e.Game).HasColumnName("game").HasMaxLength(32);
