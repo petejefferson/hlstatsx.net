@@ -1,0 +1,77 @@
+@model RoleListViewModel
+@{
+    ViewData["Title"] = "Role Statistics";
+
+    string SortUrl(string field)
+    {
+        bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
+        return Url.Action("Index", new { game = Model.Game, sortBy = field, desc = nextDesc })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
+
+    double safeKills  = Model.TotalKills  > 0 ? Model.TotalKills  : 1;
+    double safeDeaths = Model.TotalDeaths > 0 ? Model.TotalDeaths : 1;
+    double safePicked = Model.TotalPicked > 0 ? Model.TotalPicked : 1;
+}
+
+<h1>Role Statistics &mdash; @Model.Game</h1>
+
+<p>From a total of <strong>@Model.TotalKills.ToString("N0")</strong> kills with <strong>@Model.TotalDeaths.ToString("N0")</strong> deaths</p>
+
+<table class="data-table">
+    <thead>
+        <tr class="data-table-head">
+            <td style="text-align:right;">Rank</td>
+            <td><a href="@(SortUrl("role"))">Role@(Mark("role"))</a></td>
+            <td style="text-align:right;"><a href="@(SortUrl("picked"))">Picked@(Mark("picked"))</a></td>
+            <td style="text-align:right;"><a href="@(SortUrl("ppercent"))">%@(Mark("ppercent"))</a></td>
+            <td>Ratio</td>
+            <td style="text-align:right;"><a href="@(SortUrl("kills"))">Kills@(Mark("kills"))</a></td>
+            <td style="text-align:right;"><a href="@(SortUrl("kpercent"))">%@(Mark("kpercent"))</a></td>
+            <td>Ratio</td>
+            <td style="text-align:right;"><a href="@(SortUrl("deaths"))">Deaths@(Mark("deaths"))</a></td>
+            <td style="text-align:right;"><a href="@(SortUrl("dpercent"))">%@(Mark("dpercent"))</a></td>
+            <td>Ratio</td>
+            <td style="text-align:right;"><a href="@(SortUrl("kd"))">K:D@(Mark("kd"))</a></td>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            int rowNum = 1;
+            bool bg = false;
+        }
+        @foreach (var r in Model.Roles)
+        {
+            string rowClass = bg ? "bg2" : "bg1";
+            bg = !bg;
+            string altClass = bg ? "bg2" : "bg1";
+
+            double ppct = Math.Round(r.Picked / safePicked * 100, 2);
+            double kpct = Math.Round(r.Kills  / safeKills  * 100, 2);
+            double dpct = Math.Round(r.Deaths / safeDeaths * 100, 2);
+            double kd   = r.Deaths == 0 ? r.Kills : Math.Round((double)r.Kills / r.Deaths, 2);
+
+            string imgSrc = $"/hlstatsimg/games/{Model.Game}/roles/{Uri.EscapeDataString(r.Code)}.png";
+            <tr>
+                <td class="@rowClass" style="text-align:right;">@rowNum</td>
+                <td class="@altClass">
+                    <a asp-controller="Roles" asp-action="Detail" asp-route-code="@r.Code" asp-route-game="@Model.Game">
+                        <img src="@imgSrc" alt="@r.Name" title="@r.Name" onerror="this.style.display='none'" />
+                        @r.Name
+                    </a>
+                </td>
+                <td class="@rowClass" style="text-align:right;">@r.Picked.ToString("N0")</td>
+                <td class="@altClass" style="text-align:right;">@(ppct.ToString("F2"))%</td>
+                <td class="@rowClass"><meter min="0" max="100" low="25" high="50" optimum="75" value="@ppct"></meter></td>
+                <td class="@altClass" style="text-align:right;">@r.Kills.ToString("N0")</td>
+                <td class="@rowClass" style="text-align:right;">@(kpct.ToString("F2"))%</td>
+                <td class="@altClass"><meter min="0" max="100" low="25" high="50" optimum="75" value="@kpct"></meter></td>
+                <td class="@rowClass" style="text-align:right;">@r.Deaths.ToString("N0")</td>
+                <td class="@altClass" style="text-align:right;">@(dpct.ToString("F2"))%</td>
+                <td class="@rowClass"><meter min="0" max="100" low="25" high="50" optimum="75" value="@dpct"></meter></td>
+                <td class="@altClass" style="text-align:right;">@kd.ToString("F2")</td>
+            </tr>
+            rowNum++;
+        }
+    </tbody>
+</table>

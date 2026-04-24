@@ -1,0 +1,66 @@
+@model RoleDetailViewModel
+@using HLStatsX.NET.Web.Models
+@{
+    ViewData["Title"] = Model.Role.Name + " Role Details";
+
+    string SortUrl(string field)
+    {
+        bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
+        return Url.Action("Detail", new { code = Model.Role.Code, game = Model.Game, sortBy = field, desc = nextDesc, page = 1 })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
+
+    string imgSrc = $"/hlstatsimg/games/{Model.Game}/roles/{Uri.EscapeDataString(Model.Role.Code)}.png";
+}
+
+<div class="block">
+    <div class="subblock" style="overflow: hidden;">
+        <div style="float:left;">
+            <img src="@imgSrc" alt="@Model.Role.Name" onerror="this.style.display='none'" />
+            <strong>@Model.Role.Name</strong>:
+            From a total of <strong>@Model.TotalKills.ToString("N0")</strong> kills as @Model.Role.Name
+            @if (Model.TotalHeadshots > 0)
+            {
+                <span>with <strong>@Model.TotalHeadshots.ToString("N0")</strong> headshots</span>
+            }
+        </div>
+        <div style="float:right;">
+            Back to <a asp-action="Index" asp-route-game="@Model.Game">Role Statistics</a>
+        </div>
+    </div>
+
+    <br />
+
+    <table class="data-table">
+        <thead>
+            <tr class="data-table-head">
+                <td style="text-align:right;">Rank</td>
+                <td><a href="@(SortUrl("player"))">Player@(Mark("player"))</a></td>
+                <td style="text-align:right;"><a href="@(SortUrl("frags"))">@(Model.Role.Name) kills@(Mark("frags"))</a></td>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int rowNum = (Model.Killers.Page - 1) * Model.Killers.PageSize + 1;
+                bool bg = false;
+            }
+            @foreach (var row in Model.Killers.Items)
+            {
+                string rowClass = bg ? "bg2" : "bg1";
+                bg = !bg;
+                string altClass = bg ? "bg2" : "bg1";
+                string flagFile = string.IsNullOrEmpty(row.Flag) ? "0" : row.Flag.ToLowerInvariant();
+                <tr>
+                    <td class="@rowClass" style="text-align:right;">@rowNum</td>
+                    <td class="@altClass">
+                        <img src="/hlstatsimg/flags/@(flagFile).gif" alt="@row.Flag" title="@row.Flag" />&nbsp;<a asp-controller="Players" asp-action="Profile" asp-route-id="@row.PlayerId">@row.PlayerName</a>
+                    </td>
+                    <td class="@rowClass" style="text-align:right;">@row.Frags.ToString("N0")</td>
+                </tr>
+                rowNum++;
+            }
+        </tbody>
+    </table>
+
+    <partial name="_Pagination" model="@PaginationModel.From(Model.Killers, p => Url.Action("Detail", new { code = Model.Role.Code, game = Model.Game, sortBy = Model.SortBy, desc = Model.Descending, page = p })!)" />
+</div>
