@@ -13,4 +13,6 @@ public interface IAwardService
     Task<IReadOnlyList<Ribbon>> GetRibbonsAsync(string game, CancellationToken ct = default);
     Task<Ribbon?> GetRibbonAsync(int ribbonId, CancellationToken ct = default);
     Task<IReadOnlyList<RibbonRow>> GetRibbonsWithCountsAsync(string game, CancellationToken ct = default);
+    Task<Award?> GetAwardByIdAsync(int awardId, CancellationToken ct = default);
+    Task<PagedResult<DailyAwardHistoryRow>> GetDailyAwardHistoryAsync(int awardId, int page, int pageSize, string sortBy, bool desc, CancellationToken ct = default);
 }

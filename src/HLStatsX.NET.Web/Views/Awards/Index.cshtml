@@ -40,7 +40,7 @@
                         <img src="@DailyImgUrl(Model.Game, a.AwardType, a.Code)" alt="@a.Name"
                              onerror="this.style.display='none'" />
                     </div>
-                    <div class="awards-grid-name">@a.Name</div>
+                    <div class="awards-grid-name"><a asp-controller="Awards" asp-action="DailyAwardDetail" asp-route-id="@a.AwardId" asp-route-game="@Model.Game">@a.Name</a></div>
                     <div class="awards-grid-winner">
                         @if (a.DailyWinner is not null)
                         {
@@ -84,7 +84,7 @@
                         <img src="@GlobalImgUrl(Model.Game, a.AwardType, a.Code)" alt="@a.Name"
                              onerror="this.style.display='none'" />
                     </div>
-                    <div class="awards-grid-name">@a.Name</div>
+                    <div class="awards-grid-name"><a asp-controller="Awards" asp-action="DailyAwardDetail" asp-route-id="@a.AwardId" asp-route-game="@Model.Game">@a.Name</a></div>
                     <div class="awards-grid-winner">
                         @if (a.GlobalWinner is not null)
                         {

@@ -70,4 +70,10 @@ public class AwardService : IAwardService
 
     public Task<IReadOnlyList<RibbonRow>> GetRibbonsWithCountsAsync(string game, CancellationToken ct = default) =>
         _awards.GetRibbonsWithCountsAsync(game, ct);
+
+    public Task<Award?> GetAwardByIdAsync(int awardId, CancellationToken ct = default) =>
+        _awards.GetByIdAsync(awardId, ct);
+
+    public Task<PagedResult<DailyAwardHistoryRow>> GetDailyAwardHistoryAsync(int awardId, int page, int pageSize, string sortBy, bool desc, CancellationToken ct = default) =>
+        _awards.GetDailyAwardHistoryAsync(awardId, page, pageSize, sortBy, desc, ct);
 }

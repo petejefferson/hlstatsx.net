@@ -111,4 +111,38 @@ public class AwardRepository : IAwardRepository
 
         return rows.Select(x => new RibbonRow(x.Ribbon, x.AchievedCount, x.AwardName)).ToList();
     }
+
+    public async Task<PagedResult<DailyAwardHistoryRow>> GetDailyAwardHistoryAsync(
+        int awardId, int page, int pageSize, string sortBy, bool desc, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+
+        var query = db.PlayerAwards
+            .Where(pa => pa.AwardId == awardId)
+            .Join(db.Players, pa => pa.PlayerId, p => p.PlayerId, (pa, p) => new
+            {
+                pa.PlayerId,
+                pa.AwardTime,
+                PlayerName = p.LastName,
+                p.Flag,
+                pa.Count
+            });
+
+        var total = await query.CountAsync(ct);
+
+        var ordered = sortBy switch
+        {
+            "player" => desc ? query.OrderByDescending(r => r.PlayerName) : query.OrderBy(r => r.PlayerName),
+            "count"  => desc ? query.OrderByDescending(r => r.Count)      : query.OrderBy(r => r.Count),
+            _        => desc ? query.OrderByDescending(r => r.AwardTime)  : query.OrderBy(r => r.AwardTime),
+        };
+
+        var rows = await ordered
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(r => new DailyAwardHistoryRow(r.PlayerId, r.AwardTime, r.PlayerName, r.Flag, r.Count))
+            .ToListAsync(ct);
+
+        return PagedResult<DailyAwardHistoryRow>.Create(rows, total, page, pageSize);
+    }
 }

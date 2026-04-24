@@ -20,3 +20,11 @@ public record RibbonListViewModel(
     IReadOnlyList<Ribbon> Ribbons,
     string Game
 );
+
+public record DailyAwardDetailViewModel(
+    Award Award,
+    string Game,
+    PagedResult<DailyAwardHistoryRow> History,
+    string SortBy,
+    bool Descending
+);

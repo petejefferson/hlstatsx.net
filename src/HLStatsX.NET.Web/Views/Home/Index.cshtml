@@ -194,7 +194,7 @@ else
                 @foreach (var a in Model.DailyAwards)
                 {
                     <tr class="@(awardRow % 2 == 0 ? "bg1" : "bg2")">
-                        <td>@a.Name</td>
+                        <td><a asp-controller="Awards" asp-action="DailyAwardDetail" asp-route-id="@a.AwardId" asp-route-game="@Model.Game">@a.Name</a></td>
                         <td>
                             @if (a.DailyWinner is not null)
                             {

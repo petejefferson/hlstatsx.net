@@ -40,4 +40,19 @@ public class AwardsController : Controller
         if (ribbon is null) return NotFound();
         return View(ribbon);
     }
+
+    public async Task<IActionResult> DailyAwardDetail(
+        int id, string? game,
+        int page = 1, string sortBy = "awardTime", bool desc = true,
+        CancellationToken ct = default)
+    {
+        game ??= _config["HLStatsX:DefaultGame"] ?? "cstrike";
+        int pageSize = _config.GetValue<int>("HLStatsX:DefaultPageSize", 50);
+
+        var award = await _awards.GetAwardByIdAsync(id, ct);
+        if (award is null) return NotFound();
+
+        var history = await _awards.GetDailyAwardHistoryAsync(id, page, pageSize, sortBy, desc, ct);
+        return View(new DailyAwardDetailViewModel(award, game, history, sortBy, desc));
+    }
 }

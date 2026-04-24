@@ -1,0 +1,66 @@
+@model DailyAwardDetailViewModel
+@using HLStatsX.NET.Core.Models
+@{
+    ViewData["Title"] = $"Award Details — {Model.Award.Name}";
+
+    string SortUrl(string field)
+    {
+        bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
+        return Url.Action("DailyAwardDetail", new { id = Model.Award.AwardId, game = Model.Game, sortBy = field, desc = nextDesc, page = 1 })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
+
+    string imgSrc = $"/hlstatsimg/games/{Model.Game}/dawards/{Model.Award.AwardType.ToLower()}_{Model.Award.Code.ToLower()}.png";
+}
+
+<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.5rem;">
+    <h1>
+        <img src="@imgSrc" alt="@Model.Award.Name" onerror="this.style.display='none'" style="vertical-align:middle;" />
+        @Model.Award.Name
+    </h1>
+    <span><a asp-controller="Awards" asp-action="Index" asp-route-game="@Model.Game">← Back to Awards</a></span>
+</div>
+
+@if (!Model.History.Items.Any())
+{
+    <p>No award history available.</p>
+}
+else
+{
+    <table class="data-table">
+        <thead>
+            <tr class="data-table-head">
+                <td style="text-align:right;">Rank</td>
+                <td><a href="@(SortUrl("awardTime"))">Day@(Mark("awardTime"))</a></td>
+                <td><a href="@(SortUrl("player"))">Player@(Mark("player"))</a></td>
+                <td style="text-align:right;"><a href="@(SortUrl("count"))">@Model.Award.Verb@(Mark("count"))</a></td>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int rowNum = (Model.History.Page - 1) * Model.History.PageSize + 1;
+                bool alt = false;
+            }
+            @foreach (var row in Model.History.Items)
+            {
+                string rowClass = (alt = !alt) ? "bg1" : "bg2";
+                string? flagFile = string.IsNullOrEmpty(row.Flag) ? null : row.Flag.ToLowerInvariant();
+                <tr>
+                    <td class="@rowClass" style="text-align:right;">@rowNum</td>
+                    <td class="@rowClass">@row.AwardTime.ToString("yyyy-MM-dd")</td>
+                    <td class="@rowClass">
+                        @if (!string.IsNullOrEmpty(flagFile))
+                        {
+                            <img src="/hlstatsimg/flags/@(flagFile).gif" alt="@row.Flag" title="@row.Flag" />
+                        }
+                        <a asp-controller="Players" asp-action="Profile" asp-route-id="@row.PlayerId">@row.PlayerName</a>
+                    </td>
+                    <td class="@rowClass" style="text-align:right;">@row.Count.ToString("N0")</td>
+                </tr>
+                rowNum++;
+            }
+        </tbody>
+    </table>
+
+    <partial name="_Pagination" model="@PaginationModel.From(Model.History, p => Url.Action("DailyAwardDetail", new { id = Model.Award.AwardId, game = Model.Game, sortBy = Model.SortBy, desc = Model.Descending, page = p })!)" />
+}
