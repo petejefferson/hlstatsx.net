@@ -1,6 +1,7 @@
 using HLStatsX.NET.Core.Entities;
 using HLStatsX.NET.Core.Interfaces.Repositories;
 using HLStatsX.NET.Core.Interfaces.Services;
+using HLStatsX.NET.Core.Models;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace HLStatsX.NET.Infrastructure.Services;
@@ -63,4 +64,10 @@ public class AwardService : IAwardService
 
     public Task<Ribbon?> GetRibbonAsync(int ribbonId, CancellationToken ct = default) =>
         _awards.GetRibbonByIdAsync(ribbonId, ct);
+
+    public Task<IReadOnlyList<RankRow>> GetRanksWithCountsAsync(string game, CancellationToken ct = default) =>
+        _awards.GetRanksWithCountsAsync(game, ct);
+
+    public Task<IReadOnlyList<RibbonRow>> GetRibbonsWithCountsAsync(string game, CancellationToken ct = default) =>
+        _awards.GetRibbonsWithCountsAsync(game, ct);
 }

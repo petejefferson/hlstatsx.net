@@ -1,5 +1,6 @@
 using HLStatsX.NET.Core.Entities;
 using HLStatsX.NET.Core.Interfaces.Repositories;
+using HLStatsX.NET.Core.Models;
 using HLStatsX.NET.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -68,5 +69,46 @@ public class AwardRepository : IAwardRepository
         await using var db = _factory.CreateDbContext();
         return await db.Ribbons
             .FirstOrDefaultAsync(r => r.RibbonId == ribbonId, ct);
+    }
+
+    public async Task<IReadOnlyList<RankRow>> GetRanksWithCountsAsync(string game, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        var rows = await db.Ranks
+            .Where(r => r.Game == game)
+            .OrderBy(r => r.MinKills)
+            .Select(r => new
+            {
+                Rank = r,
+                PlayerCount = db.Players.Count(p =>
+                    p.Game == game &&
+                    p.Kills >= r.MinKills &&
+                    (r.MaxKills == 0 || p.Kills <= r.MaxKills))
+            })
+            .ToListAsync(ct);
+
+        return rows.Select(x => new RankRow(x.Rank, x.PlayerCount)).ToList();
+    }
+
+    public async Task<IReadOnlyList<RibbonRow>> GetRibbonsWithCountsAsync(string game, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        var rows = await db.Ribbons
+            .Where(r => r.Game == game && r.Special == 0)
+            .OrderBy(r => r.AwardCount)
+            .ThenBy(r => r.RibbonName)
+            .ThenBy(r => r.AwardCode)
+            .Select(r => new
+            {
+                Ribbon = r,
+                AchievedCount = db.PlayerRibbons.Count(pr => pr.RibbonId == r.RibbonId),
+                AwardName = db.Awards
+                    .Where(a => a.Game == game && a.Code == r.AwardCode)
+                    .Select(a => a.Name)
+                    .FirstOrDefault()
+            })
+            .ToListAsync(ct);
+
+        return rows.Select(x => new RibbonRow(x.Ribbon, x.AchievedCount, x.AwardName)).ToList();
     }
 }

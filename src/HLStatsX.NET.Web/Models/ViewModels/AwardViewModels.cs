@@ -1,10 +1,13 @@
 using HLStatsX.NET.Core.Entities;
+using HLStatsX.NET.Core.Models;
 
 namespace HLStatsX.NET.Web.Models.ViewModels;
 
-public record AwardListViewModel(
-    IReadOnlyList<Award> Awards,
+public record AwardsIndexViewModel(
     IReadOnlyList<Award> DailyAwards,
+    IReadOnlyList<Award> GlobalAwards,
+    IReadOnlyList<RankRow> Ranks,
+    IReadOnlyList<RibbonRow> Ribbons,
     string Game
 );
 

@@ -18,23 +18,20 @@ public class AwardsController : Controller
     public async Task<IActionResult> Index(string? game, CancellationToken ct)
     {
         game ??= _config["HLStatsX:DefaultGame"] ?? "cstrike";
-        var awards = await _awards.GetAwardsAsync(game, ct);
-        var dailyAwards = await _awards.GetDailyAwardsAsync(game, ct);
-        return View(new AwardListViewModel(awards, dailyAwards, game));
-    }
 
-    public async Task<IActionResult> Ranks(string? game, CancellationToken ct)
-    {
-        game ??= _config["HLStatsX:DefaultGame"] ?? "cstrike";
-        var ranks = await _awards.GetRanksAsync(game, ct);
-        return View(new RankListViewModel(ranks, game));
-    }
+        var dailyTask   = _awards.GetDailyAwardsAsync(game, ct);
+        var globalTask  = _awards.GetAwardsAsync(game, ct);
+        var ranksTask   = _awards.GetRanksWithCountsAsync(game, ct);
+        var ribbonsTask = _awards.GetRibbonsWithCountsAsync(game, ct);
 
-    public async Task<IActionResult> Ribbons(string? game, CancellationToken ct)
-    {
-        game ??= _config["HLStatsX:DefaultGame"] ?? "cstrike";
-        var ribbons = await _awards.GetRibbonsAsync(game, ct);
-        return View(new RibbonListViewModel(ribbons, game));
+        await Task.WhenAll(dailyTask, globalTask, ranksTask, ribbonsTask);
+
+        return View(new AwardsIndexViewModel(
+            dailyTask.Result,
+            globalTask.Result,
+            ranksTask.Result,
+            ribbonsTask.Result,
+            game));
     }
 
     public async Task<IActionResult> RibbonDetail(int id, CancellationToken ct)

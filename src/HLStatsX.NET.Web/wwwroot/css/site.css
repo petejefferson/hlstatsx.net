@@ -288,6 +288,31 @@ footer {
 .ribbons-list li { background: var(--accent); border-radius: 3px; padding: 0.2rem 0.4rem; font-size: 0.75rem; }
 
 /* ============================================================
+   AWARDS GRID
+   ============================================================ */
+.awards-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+}
+.awards-grid-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 0.5rem;
+    text-align: center;
+}
+.awards-grid-img { min-height: 48px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.3rem; }
+.awards-grid-img img { max-width: 64px; max-height: 64px; }
+.awards-grid-name { font-weight: bold; font-size: 0.85rem; margin-bottom: 0.2rem; }
+.awards-grid-winner { font-size: 0.8rem; margin-bottom: 0.2rem; }
+.awards-grid-count { font-size: 0.75rem; color: var(--muted); }
+.awards-grid-meta { font-size: 0.75rem; color: var(--muted); font-style: italic; margin-bottom: 0.2rem; }
+.awards-no-winner { color: var(--muted); font-style: italic; }
+.awards-ribbon-class { margin: 1rem 0 0.4rem; font-size: 0.95rem; border-bottom: 1px solid var(--border); padding-bottom: 0.2rem; }
+
+/* ============================================================
    ADMIN / FORMS
    ============================================================ */
 .form-group { margin-bottom: 0.75rem; }
