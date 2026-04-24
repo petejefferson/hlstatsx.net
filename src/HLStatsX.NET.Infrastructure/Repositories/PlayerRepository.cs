@@ -90,6 +90,57 @@ public class PlayerRepository : IPlayerRepository
             .ToListAsync(ct);
     }
 
+    public async Task<PagedResult<PlayerSessionRow>> GetSessionsAsync(
+        int playerId, int page, int pageSize, string sortBy, bool descending, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        var query = db.PlayerHistories.Where(h => h.PlayerId == playerId);
+
+        query = (sortBy, descending) switch
+        {
+            ("skill_change", true)       => query.OrderByDescending(h => h.SkillChange).ThenByDescending(h => h.EventTime),
+            ("skill_change", false)      => query.OrderBy(h => h.SkillChange).ThenByDescending(h => h.EventTime),
+            ("skill", true)              => query.OrderByDescending(h => h.Skill).ThenByDescending(h => h.EventTime),
+            ("skill", false)             => query.OrderBy(h => h.Skill).ThenByDescending(h => h.EventTime),
+            ("connection_time", true)    => query.OrderByDescending(h => h.ConnectionTime).ThenByDescending(h => h.EventTime),
+            ("connection_time", false)   => query.OrderBy(h => h.ConnectionTime).ThenByDescending(h => h.EventTime),
+            ("kills", true)              => query.OrderByDescending(h => h.Kills).ThenByDescending(h => h.EventTime),
+            ("kills", false)             => query.OrderBy(h => h.Kills).ThenByDescending(h => h.EventTime),
+            ("deaths", true)             => query.OrderByDescending(h => h.Deaths).ThenByDescending(h => h.EventTime),
+            ("deaths", false)            => query.OrderBy(h => h.Deaths).ThenByDescending(h => h.EventTime),
+            ("headshots", true)          => query.OrderByDescending(h => h.Headshots).ThenByDescending(h => h.EventTime),
+            ("headshots", false)         => query.OrderBy(h => h.Headshots).ThenByDescending(h => h.EventTime),
+            ("suicides", true)           => query.OrderByDescending(h => h.Suicides).ThenByDescending(h => h.EventTime),
+            ("suicides", false)          => query.OrderBy(h => h.Suicides).ThenByDescending(h => h.EventTime),
+            ("teamkills", true)          => query.OrderByDescending(h => h.TeamKills).ThenByDescending(h => h.EventTime),
+            ("teamkills", false)         => query.OrderBy(h => h.TeamKills).ThenByDescending(h => h.EventTime),
+            ("kill_streak", true)        => query.OrderByDescending(h => h.KillStreak).ThenByDescending(h => h.EventTime),
+            ("kill_streak", false)       => query.OrderBy(h => h.KillStreak).ThenByDescending(h => h.EventTime),
+            _                            => query.OrderByDescending(h => h.EventTime).ThenByDescending(h => h.SkillChange),
+        };
+
+        var total = await query.CountAsync(ct);
+        var rows = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(h => new PlayerSessionRow(
+                h.EventTime,
+                h.SkillChange,
+                h.Skill,
+                h.ConnectionTime,
+                h.Kills,
+                h.Deaths,
+                h.Deaths == 0 ? (double)h.Kills : Math.Round((double)h.Kills / h.Deaths, 2),
+                h.Headshots,
+                h.Kills == 0 ? (double)h.Headshots : Math.Round((double)h.Headshots / h.Kills, 2),
+                h.Suicides,
+                h.TeamKills,
+                h.KillStreak))
+            .ToListAsync(ct);
+
+        return PagedResult<PlayerSessionRow>.Create(rows, total, page, pageSize);
+    }
+
     public async Task<IReadOnlyList<PlayerAward>> GetAwardsAsync(int playerId, CancellationToken ct = default)
     {
         await using var db = _factory.CreateDbContext();

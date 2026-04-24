@@ -49,4 +49,18 @@ public record ActionStatRow(
 
 public record TrendPoint(DateTime EventTime, int Skill, int SkillChange);
 
+public record PlayerSessionRow(
+    DateTime EventTime,
+    int SkillChange,
+    int Skill,
+    int ConnectionTime,
+    int Kills,
+    int Deaths,
+    double Kpd,
+    int Headshots,
+    double Hpk,
+    int Suicides,
+    int TeamKills,
+    int KillStreak);
+
 public record GlobalAwardRow(string AwardType, string Code, string Name);

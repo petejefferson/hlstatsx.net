@@ -11,6 +11,7 @@ public interface IPlayerService
     Task<PagedResult<PlayerLeaderboardRow>> GetPeriodLeaderboardAsync(string game, DateTime from, DateTime to, int page, int pageSize, string sortBy, bool descending, int minKills = 1, CancellationToken ct = default);
     Task<int> GetPlayerRankAsync(int playerId, string game, CancellationToken ct = default);
     Task<IReadOnlyList<PlayerHistory>> GetPlayerHistoryAsync(int playerId, int days = 30, CancellationToken ct = default);
+    Task<PagedResult<PlayerSessionRow>> GetPlayerSessionsAsync(int playerId, int page, int pageSize, string sortBy, bool descending, CancellationToken ct = default);
     Task<IReadOnlyList<PlayerAward>> GetPlayerAwardsAsync(int playerId, CancellationToken ct = default);
     Task<IReadOnlyList<PlayerRibbon>> GetPlayerRibbonsAsync(int playerId, CancellationToken ct = default);
     Task<IReadOnlyList<PlayerName>> GetPlayerAliasesAsync(int playerId, CancellationToken ct = default);

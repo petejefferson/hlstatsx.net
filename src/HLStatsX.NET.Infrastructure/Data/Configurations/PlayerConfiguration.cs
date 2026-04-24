@@ -116,6 +116,9 @@ public class PlayerHistoryConfiguration : IEntityTypeConfiguration<PlayerHistory
         builder.Property(h => h.Headshots).HasColumnName("headshots");
         builder.Property(h => h.ConnectionTime).HasColumnName("connection_time");
         builder.Property(h => h.SkillChange).HasColumnName("skill_change");
+        builder.Property(h => h.Suicides).HasColumnName("suicides");
+        builder.Property(h => h.TeamKills).HasColumnName("teamkills");
+        builder.Property(h => h.KillStreak).HasColumnName("kill_streak");
 
         builder.HasOne(h => h.Player).WithMany(p => p.History).HasForeignKey(h => h.PlayerId);
     }

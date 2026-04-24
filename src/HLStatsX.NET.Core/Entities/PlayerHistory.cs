@@ -11,6 +11,9 @@ public class PlayerHistory
     public int Headshots { get; set; }
     public int ConnectionTime { get; set; }
     public int SkillChange { get; set; }
+    public int Suicides { get; set; }
+    public int TeamKills { get; set; }
+    public int KillStreak { get; set; }
 
     public Player? Player { get; set; }
 }

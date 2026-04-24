@@ -89,6 +89,15 @@ public record PlayerHistoryViewModel(
     int Days
 );
 
+public record PlayerSessionsViewModel(
+    Player Player,
+    PagedResult<PlayerSessionRow> Sessions,
+    int Page,
+    string SortBy,
+    bool Descending,
+    int DeleteDays
+);
+
 public record BanListViewModel(
     IReadOnlyList<Player> BannedPlayers,
     string Game

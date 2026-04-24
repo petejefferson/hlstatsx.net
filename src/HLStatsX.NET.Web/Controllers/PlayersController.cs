@@ -391,6 +391,18 @@ public class PlayersController : Controller
         return View(new PlayerHistoryViewModel(player, history, days));
     }
 
+    public async Task<IActionResult> Sessions(int id, int page = 1, string sortBy = "eventTime", bool desc = true, CancellationToken ct = default)
+    {
+        var player = await _players.GetPlayerAsync(id, ct);
+        if (player is null) return NotFound();
+
+        var sessionsTask   = _players.GetPlayerSessionsAsync(id, page, 50, sortBy, desc, ct);
+        var deleteDaysTask = _players.GetDeleteDaysAsync(ct);
+        await Task.WhenAll(sessionsTask, deleteDaysTask);
+
+        return View(new PlayerSessionsViewModel(player, sessionsTask.Result, page, sortBy, desc, deleteDaysTask.Result));
+    }
+
     public async Task<IActionResult> Bans(string? game, CancellationToken ct)
     {
         game ??= _config["HLStatsX:DefaultGame"] ?? "cstrike";

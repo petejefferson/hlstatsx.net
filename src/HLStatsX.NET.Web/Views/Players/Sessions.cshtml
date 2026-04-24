@@ -1,0 +1,73 @@
+@model PlayerSessionsViewModel
+@{
+    ViewData["Title"] = $"{Model.Player.LastName} - Session History";
+
+    string SortUrl(string field)
+    {
+        bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
+        return Url.Action("Sessions", new { id = Model.Player.PlayerId, sortBy = field, desc = nextDesc, page = 1 })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
+
+    static string FormatTime(int seconds)
+    {
+        var ts = TimeSpan.FromSeconds(seconds);
+        return $"{ts.Days}d {ts.Hours:D2}:{ts.Minutes:D2}:{ts.Seconds:D2}h";
+    }
+}
+
+<h1>Session History &mdash; @Model.Player.LastName</h1>
+
+@if (Model.Sessions.Items.Any())
+{
+    <table class="data-table">
+        <thead>
+            <tr class="data-table-head">
+                <td><a href="@(SortUrl("eventTime"))">Date@(Mark("eventTime"))</a></td>
+                <td style="text-align:right"><a href="@(SortUrl("skill_change"))">Skill Change@(Mark("skill_change"))</a></td>
+                <td style="text-align:right"><a href="@(SortUrl("skill"))">Points@(Mark("skill"))</a></td>
+                <td style="text-align:right"><a href="@(SortUrl("connection_time"))">Time@(Mark("connection_time"))</a></td>
+                <td style="text-align:right"><a href="@(SortUrl("kills"))">Kills@(Mark("kills"))</a></td>
+                <td style="text-align:right"><a href="@(SortUrl("deaths"))">Deaths@(Mark("deaths"))</a></td>
+                <td style="text-align:right">K:D</td>
+                <td style="text-align:right"><a href="@(SortUrl("headshots"))">HS@(Mark("headshots"))</a></td>
+                <td style="text-align:right">HS:K</td>
+                <td style="text-align:right"><a href="@(SortUrl("suicides"))">Suicides@(Mark("suicides"))</a></td>
+                <td style="text-align:right"><a href="@(SortUrl("teamkills"))">TKs@(Mark("teamkills"))</a></td>
+                <td style="text-align:right"><a href="@(SortUrl("kill_streak"))">Kill Streak@(Mark("kill_streak"))</a></td>
+            </tr>
+        </thead>
+        <tbody>
+            @{ bool bg = false; }
+            @foreach (var s in Model.Sessions.Items)
+            {
+                string row = bg ? "bg2" : "bg1"; bg = !bg;
+                string arrow = s.SkillChange > 0 ? "<span style=\"color:green\">&#x25B2;</span>" :
+                               s.SkillChange < 0 ? "<span style=\"color:red\">&#x25BC;</span>" : "";
+                <tr>
+                    <td class="@row">@s.EventTime.ToString("yyyy-MM-dd")</td>
+                    <td class="@row" style="text-align:right">@s.SkillChange.ToString("N0") @Html.Raw(arrow)</td>
+                    <td class="@row" style="text-align:right">@s.Skill.ToString("N0")</td>
+                    <td class="@row" style="text-align:right">@FormatTime(s.ConnectionTime)</td>
+                    <td class="@row" style="text-align:right">@s.Kills.ToString("N0")</td>
+                    <td class="@row" style="text-align:right">@s.Deaths.ToString("N0")</td>
+                    <td class="@row" style="text-align:right">@s.Kpd.ToString("F2")</td>
+                    <td class="@row" style="text-align:right">@s.Headshots.ToString("N0")</td>
+                    <td class="@row" style="text-align:right">@s.Hpk.ToString("F2")</td>
+                    <td class="@row" style="text-align:right">@s.Suicides.ToString("N0")</td>
+                    <td class="@row" style="text-align:right">@s.TeamKills.ToString("N0")</td>
+                    <td class="@row" style="text-align:right">@s.KillStreak.ToString("N0")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <partial name="_Pagination" model="@PaginationModel.From(Model.Sessions, p => Url.Action("Sessions", new { id = Model.Player.PlayerId, sortBy = Model.SortBy, desc = Model.Descending, page = p })!)" />
+}
+else
+{
+    <p>No session data available.</p>
+}
+
+<p>Items above are generated from the last @Model.DeleteDays days.</p>
+<p><a asp-action="Profile" asp-route-id="@Model.Player.PlayerId">&larr; Back to @Model.Player.LastName's Statistics</a></p>
