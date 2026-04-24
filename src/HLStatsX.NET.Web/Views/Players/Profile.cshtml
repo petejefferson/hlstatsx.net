@@ -133,7 +133,15 @@
         <tr class="bg1">
           <td>Favorite Weapon:*</td>
           <td>
-            @if (Model.FavoriteWeapon != null) { <text>@Model.FavoriteWeapon.WeaponName</text> }
+            @if (Model.FavoriteWeapon is not null)
+            {
+              <a asp-controller="Weapons" asp-action="Detail" asp-route-code="@(Model.FavoriteWeapon.WeaponCode)" asp-route-game="@(Model.Player.Game)">
+                <img src="/hlstatsimg/games/@(Model.Player.Game)/weapons/@(Model.FavoriteWeapon.WeaponCode).gif"
+                     alt="@Model.FavoriteWeapon.WeaponName" title="@Model.FavoriteWeapon.WeaponName"
+                     style="vertical-align:middle;max-height:24px;"
+                     onerror="this.style.display='none'" />
+              </a>
+            }
             else { <text>-</text> }
           </td>
         </tr>
