@@ -14,5 +14,10 @@ public record WeaponListViewModel(
 
 public record WeaponDetailViewModel(
     Weapon Weapon,
-    string Game
+    string Game,
+    PagedResult<WeaponKillerRow> Killers,
+    int TotalKills,
+    int TotalHeadshots,
+    string SortBy,
+    bool Descending
 );

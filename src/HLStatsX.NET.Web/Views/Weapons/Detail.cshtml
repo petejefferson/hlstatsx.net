@@ -1,16 +1,66 @@
 @model WeaponDetailViewModel
+@using HLStatsX.NET.Web.Models.ViewModels
+@using HLStatsX.NET.Web.Models
 @{
-    ViewData["Title"] = Model.Weapon.Name;
+    ViewData["Title"] = Model.Weapon.Name + " Details";
+
+    string SortUrl(string field)
+    {
+        bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
+        return Url.Action("Detail", new { id = Model.Weapon.WeaponId, sortBy = field, desc = nextDesc, page = 1 })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
+
+    string imgSrc = $"/hlstatsimg/games/{Model.Game}/weapons/{Model.Weapon.Code.ToLower()}.gif";
 }
 
-<h1>@Model.Weapon.Name</h1>
+<div class="block">
+    <div class="subblock" style="overflow: hidden;">
+        <div style="float:left;">
+            <img src="@imgSrc" alt="@Model.Weapon.Name" onerror="this.style.display='none'" />
+            &nbsp;From a total of <strong>@Model.TotalKills.ToString("N0")</strong> kills with <strong>@Model.TotalHeadshots.ToString("N0")</strong> headshots
+        </div>
+        <div style="float:right;">
+            Back to <a asp-action="Index" asp-route-game="@Model.Game">Weapon Statistics</a>
+        </div>
+    </div>
 
-<table class="stats-table" style="max-width: 400px;">
-    <tr><th>Code</th><td>@Model.Weapon.Code</td></tr>
-    <tr><th>Kills</th><td>@Model.Weapon.Kills.ToString("N0")</td></tr>
-    <tr><th>Headshots</th><td>@Model.Weapon.Headshots.ToString("N0")</td></tr>
-    <tr><th>HS%</th><td>@Model.Weapon.HeadshotPercent%</td></tr>
-    <tr><th>Modifier</th><td>@Model.Weapon.Modifier</td></tr>
-</table>
+    <br />
 
-<p><a asp-action="Index" asp-route-game="@Model.Game">&larr; Back to Weapons</a></p>
+    <table class="data-table">
+        <thead>
+            <tr class="data-table-head">
+                <td style="text-align:right;">Rank</td>
+                <td><a href="@(SortUrl("player"))">Player@(Mark("player"))</a></td>
+                <td style="text-align:right;"><a href="@(SortUrl("frags"))">@(Model.Weapon.Name) kills@(Mark("frags"))</a></td>
+                <td style="text-align:right;"><a href="@(SortUrl("headshots"))">Headshots@(Mark("headshots"))</a></td>
+                <td style="text-align:right;"><a href="@(SortUrl("hpk"))">Hpk@(Mark("hpk"))</a></td>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int rowNum = (Model.Killers.Page - 1) * Model.Killers.PageSize + 1;
+                bool bg = false;
+            }
+            @foreach (var row in Model.Killers.Items)
+            {
+                string rowClass = bg ? "bg2" : "bg1";
+                bg = !bg;
+                string altClass = bg ? "bg2" : "bg1";
+                string flagFile = string.IsNullOrEmpty(row.Flag) ? "0" : row.Flag.ToLowerInvariant();
+                <tr>
+                    <td class="@rowClass" style="text-align:right;">@rowNum</td>
+                    <td class="@altClass">
+                        <img src="/hlstatsimg/flags/@(flagFile).gif" alt="@row.Flag" title="@row.Flag" />&nbsp;<a asp-controller="Players" asp-action="Profile" asp-route-id="@row.PlayerId">@row.PlayerName</a>
+                    </td>
+                    <td class="@rowClass" style="text-align:right;">@row.Frags.ToString("N0")</td>
+                    <td class="@altClass" style="text-align:right;">@row.Headshots.ToString("N0")</td>
+                    <td class="@rowClass" style="text-align:right;">@row.Hpk.ToString("F2")</td>
+                </tr>
+                rowNum++;
+            }
+        </tbody>
+    </table>
+
+    <partial name="_Pagination" model="@PaginationModel.From(Model.Killers, p => Url.Action("Detail", new { id = Model.Weapon.WeaponId, sortBy = Model.SortBy, desc = Model.Descending, page = p })!)" />
+</div>

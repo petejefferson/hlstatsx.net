@@ -76,6 +76,53 @@ public class WeaponRepository : IWeaponRepository
         return (totals?.Kills ?? 0, totals?.Headshots ?? 0);
     }
 
+    public async Task<PagedResult<WeaponKillerRow>> GetWeaponKillersAsync(string code, string game, int page, int pageSize, string sortBy, bool desc, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+
+        var aggregated = db.EventFrags
+            .Where(f => f.Weapon == code)
+            .Join(db.Players, f => f.KillerId, p => p.PlayerId, (f, p) => new { f, p })
+            .Where(x => x.p.Game == game && x.p.HideRanking == 0)
+            .GroupBy(x => new { x.f.KillerId, x.p.LastName, x.p.Flag })
+            .Select(g => new
+            {
+                PlayerId   = g.Key.KillerId,
+                PlayerName = g.Key.LastName,
+                Flag       = g.Key.Flag,
+                Frags      = g.Count(),
+                Headshots  = g.Sum(x => x.f.Headshot ? 1 : 0)
+            });
+
+        aggregated = (sortBy.ToLowerInvariant(), desc) switch
+        {
+            ("player",    true)  => aggregated.OrderByDescending(r => r.PlayerName),
+            ("player",    false) => aggregated.OrderBy(r => r.PlayerName),
+            ("headshots", true)  => aggregated.OrderByDescending(r => r.Headshots).ThenBy(r => r.PlayerName),
+            ("headshots", false) => aggregated.OrderBy(r => r.Headshots).ThenBy(r => r.PlayerName),
+            ("hpk",       true)  => aggregated.OrderByDescending(r => r.Frags == 0 ? 0.0 : (double)r.Headshots / r.Frags).ThenBy(r => r.PlayerName),
+            ("hpk",       false) => aggregated.OrderBy(r => r.Frags == 0 ? 0.0 : (double)r.Headshots / r.Frags).ThenBy(r => r.PlayerName),
+            (_,           true)  => aggregated.OrderByDescending(r => r.Frags).ThenBy(r => r.PlayerName),
+            (_,           false) => aggregated.OrderBy(r => r.Frags).ThenBy(r => r.PlayerName)
+        };
+
+        var total = await aggregated.CountAsync(ct);
+        var rows  = await aggregated.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+        var items = rows.Select(r => new WeaponKillerRow(r.PlayerId, r.PlayerName, r.Flag, r.Frags, r.Headshots)).ToList();
+        return PagedResult<WeaponKillerRow>.Create(items, total, page, pageSize);
+    }
+
+    public async Task<(int TotalKills, int TotalHeadshots)> GetWeaponKillTotalsAsync(string code, string game, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        var totals = await db.EventFrags
+            .Where(f => f.Weapon == code && f.Server!.Game == game)
+            .GroupBy(_ => 1)
+            .Select(g => new { Kills = g.Count(), Headshots = g.Sum(f => f.Headshot ? 1 : 0) })
+            .FirstOrDefaultAsync(ct);
+        return (totals?.Kills ?? 0, totals?.Headshots ?? 0);
+    }
+
     public async Task UpdateAsync(Weapon weapon, CancellationToken ct = default)
     {
         await using var db = _factory.CreateDbContext();
