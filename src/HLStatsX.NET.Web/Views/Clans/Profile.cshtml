@@ -9,6 +9,8 @@
         return Url.Action("Profile", new {
             id = Model.Clan.ClanId, membersSortBy = field, membersDesc = nextDesc, membersPage = 1,
             weaponsSortBy = Model.WeaponsSortBy, weaponsDesc = Model.WeaponsDescending,
+            weaponStatsSortBy = Model.WeaponStatsSortBy, weaponStatsDesc = Model.WeaponStatsDescending,
+            weaponTargetsSortBy = Model.WeaponTargetsSortBy, weaponTargetsDesc = Model.WeaponTargetsDescending,
             mapsSortBy = Model.MapsSortBy, mapsDesc = Model.MapsDescending,
             actionsSortBy = Model.ActionsSortBy, actionsDesc = Model.ActionsDescending,
             victimsSortBy = Model.VictimsSortBy, victimsDesc = Model.VictimsDescending,
@@ -25,6 +27,8 @@
             id = Model.Clan.ClanId,
             membersSortBy = Model.MembersSortBy, membersDesc = Model.MembersDescending, membersPage = Model.MembersPage,
             weaponsSortBy = field, weaponsDesc = nextDesc,
+            weaponStatsSortBy = Model.WeaponStatsSortBy, weaponStatsDesc = Model.WeaponStatsDescending,
+            weaponTargetsSortBy = Model.WeaponTargetsSortBy, weaponTargetsDesc = Model.WeaponTargetsDescending,
             mapsSortBy = Model.MapsSortBy, mapsDesc = Model.MapsDescending,
             actionsSortBy = Model.ActionsSortBy, actionsDesc = Model.ActionsDescending,
             victimsSortBy = Model.VictimsSortBy, victimsDesc = Model.VictimsDescending,
@@ -34,6 +38,42 @@
     }
     string WeaponMark(string field) => Model.WeaponsSortBy == field ? (Model.WeaponsDescending ? " ▼" : " ▲") : "";
 
+    string WeaponStatsSortUrl(string field)
+    {
+        bool nextDesc = Model.WeaponStatsSortBy == field ? !Model.WeaponStatsDescending : true;
+        return Url.Action("Profile", new {
+            id = Model.Clan.ClanId,
+            membersSortBy = Model.MembersSortBy, membersDesc = Model.MembersDescending, membersPage = Model.MembersPage,
+            weaponsSortBy = Model.WeaponsSortBy, weaponsDesc = Model.WeaponsDescending,
+            weaponStatsSortBy = field, weaponStatsDesc = nextDesc,
+            weaponTargetsSortBy = Model.WeaponTargetsSortBy, weaponTargetsDesc = Model.WeaponTargetsDescending,
+            mapsSortBy = Model.MapsSortBy, mapsDesc = Model.MapsDescending,
+            actionsSortBy = Model.ActionsSortBy, actionsDesc = Model.ActionsDescending,
+            victimsSortBy = Model.VictimsSortBy, victimsDesc = Model.VictimsDescending,
+            teamsSortBy = Model.TeamsSortBy, teamsDesc = Model.TeamsDescending,
+            rolesSortBy = Model.RolesSortBy, rolesDesc = Model.RolesDescending
+        }) + "#tab-weapons";
+    }
+    string WeaponStatsMark(string field) => Model.WeaponStatsSortBy == field ? (Model.WeaponStatsDescending ? " ▼" : " ▲") : "";
+
+    string WeaponTargetsSortUrl(string field)
+    {
+        bool nextDesc = Model.WeaponTargetsSortBy == field ? !Model.WeaponTargetsDescending : true;
+        return Url.Action("Profile", new {
+            id = Model.Clan.ClanId,
+            membersSortBy = Model.MembersSortBy, membersDesc = Model.MembersDescending, membersPage = Model.MembersPage,
+            weaponsSortBy = Model.WeaponsSortBy, weaponsDesc = Model.WeaponsDescending,
+            weaponStatsSortBy = Model.WeaponStatsSortBy, weaponStatsDesc = Model.WeaponStatsDescending,
+            weaponTargetsSortBy = field, weaponTargetsDesc = nextDesc,
+            mapsSortBy = Model.MapsSortBy, mapsDesc = Model.MapsDescending,
+            actionsSortBy = Model.ActionsSortBy, actionsDesc = Model.ActionsDescending,
+            victimsSortBy = Model.VictimsSortBy, victimsDesc = Model.VictimsDescending,
+            teamsSortBy = Model.TeamsSortBy, teamsDesc = Model.TeamsDescending,
+            rolesSortBy = Model.RolesSortBy, rolesDesc = Model.RolesDescending
+        }) + "#tab-weapons";
+    }
+    string WeaponTargetsMark(string field) => Model.WeaponTargetsSortBy == field ? (Model.WeaponTargetsDescending ? " ▼" : " ▲") : "";
+
     string MapSortUrl(string field)
     {
         bool nextDesc = Model.MapsSortBy == field ? !Model.MapsDescending : true;
@@ -41,6 +81,8 @@
             id = Model.Clan.ClanId,
             membersSortBy = Model.MembersSortBy, membersDesc = Model.MembersDescending, membersPage = Model.MembersPage,
             weaponsSortBy = Model.WeaponsSortBy, weaponsDesc = Model.WeaponsDescending,
+            weaponStatsSortBy = Model.WeaponStatsSortBy, weaponStatsDesc = Model.WeaponStatsDescending,
+            weaponTargetsSortBy = Model.WeaponTargetsSortBy, weaponTargetsDesc = Model.WeaponTargetsDescending,
             mapsSortBy = field, mapsDesc = nextDesc,
             actionsSortBy = Model.ActionsSortBy, actionsDesc = Model.ActionsDescending,
             victimsSortBy = Model.VictimsSortBy, victimsDesc = Model.VictimsDescending,
@@ -57,6 +99,8 @@
             id = Model.Clan.ClanId,
             membersSortBy = Model.MembersSortBy, membersDesc = Model.MembersDescending, membersPage = Model.MembersPage,
             weaponsSortBy = Model.WeaponsSortBy, weaponsDesc = Model.WeaponsDescending,
+            weaponStatsSortBy = Model.WeaponStatsSortBy, weaponStatsDesc = Model.WeaponStatsDescending,
+            weaponTargetsSortBy = Model.WeaponTargetsSortBy, weaponTargetsDesc = Model.WeaponTargetsDescending,
             mapsSortBy = Model.MapsSortBy, mapsDesc = Model.MapsDescending,
             actionsSortBy = field, actionsDesc = nextDesc,
             victimsSortBy = Model.VictimsSortBy, victimsDesc = Model.VictimsDescending,
@@ -73,6 +117,8 @@
             id = Model.Clan.ClanId,
             membersSortBy = Model.MembersSortBy, membersDesc = Model.MembersDescending, membersPage = Model.MembersPage,
             weaponsSortBy = Model.WeaponsSortBy, weaponsDesc = Model.WeaponsDescending,
+            weaponStatsSortBy = Model.WeaponStatsSortBy, weaponStatsDesc = Model.WeaponStatsDescending,
+            weaponTargetsSortBy = Model.WeaponTargetsSortBy, weaponTargetsDesc = Model.WeaponTargetsDescending,
             mapsSortBy = Model.MapsSortBy, mapsDesc = Model.MapsDescending,
             actionsSortBy = Model.ActionsSortBy, actionsDesc = Model.ActionsDescending,
             victimsSortBy = field, victimsDesc = nextDesc,
@@ -89,6 +135,8 @@
             id = Model.Clan.ClanId,
             membersSortBy = Model.MembersSortBy, membersDesc = Model.MembersDescending, membersPage = Model.MembersPage,
             weaponsSortBy = Model.WeaponsSortBy, weaponsDesc = Model.WeaponsDescending,
+            weaponStatsSortBy = Model.WeaponStatsSortBy, weaponStatsDesc = Model.WeaponStatsDescending,
+            weaponTargetsSortBy = Model.WeaponTargetsSortBy, weaponTargetsDesc = Model.WeaponTargetsDescending,
             mapsSortBy = Model.MapsSortBy, mapsDesc = Model.MapsDescending,
             actionsSortBy = Model.ActionsSortBy, actionsDesc = Model.ActionsDescending,
             victimsSortBy = Model.VictimsSortBy, victimsDesc = Model.VictimsDescending,
@@ -105,6 +153,8 @@
             id = Model.Clan.ClanId,
             membersSortBy = Model.MembersSortBy, membersDesc = Model.MembersDescending, membersPage = Model.MembersPage,
             weaponsSortBy = Model.WeaponsSortBy, weaponsDesc = Model.WeaponsDescending,
+            weaponStatsSortBy = Model.WeaponStatsSortBy, weaponStatsDesc = Model.WeaponStatsDescending,
+            weaponTargetsSortBy = Model.WeaponTargetsSortBy, weaponTargetsDesc = Model.WeaponTargetsDescending,
             mapsSortBy = Model.MapsSortBy, mapsDesc = Model.MapsDescending,
             actionsSortBy = Model.ActionsSortBy, actionsDesc = Model.ActionsDescending,
             victimsSortBy = Model.VictimsSortBy, victimsDesc = Model.VictimsDescending,
@@ -374,6 +424,103 @@
           <td style="text-align:right;">@w.Headshots.ToString("N0")</td>
           <td style="text-align:right;">@w.HeadshotPercent.ToString("F2")%</td>
           <td style="text-align:right;">@w.HeadshotsPerKill.ToString("F2")</td>
+        </tr>
+      }
+    </table>
+    <p style="margin-top:8px;font-size:0.9em;">* Generated from all recorded events.</p>
+  }
+
+  @if (Model.WeaponStats.Any())
+  {
+    <h2 style="margin-top:24px;">Weapon Stats *</h2>
+    <table class="data-table">
+      <tr class="data-table-head">
+        <th style="text-align:right;">Rank</th>
+        <th><a href="@(WeaponStatsSortUrl("name"))">Weapon@(WeaponStatsMark("name"))</a></th>
+        <th style="text-align:right;"><a href="@(WeaponStatsSortUrl("shots"))">Shots@(WeaponStatsMark("shots"))</a></th>
+        <th style="text-align:right;"><a href="@(WeaponStatsSortUrl("hits"))">Hits@(WeaponStatsMark("hits"))</a></th>
+        <th style="text-align:right;"><a href="@(WeaponStatsSortUrl("damage"))">Damage@(WeaponStatsMark("damage"))</a></th>
+        <th style="text-align:right;"><a href="@(WeaponStatsSortUrl("headshots"))">Headshots@(WeaponStatsMark("headshots"))</a></th>
+        <th style="text-align:right;"><a href="@(WeaponStatsSortUrl("kills"))">Kills@(WeaponStatsMark("kills"))</a></th>
+        <th style="text-align:right;"><a href="@(WeaponStatsSortUrl("kdr"))">K/D@(WeaponStatsMark("kdr"))</a></th>
+        <th style="text-align:right;"><a href="@(WeaponStatsSortUrl("accuracy"))">Accuracy@(WeaponStatsMark("accuracy"))</a></th>
+        <th style="text-align:right;"><a href="@(WeaponStatsSortUrl("dph"))">Dmg/Hit@(WeaponStatsMark("dph"))</a></th>
+        <th style="text-align:right;"><a href="@(WeaponStatsSortUrl("spk"))">Shots/Kill@(WeaponStatsMark("spk"))</a></th>
+      </tr>
+      @{rowNum = 0;}
+      @foreach (var w in Model.WeaponStats)
+      {
+        string rowClass = rowNum % 2 == 0 ? "bg1" : "bg2";
+        rowNum++;
+        <tr class="@rowClass">
+          <td style="text-align:right;">@rowNum</td>
+          <td>
+            <a asp-controller="Weapons" asp-action="Detail" asp-route-code="@(w.WeaponCode)" asp-route-game="@(Model.Game)">
+              <img src="/hlstatsimg/games/@(Model.Game)/weapons/@(w.WeaponCode).gif"
+                   alt="" title="@w.WeaponName"
+                   style="vertical-align:middle;max-height:20px;"
+                   onerror="this.style.display='none'" />
+            </a>
+          </td>
+          <td style="text-align:right;">@w.Shots.ToString("N0")</td>
+          <td style="text-align:right;">@w.Hits.ToString("N0")</td>
+          <td style="text-align:right;">@w.Damage.ToString("N0")</td>
+          <td style="text-align:right;">@w.Headshots.ToString("N0")</td>
+          <td style="text-align:right;">@w.Kills.ToString("N0")</td>
+          <td style="text-align:right;">@w.KillDeathRatio.ToString("F2")</td>
+          <td style="text-align:right;">@w.Accuracy.ToString("F1")%</td>
+          <td style="text-align:right;">@w.DamagePerHit.ToString("F1")</td>
+          <td style="text-align:right;">@w.ShotsPerKill.ToString("F1")</td>
+        </tr>
+      }
+    </table>
+  }
+
+  @if (Model.WeaponTargets.Any())
+  {
+    <h2 style="margin-top:24px;">Weapon Targets *</h2>
+    <table class="data-table">
+      <tr class="data-table-head">
+        <th style="text-align:right;">Rank</th>
+        <th><a href="@(WeaponTargetsSortUrl("name"))">Weapon@(WeaponTargetsMark("name"))</a></th>
+        <th style="text-align:right;"><a href="@(WeaponTargetsSortUrl("hits"))">Hits@(WeaponTargetsMark("hits"))</a></th>
+        <th style="text-align:right;"><a href="@(WeaponTargetsSortUrl("head"))">Head@(WeaponTargetsMark("head"))</a></th>
+        <th style="text-align:right;"><a href="@(WeaponTargetsSortUrl("chest"))">Chest@(WeaponTargetsMark("chest"))</a></th>
+        <th style="text-align:right;"><a href="@(WeaponTargetsSortUrl("stomach"))">Stomach@(WeaponTargetsMark("stomach"))</a></th>
+        <th style="text-align:right;"><a href="@(WeaponTargetsSortUrl("leftarm"))">Left Arm@(WeaponTargetsMark("leftarm"))</a></th>
+        <th style="text-align:right;"><a href="@(WeaponTargetsSortUrl("rightarm"))">Right Arm@(WeaponTargetsMark("rightarm"))</a></th>
+        <th style="text-align:right;"><a href="@(WeaponTargetsSortUrl("leftleg"))">Left Leg@(WeaponTargetsMark("leftleg"))</a></th>
+        <th style="text-align:right;"><a href="@(WeaponTargetsSortUrl("rightleg"))">Right Leg@(WeaponTargetsMark("rightleg"))</a></th>
+        <th style="text-align:right;"><a href="@(WeaponTargetsSortUrl("left"))">Left%@(WeaponTargetsMark("left"))</a></th>
+        <th style="text-align:right;"><a href="@(WeaponTargetsSortUrl("middle"))">Middle%@(WeaponTargetsMark("middle"))</a></th>
+        <th style="text-align:right;"><a href="@(WeaponTargetsSortUrl("right"))">Right%@(WeaponTargetsMark("right"))</a></th>
+      </tr>
+      @{rowNum = 0;}
+      @foreach (var w in Model.WeaponTargets)
+      {
+        string rowClass = rowNum % 2 == 0 ? "bg1" : "bg2";
+        rowNum++;
+        <tr class="@rowClass">
+          <td style="text-align:right;">@rowNum</td>
+          <td>
+            <a asp-controller="Weapons" asp-action="Detail" asp-route-code="@(w.WeaponCode)" asp-route-game="@(Model.Game)">
+              <img src="/hlstatsimg/games/@(Model.Game)/weapons/@(w.WeaponCode).gif"
+                   alt="" title="@w.WeaponName"
+                   style="vertical-align:middle;max-height:20px;"
+                   onerror="this.style.display='none'" />
+            </a>
+          </td>
+          <td style="text-align:right;">@w.Hits.ToString("N0")</td>
+          <td style="text-align:right;">@w.Head.ToString("N0")</td>
+          <td style="text-align:right;">@w.Chest.ToString("N0")</td>
+          <td style="text-align:right;">@w.Stomach.ToString("N0")</td>
+          <td style="text-align:right;">@w.LeftArm.ToString("N0")</td>
+          <td style="text-align:right;">@w.RightArm.ToString("N0")</td>
+          <td style="text-align:right;">@w.LeftLeg.ToString("N0")</td>
+          <td style="text-align:right;">@w.RightLeg.ToString("N0")</td>
+          <td style="text-align:right;">@w.LeftPct.ToString("F1")%</td>
+          <td style="text-align:right;">@w.MiddlePct.ToString("F1")%</td>
+          <td style="text-align:right;">@w.RightPct.ToString("F1")%</td>
         </tr>
       }
     </table>

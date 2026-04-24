@@ -488,6 +488,96 @@ public class ClanRepository : IClanRepository
             .ToList();
     }
 
+    public async Task<IReadOnlyList<ClanWeaponStatsRow>> GetWeaponStatsAsync(int clanId, string game, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+
+        var rows = await (
+            from e in db.EventStatsme
+            join p in db.Players on e.PlayerId equals p.PlayerId
+            where p.ClanId == clanId
+            group e by e.Weapon into g
+            select new
+            {
+                Code      = g.Key,
+                Kills     = (long)g.Sum(e => e.Kills),
+                Hits      = (long)g.Sum(e => e.Hits),
+                Shots     = (long)g.Sum(e => e.Shots),
+                Headshots = (long)g.Sum(e => e.Headshots),
+                Deaths    = (long)g.Sum(e => e.Deaths),
+                Damage    = (long)g.Sum(e => e.Damage)
+            }
+        ).Where(x => x.Shots > 0).ToListAsync(ct);
+
+        if (rows.Count == 0) return Array.Empty<ClanWeaponStatsRow>();
+
+        var weapons = await db.Weapons
+            .Where(w => w.Game == game)
+            .ToDictionaryAsync(w => w.Code, w => w.Name, ct);
+
+        return rows.Select(r =>
+        {
+            weapons.TryGetValue(r.Code, out var name);
+            double kdr = r.Deaths == 0 ? r.Kills : Math.Round((double)r.Kills  / r.Deaths, 2);
+            double acc = r.Shots  == 0 ? 0       : Math.Round((double)r.Hits   / r.Shots  * 100, 1);
+            double dph = r.Hits   == 0 ? 0       : Math.Round((double)r.Damage / r.Hits,   1);
+            double spk = r.Kills  == 0 ? 0       : Math.Round((double)r.Shots  / r.Kills,  1);
+            return new ClanWeaponStatsRow(r.Code, name ?? r.Code,
+                r.Shots, r.Hits, r.Damage, r.Headshots, r.Kills, r.Deaths, kdr, acc, dph, spk);
+        })
+        .OrderByDescending(r => r.Kills)
+        .ToList();
+    }
+
+    public async Task<IReadOnlyList<ClanWeaponTargetRow>> GetWeaponTargetsAsync(int clanId, string game, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+
+        var rows = await (
+            from e in db.EventStatsme2
+            join p in db.Players on e.PlayerId equals p.PlayerId
+            where p.ClanId == clanId
+            group e by e.Weapon into g
+            select new
+            {
+                Code     = g.Key,
+                Head     = (long)g.Sum(e => e.Head),
+                Chest    = (long)g.Sum(e => e.Chest),
+                Stomach  = (long)g.Sum(e => e.Stomach),
+                LeftArm  = (long)g.Sum(e => e.LeftArm),
+                RightArm = (long)g.Sum(e => e.RightArm),
+                LeftLeg  = (long)g.Sum(e => e.LeftLeg),
+                RightLeg = (long)g.Sum(e => e.RightLeg)
+            }
+        ).ToListAsync(ct);
+
+        var withHits = rows.Select(r => new
+        {
+            r.Code, r.Head, r.Chest, r.Stomach, r.LeftArm, r.RightArm, r.LeftLeg, r.RightLeg,
+            Hits = r.Head + r.Chest + r.Stomach + r.LeftArm + r.RightArm + r.LeftLeg + r.RightLeg
+        }).Where(r => r.Hits > 0).ToList();
+
+        if (withHits.Count == 0) return Array.Empty<ClanWeaponTargetRow>();
+
+        var weapons = await db.Weapons
+            .Where(w => w.Game == game)
+            .ToDictionaryAsync(w => w.Code, w => w.Name, ct);
+
+        return withHits.Select(r =>
+        {
+            weapons.TryGetValue(r.Code, out var name);
+            double safeHits = r.Hits == 0 ? 1 : r.Hits;
+            double leftPct   = Math.Round((r.LeftArm  + r.LeftLeg)                    / safeHits * 100, 1);
+            double middlePct = Math.Round((r.Head + r.Chest + r.Stomach)               / safeHits * 100, 1);
+            double rightPct  = Math.Round((r.RightArm + r.RightLeg)                   / safeHits * 100, 1);
+            return new ClanWeaponTargetRow(r.Code, name ?? r.Code,
+                r.Hits, r.Head, r.Chest, r.Stomach, r.LeftArm, r.RightArm, r.LeftLeg, r.RightLeg,
+                leftPct, middlePct, rightPct);
+        })
+        .OrderByDescending(r => r.Hits)
+        .ToList();
+    }
+
     public async Task<IReadOnlyList<ClanMemberLocationRow>> GetMemberLocationsAsync(int clanId, CancellationToken ct = default)
     {
         await using var db = _factory.CreateDbContext();

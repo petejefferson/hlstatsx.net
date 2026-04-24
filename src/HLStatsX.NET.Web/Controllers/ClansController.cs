@@ -30,6 +30,8 @@ public class ClansController : Controller
         int id,
         int membersPage = 1, string membersSortBy = "skill", bool membersDesc = true,
         string weaponsSortBy = "kills", bool weaponsDesc = true,
+        string weaponStatsSortBy = "kills", bool weaponStatsDesc = true,
+        string weaponTargetsSortBy = "hits", bool weaponTargetsDesc = true,
         string mapsSortBy = "kills", bool mapsDesc = true,
         string actionsSortBy = "count", bool actionsDesc = true,
         string victimsSortBy = "count", bool victimsDesc = true,
@@ -50,6 +52,8 @@ public class ClansController : Controller
         var favWeaponTask      = _clans.GetFavoriteWeaponAsync(id, clan.Game, ct);
         var membersTask        = _clans.GetMembersPagedAsync(id, clan.Game, membersPage, pageSize, membersSortBy, membersDesc, summary.TotalKills, ct);
         var weaponsTask        = _clans.GetWeaponUsageAsync(id, clan.Game, summary.TotalKills, summary.TotalHeadshots, ct);
+        var weaponStatsTask    = _clans.GetWeaponStatsAsync(id, clan.Game, ct);
+        var weaponTargetsTask  = _clans.GetWeaponTargetsAsync(id, clan.Game, ct);
         var mapsTask           = _clans.GetMapPerformanceAsync(id, summary.TotalKills, summary.TotalHeadshots, ct);
         var actionsTask        = _clans.GetActionsAsync(id, ct);
         var actionVictimsTask  = _clans.GetActionVictimsAsync(id, ct);
@@ -59,7 +63,8 @@ public class ClansController : Controller
 
         await Task.WhenAll(
             favServerTask, favMapTask, favWeaponTask, membersTask,
-            weaponsTask, mapsTask, actionsTask, actionVictimsTask, teamsTask, rolesTask, locationsTask);
+            weaponsTask, weaponStatsTask, weaponTargetsTask,
+            mapsTask, actionsTask, actionVictimsTask, teamsTask, rolesTask, locationsTask);
 
         string? googleMapsApiKey = _config["HLStatsX:Maps:GoogleMapsApiKey"];
         if (string.IsNullOrWhiteSpace(googleMapsApiKey)) googleMapsApiKey = null;
@@ -69,6 +74,8 @@ public class ClansController : Controller
             favServerTask.Result, favMapTask.Result, favWeaponTask.Result,
             membersTask.Result, membersPage, membersSortBy, membersDesc,
             SortWeapons(weaponsTask.Result, weaponsSortBy, weaponsDesc), weaponsSortBy, weaponsDesc,
+            SortWeaponStats(weaponStatsTask.Result, weaponStatsSortBy, weaponStatsDesc), weaponStatsSortBy, weaponStatsDesc,
+            SortWeaponTargets(weaponTargetsTask.Result, weaponTargetsSortBy, weaponTargetsDesc), weaponTargetsSortBy, weaponTargetsDesc,
             SortMaps(mapsTask.Result, mapsSortBy, mapsDesc), mapsSortBy, mapsDesc,
             SortActions(actionsTask.Result, actionsSortBy, actionsDesc), actionsSortBy, actionsDesc,
             SortActions(actionVictimsTask.Result, victimsSortBy, victimsDesc), victimsSortBy, victimsDesc,
@@ -88,6 +95,45 @@ public class ClansController : Controller
             "hspct"     => desc ? rows.OrderByDescending(r => r.HeadshotPercent) : rows.OrderBy(r => r.HeadshotPercent),
             "hsperkill" => desc ? rows.OrderByDescending(r => r.HeadshotsPerKill): rows.OrderBy(r => r.HeadshotsPerKill),
             _           => desc ? rows.OrderByDescending(r => r.Kills)           : rows.OrderBy(r => r.Kills),
+        };
+        return q.ToList();
+    }
+
+    private static IReadOnlyList<ClanWeaponStatsRow> SortWeaponStats(IReadOnlyList<ClanWeaponStatsRow> rows, string sortBy, bool desc)
+    {
+        IOrderedEnumerable<ClanWeaponStatsRow> q = sortBy switch
+        {
+            "name"      => desc ? rows.OrderByDescending(r => r.WeaponName)    : rows.OrderBy(r => r.WeaponName),
+            "shots"     => desc ? rows.OrderByDescending(r => r.Shots)         : rows.OrderBy(r => r.Shots),
+            "hits"      => desc ? rows.OrderByDescending(r => r.Hits)          : rows.OrderBy(r => r.Hits),
+            "damage"    => desc ? rows.OrderByDescending(r => r.Damage)        : rows.OrderBy(r => r.Damage),
+            "headshots" => desc ? rows.OrderByDescending(r => r.Headshots)     : rows.OrderBy(r => r.Headshots),
+            "deaths"    => desc ? rows.OrderByDescending(r => r.Deaths)        : rows.OrderBy(r => r.Deaths),
+            "kdr"       => desc ? rows.OrderByDescending(r => r.KillDeathRatio): rows.OrderBy(r => r.KillDeathRatio),
+            "accuracy"  => desc ? rows.OrderByDescending(r => r.Accuracy)      : rows.OrderBy(r => r.Accuracy),
+            "dph"       => desc ? rows.OrderByDescending(r => r.DamagePerHit)  : rows.OrderBy(r => r.DamagePerHit),
+            "spk"       => desc ? rows.OrderByDescending(r => r.ShotsPerKill)  : rows.OrderBy(r => r.ShotsPerKill),
+            _           => desc ? rows.OrderByDescending(r => r.Kills)         : rows.OrderBy(r => r.Kills),
+        };
+        return q.ToList();
+    }
+
+    private static IReadOnlyList<ClanWeaponTargetRow> SortWeaponTargets(IReadOnlyList<ClanWeaponTargetRow> rows, string sortBy, bool desc)
+    {
+        IOrderedEnumerable<ClanWeaponTargetRow> q = sortBy switch
+        {
+            "name"     => desc ? rows.OrderByDescending(r => r.WeaponName) : rows.OrderBy(r => r.WeaponName),
+            "head"     => desc ? rows.OrderByDescending(r => r.Head)       : rows.OrderBy(r => r.Head),
+            "chest"    => desc ? rows.OrderByDescending(r => r.Chest)      : rows.OrderBy(r => r.Chest),
+            "stomach"  => desc ? rows.OrderByDescending(r => r.Stomach)    : rows.OrderBy(r => r.Stomach),
+            "leftarm"  => desc ? rows.OrderByDescending(r => r.LeftArm)    : rows.OrderBy(r => r.LeftArm),
+            "rightarm" => desc ? rows.OrderByDescending(r => r.RightArm)   : rows.OrderBy(r => r.RightArm),
+            "leftleg"  => desc ? rows.OrderByDescending(r => r.LeftLeg)    : rows.OrderBy(r => r.LeftLeg),
+            "rightleg" => desc ? rows.OrderByDescending(r => r.RightLeg)   : rows.OrderBy(r => r.RightLeg),
+            "left"     => desc ? rows.OrderByDescending(r => r.LeftPct)    : rows.OrderBy(r => r.LeftPct),
+            "middle"   => desc ? rows.OrderByDescending(r => r.MiddlePct)  : rows.OrderBy(r => r.MiddlePct),
+            "right"    => desc ? rows.OrderByDescending(r => r.RightPct)   : rows.OrderBy(r => r.RightPct),
+            _          => desc ? rows.OrderByDescending(r => r.Hits)       : rows.OrderBy(r => r.Hits),
         };
         return q.ToList();
     }

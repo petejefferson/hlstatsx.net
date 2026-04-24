@@ -62,6 +62,12 @@ public class ClanService : IClanService
     public Task<IReadOnlyList<ClanRoleRow>> GetRoleSelectionAsync(int clanId, string game, CancellationToken ct = default) =>
         _clans.GetRoleSelectionAsync(clanId, game, ct);
 
+    public Task<IReadOnlyList<ClanWeaponStatsRow>> GetWeaponStatsAsync(int clanId, string game, CancellationToken ct = default) =>
+        _clans.GetWeaponStatsAsync(clanId, game, ct);
+
+    public Task<IReadOnlyList<ClanWeaponTargetRow>> GetWeaponTargetsAsync(int clanId, string game, CancellationToken ct = default) =>
+        _clans.GetWeaponTargetsAsync(clanId, game, ct);
+
     public Task<IReadOnlyList<ClanMemberLocationRow>> GetMemberLocationsAsync(int clanId, CancellationToken ct = default) =>
         _clans.GetMemberLocationsAsync(clanId, ct);
 }

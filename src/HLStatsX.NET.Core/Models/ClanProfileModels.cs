@@ -70,6 +70,35 @@ public record ClanRoleRow(
     long Deaths,
     double KillDeathRatio);
 
+public record ClanWeaponStatsRow(
+    string WeaponCode,
+    string WeaponName,
+    long Shots,
+    long Hits,
+    long Damage,
+    long Headshots,
+    long Kills,
+    long Deaths,
+    double KillDeathRatio,
+    double Accuracy,
+    double DamagePerHit,
+    double ShotsPerKill);
+
+public record ClanWeaponTargetRow(
+    string WeaponCode,
+    string WeaponName,
+    long Hits,
+    long Head,
+    long Chest,
+    long Stomach,
+    long LeftArm,
+    long RightArm,
+    long LeftLeg,
+    long RightLeg,
+    double LeftPct,
+    double MiddlePct,
+    double RightPct);
+
 public record ClanMemberLocationRow(
     int PlayerId,
     string LastName,
