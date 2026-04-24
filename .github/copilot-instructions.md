@@ -157,3 +157,7 @@ Any new filter on the players leaderboard must propagate through the full stack:
 
 Live PHP reference: **https://tft.nervaware.co.uk/stats/hlstats.php**  
 Live .NET rewrite: **https://tft.nervaware.co.uk/stats**
+
+## Announcement and Marketing Pages
+
+- Announcement or marketing pages should be self-isolated under `/blog` and should not modify main project views or shared styles.

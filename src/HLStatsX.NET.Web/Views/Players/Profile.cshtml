@@ -184,6 +184,9 @@
         <a asp-action="Sessions" asp-route-id="@Model.Player.PlayerId">Sessions</a> |
         <a asp-action="Awards" asp-route-id="@Model.Player.PlayerId">Awards (@Model.Awards.Count)</a>
       </p>
+      <p>
+        <a asp-controller="Search" asp-action="Index" asp-route-q="@Model.Player.LastName" asp-route-st="player" asp-route-game="@Model.Player.Game">Find other players with the same name</a>
+      </p>
     </section>
   </div>
 
