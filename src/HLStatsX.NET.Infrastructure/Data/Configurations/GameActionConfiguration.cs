@@ -18,8 +18,10 @@ public class GameActionConfiguration : IEntityTypeConfiguration<GameAction>
         builder.Property(a => a.RewardPlayer).HasColumnName("reward_player");
         builder.Property(a => a.RewardTeam).HasColumnName("reward_team");
         builder.Property(a => a.Count).HasColumnName("count");
-        builder.Property(a => a.ForPlayerActions).HasColumnName("for_PlayerActions");
-        builder.Property(a => a.ForPlayerPlayerActions).HasColumnName("for_PlayerPlayerActions");
+        builder.Property(a => a.ForPlayerActions).HasColumnName("for_PlayerActions")
+            .HasConversion(v => v ? "1" : "0", v => v == "1");
+        builder.Property(a => a.ForPlayerPlayerActions).HasColumnName("for_PlayerPlayerActions")
+            .HasConversion(v => v ? "1" : "0", v => v == "1");
 
         builder.HasOne(a => a.GameNavigation)
             .WithMany(g => g.Actions)

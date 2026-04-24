@@ -30,8 +30,10 @@ var connectionString = builder.Configuration.GetConnectionString("HLStats")
 // Repositories call _factory.CreateDbContext() per method, giving each query its own
 // short-lived context — this is required for concurrent Task.WhenAll calls because
 // EF Core DbContext is not thread-safe.
+int commandTimeout = builder.Configuration.GetValue<int>("HLStatsX:CommandTimeout", 120);
 builder.Services.AddDbContextFactory<HLStatsDbContext>(options =>
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString),
+                     o => o.CommandTimeout(commandTimeout))
            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
 
 // Repositories
