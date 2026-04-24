@@ -17,7 +17,7 @@
 
 <h1>Awards &mdash; @Model.Game</h1>
 
-<div class="profile-tabs" id="awardTabs">
+<div class="profile-tabs" id="profileTabs">
     <a href="#tab-daily"   class="tab-link active">Daily Awards</a>
     <a href="#tab-global"  class="tab-link">Global Awards</a>
     <a href="#tab-ranks"   class="tab-link">Ranks</a>
@@ -138,7 +138,7 @@
                         @row.Rank.MinKills&ndash;@(row.Rank.MaxKills == 0 ? "&#8734;" : row.Rank.MaxKills.ToString()) kills
                     </div>
                     <div class="awards-grid-count">
-                        @row.PlayerCount @(row.PlayerCount == 1 ? "player" : "players")
+                        Achieved by @row.PlayerCount @(row.PlayerCount == 1 ? "player" : "players")
                     </div>
                 </div>
             }
