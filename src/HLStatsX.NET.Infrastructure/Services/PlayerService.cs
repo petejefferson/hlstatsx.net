@@ -44,6 +44,12 @@ public class PlayerService : IPlayerService
     public Task<IReadOnlyList<PlayerAward>> GetPlayerAwardsAsync(int playerId, CancellationToken ct = default) =>
         _players.GetAwardsAsync(playerId, ct);
 
+    public Task<PagedResult<PlayerAwardRow>> GetPlayerAwardsSummaryAsync(int playerId, int page, int pageSize, string sortBy, bool descending, CancellationToken ct = default) =>
+        _players.GetAwardsSummaryAsync(playerId, page, pageSize, sortBy, descending, ct);
+
+    public Task<PagedResult<PlayerAwardRow>> GetPlayerAwardDetailAsync(int playerId, int awardId, int page, int pageSize, string sortBy, bool descending, CancellationToken ct = default) =>
+        _players.GetAwardDetailAsync(playerId, awardId, page, pageSize, sortBy, descending, ct);
+
     public Task<IReadOnlyList<PlayerRibbon>> GetPlayerRibbonsAsync(int playerId, CancellationToken ct = default) =>
         _players.GetRibbonsAsync(playerId, ct);
 

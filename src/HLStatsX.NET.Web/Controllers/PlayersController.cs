@@ -406,6 +406,20 @@ public class PlayersController : Controller
         return View(new PlayerSessionsViewModel(player, sessionsTask.Result, page, sortBy, desc, deleteDaysTask.Result));
     }
 
+    public async Task<IActionResult> Awards(int id, int? awardId = null, int page = 1, string sortBy = "awardTime", bool desc = true, CancellationToken ct = default)
+    {
+        var player = await _players.GetPlayerAsync(id, ct);
+        if (player is null) return NotFound();
+
+        PagedResult<PlayerAwardRow> awards;
+        if (awardId.HasValue)
+            awards = await _players.GetPlayerAwardDetailAsync(id, awardId.Value, page, 50, sortBy, desc, ct);
+        else
+            awards = await _players.GetPlayerAwardsSummaryAsync(id, page, 50, sortBy, desc, ct);
+
+        return View(new PlayerAwardsViewModel(player, awards, page, sortBy, desc, awardId));
+    }
+
     public async Task<IActionResult> Bans(string? game, CancellationToken ct)
     {
         game ??= _config["HLStatsX:DefaultGame"] ?? "cstrike";

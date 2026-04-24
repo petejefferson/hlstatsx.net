@@ -107,6 +107,15 @@ public record PlayerSessionsViewModel(
     int DeleteDays
 );
 
+public record PlayerAwardsViewModel(
+    Player Player,
+    PagedResult<PlayerAwardRow> Awards,
+    int Page,
+    string SortBy,
+    bool Descending,
+    int? AwardId
+);
+
 public record BanListViewModel(
     IReadOnlyList<Player> BannedPlayers,
     string Game

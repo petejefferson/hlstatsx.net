@@ -18,6 +18,8 @@ public interface IPlayerRepository
     Task<PagedResult<PlayerEventRow>> GetEventHistoryAsync(int playerId, string game, int page, int pageSize, string sortBy, bool descending, CancellationToken ct = default);
     Task<PagedResult<PlayerSessionRow>> GetSessionsAsync(int playerId, int page, int pageSize, string sortBy, bool descending, CancellationToken ct = default);
     Task<IReadOnlyList<PlayerAward>> GetAwardsAsync(int playerId, CancellationToken ct = default);
+    Task<PagedResult<PlayerAwardRow>> GetAwardsSummaryAsync(int playerId, int page, int pageSize, string sortBy, bool descending, CancellationToken ct = default);
+    Task<PagedResult<PlayerAwardRow>> GetAwardDetailAsync(int playerId, int awardId, int page, int pageSize, string sortBy, bool descending, CancellationToken ct = default);
     Task<IReadOnlyList<PlayerRibbon>> GetRibbonsAsync(int playerId, CancellationToken ct = default);
     Task<int> GetRankAsync(int playerId, string game, CancellationToken ct = default);
     Task<PagedResult<PlayerSearchResult>> SearchAsync(string query, string? game, int page, int pageSize, CancellationToken ct = default);

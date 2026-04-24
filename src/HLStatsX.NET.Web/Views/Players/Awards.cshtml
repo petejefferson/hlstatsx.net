@@ -1,0 +1,67 @@
+@model PlayerAwardsViewModel
+@{
+    ViewData["Title"] = $"{Model.Player.LastName} - Awards History";
+
+    string SortUrl(string field)
+    {
+        bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
+        return Url.Action("Awards", new { id = Model.Player.PlayerId, awardId = Model.AwardId, sortBy = field, desc = nextDesc, page = 1 })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
+
+    string countHeader = Model.AwardId.HasValue ? "Kills on Day" : "Times Earned";
+}
+
+<h1>Awards History &mdash; @Model.Player.LastName</h1>
+
+@if (Model.AwardId.HasValue)
+{
+    <p><a href="@Url.Action("Awards", new { id = Model.Player.PlayerId })">&#8592; All Awards</a></p>
+}
+
+@if (Model.Awards.Items.Any())
+{
+    <table class="data-table">
+        <thead>
+            <tr class="data-table-head">
+                <td style="text-align:right;">Rank</td>
+                <td><a href="@(SortUrl("awardTime"))">@(Model.AwardId.HasValue ? "Date" : "Date Last Earned")@(Mark("awardTime"))</a></td>
+                <td><a href="@(SortUrl("name"))">Name@(Mark("name"))</a></td>
+                <td><a href="@(SortUrl("verb"))">Description@(Mark("verb"))</a></td>
+                <td style="text-align:right;"><a href="@(SortUrl("count"))">@countHeader@(Mark("count"))</a></td>
+            </tr>
+        </thead>
+        <tbody>
+            @{ bool bg = false; int rowNum = (Model.Awards.Page - 1) * Model.Awards.PageSize + 1; }
+            @foreach (var a in Model.Awards.Items)
+            {
+                string row = bg ? "bg2" : "bg1"; bg = !bg;
+                <tr>
+                    <td class="@row" style="text-align:right;">@rowNum</td>
+                    <td class="@row">@a.AwardTime.ToString("yyyy-MM-dd")</td>
+                    <td class="@row">
+                        @if (!Model.AwardId.HasValue)
+                        {
+                            <a href="@Url.Action("Awards", new { id = Model.Player.PlayerId, awardId = a.AwardId })">@a.Name</a>
+                        }
+                        else
+                        {
+                            @a.Name
+                        }
+                    </td>
+                    <td class="@row">@a.Verb</td>
+                    <td class="@row" style="text-align:right;">@a.Count.ToString("N0")</td>
+                </tr>
+                rowNum++;
+            }
+        </tbody>
+    </table>
+
+    <partial name="_Pagination" model="@PaginationModel.From(Model.Awards, p => Url.Action("Awards", new { id = Model.Player.PlayerId, awardId = Model.AwardId, sortBy = Model.SortBy, desc = Model.Descending, page = p })!)" />
+}
+else
+{
+    <p>No awards data available.</p>
+}
+
+<p><a asp-action="Profile" asp-route-id="@Model.Player.PlayerId">&larr; Back to @Model.Player.LastName's Statistics</a></p>

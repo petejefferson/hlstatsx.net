@@ -318,6 +318,76 @@ public class PlayerRepository : IPlayerRepository
             .ToListAsync(ct);
     }
 
+    public async Task<PagedResult<PlayerAwardRow>> GetAwardsSummaryAsync(int playerId, int page, int pageSize, string sortBy, bool descending, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+
+        var baseQuery = db.PlayerAwards
+            .Where(pa => pa.PlayerId == playerId)
+            .Join(db.Awards, pa => pa.AwardId, a => a.AwardId,
+                  (pa, a) => new { pa.AwardTime, a.AwardId, a.Name, a.Verb })
+            .GroupBy(x => new { x.AwardId, x.Name, x.Verb })
+            .Select(g => new {
+                g.Key.AwardId, g.Key.Name, g.Key.Verb,
+                LastEarned = g.Max(x => x.AwardTime),
+                Count = g.Count()
+            });
+
+        var total = await baseQuery.CountAsync(ct);
+
+        var sorted = (sortBy, descending) switch
+        {
+            ("name",  true)  => baseQuery.OrderByDescending(x => x.Name),
+            ("name",  false) => baseQuery.OrderBy(x => x.Name),
+            ("verb",  true)  => baseQuery.OrderByDescending(x => x.Verb),
+            ("verb",  false) => baseQuery.OrderBy(x => x.Verb),
+            ("count", true)  => baseQuery.OrderByDescending(x => x.Count),
+            ("count", false) => baseQuery.OrderBy(x => x.Count),
+            (_,       true)  => baseQuery.OrderByDescending(x => x.LastEarned),
+            (_,       false) => baseQuery.OrderBy(x => x.LastEarned),
+        };
+
+        var items = await sorted
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(x => new PlayerAwardRow(x.AwardId, x.Name, x.Verb, x.LastEarned, x.Count))
+            .ToListAsync(ct);
+
+        return PagedResult<PlayerAwardRow>.Create(items, total, page, pageSize);
+    }
+
+    public async Task<PagedResult<PlayerAwardRow>> GetAwardDetailAsync(int playerId, int awardId, int page, int pageSize, string sortBy, bool descending, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+
+        var baseQuery = db.PlayerAwards
+            .Where(pa => pa.PlayerId == playerId && pa.AwardId == awardId)
+            .Join(db.Awards, pa => pa.AwardId, a => a.AwardId,
+                  (pa, a) => new { pa.AwardTime, a.AwardId, a.Name, a.Verb, pa.Count });
+
+        var total = await baseQuery.CountAsync(ct);
+
+        var sorted = (sortBy, descending) switch
+        {
+            ("name",  true)  => baseQuery.OrderByDescending(x => x.Name),
+            ("name",  false) => baseQuery.OrderBy(x => x.Name),
+            ("verb",  true)  => baseQuery.OrderByDescending(x => x.Verb),
+            ("verb",  false) => baseQuery.OrderBy(x => x.Verb),
+            ("count", true)  => baseQuery.OrderByDescending(x => x.Count),
+            ("count", false) => baseQuery.OrderBy(x => x.Count),
+            (_,       true)  => baseQuery.OrderByDescending(x => x.AwardTime),
+            (_,       false) => baseQuery.OrderBy(x => x.AwardTime),
+        };
+
+        var items = await sorted
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(x => new PlayerAwardRow(x.AwardId, x.Name, x.Verb, x.AwardTime, x.Count))
+            .ToListAsync(ct);
+
+        return PagedResult<PlayerAwardRow>.Create(items, total, page, pageSize);
+    }
+
     public async Task<IReadOnlyList<PlayerRibbon>> GetRibbonsAsync(int playerId, CancellationToken ct = default)
     {
         await using var db = _factory.CreateDbContext();

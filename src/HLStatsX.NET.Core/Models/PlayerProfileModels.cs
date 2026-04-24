@@ -65,6 +65,8 @@ public record PlayerSessionRow(
 
 public record GlobalAwardRow(string AwardType, string Code, string Name);
 
+public record PlayerAwardRow(int AwardId, string Name, string Verb, DateTime AwardTime, int Count);
+
 public record PlayerEventRow(
     DateTime EventTime,
     string EventType,
