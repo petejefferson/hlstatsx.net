@@ -1,0 +1,45 @@
+@model ActionListViewModel
+@{
+    ViewData["Title"] = "Action Statistics";
+
+    string SortUrl(string field)
+    {
+        bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
+        return Url.Action("Index", new { game = Model.Game, sortBy = field, desc = nextDesc })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
+
+    int rank = 1;
+    bool bg = false;
+}
+
+<h1>Action Statistics &mdash; @Model.Game</h1>
+
+<p>From a total of <strong>@Model.TotalEarned.ToString("N0")</strong> earned actions</p>
+
+<table class="data-table">
+    <thead>
+        <tr class="data-table-head">
+            <td style="text-align:right;">Rank</td>
+            <td><a href="@(SortUrl("description"))">Action@(Mark("description"))</a></td>
+            <td style="text-align:right;"><a href="@(SortUrl("count"))">Earned@(Mark("count"))</a></td>
+            <td style="text-align:right;"><a href="@(SortUrl("reward"))">Reward@(Mark("reward"))</a></td>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var a in Model.Actions)
+        {
+            string rowClass = bg ? "bg2" : "bg1";
+            bg = !bg;
+            <tr>
+                <td class="@rowClass" style="text-align:right;">@rank</td>
+                <td class="@(bg ? "bg1" : "bg2")">
+                    <a asp-controller="Actions" asp-action="Detail" asp-route-code="@a.Code" asp-route-game="@Model.Game">@a.Description</a>
+                </td>
+                <td class="@rowClass" style="text-align:right;">@a.Count.ToString("N0") times</td>
+                <td class="@(bg ? "bg1" : "bg2")" style="text-align:right;">@a.RewardPlayer</td>
+            </tr>
+            rank++;
+        }
+    </tbody>
+</table>

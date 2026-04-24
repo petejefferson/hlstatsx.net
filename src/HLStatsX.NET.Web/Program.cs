@@ -45,6 +45,7 @@ builder.Services.AddScoped<IAwardRepository, AwardRepository>();
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<ICountryRepository, CountryRepository>();
 builder.Services.AddScoped<IGameRepository, GameRepository>();
+builder.Services.AddScoped<IActionRepository, ActionRepository>();
 
 // Services
 builder.Services.AddScoped<IPlayerService, PlayerService>();

@@ -1,0 +1,103 @@
+@model ActionDetailViewModel
+@{
+    string actName = Model.Action.Description ?? Model.Action.Code;
+    ViewData["Title"] = $"Action Details — {actName}";
+
+    string SortUrl(string field)
+    {
+        bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
+        return Url.Action("Detail", new { code = Model.Action.Code, game = Model.Game, sortBy = field, desc = nextDesc, vpage = 1, vsortBy = Model.VSortBy, vdesc = Model.VDescending })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
+
+    string VSortUrl(string field)
+    {
+        bool nextDesc = Model.VSortBy == field ? !Model.VDescending : true;
+        return Url.Action("Detail", new { code = Model.Action.Code, game = Model.Game, sortBy = Model.SortBy, desc = Model.Descending, page = 1, vsortBy = field, vdesc = nextDesc })!;
+    }
+    string VMark(string field) => Model.VSortBy == field ? (Model.VDescending ? " ▼" : " ▲") : "";
+}
+
+<h1>Action Details &mdash; @actName</h1>
+
+<p>
+    <strong>@actName</strong> from a total of <strong>@Model.TotalAchievements.ToString("N0")</strong> achievements
+    &nbsp;&mdash;&nbsp;
+    <a asp-controller="Actions" asp-action="Index" asp-route-game="@Model.Game">Back to Action Statistics</a>
+</p>
+
+<table class="data-table">
+    <thead>
+        <tr class="data-table-head">
+            <td style="text-align:right;">Rank</td>
+            <td><a href="@(SortUrl("player"))">Player@(Mark("player"))</a></td>
+            <td style="text-align:right;"><a href="@(SortUrl("count"))">Achieved@(Mark("count"))</a></td>
+            <td style="text-align:right;">Skill Bonus Total</td>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            int rank = (Model.Achievers.Page - 1) * Model.Achievers.PageSize + 1;
+            bool bg = false;
+        }
+        @foreach (var r in Model.Achievers.Items)
+        {
+            string rowClass = bg ? "bg2" : "bg1";
+            bg = !bg;
+            string flagFile = string.IsNullOrEmpty(r.Flag) ? "0" : r.Flag.ToLowerInvariant();
+            <tr>
+                <td class="@rowClass" style="text-align:right;">@rank</td>
+                <td class="@(bg ? "bg1" : "bg2")">
+                    <img src="/hlstatsimg/flags/@(flagFile).gif" alt="@r.Flag" title="@r.Flag" />&nbsp;
+                    <a asp-controller="Players" asp-action="Profile" asp-route-id="@r.PlayerId">@r.PlayerName</a>
+                </td>
+                <td class="@rowClass" style="text-align:right;">@r.Count.ToString("N0")</td>
+                <td class="@(bg ? "bg1" : "bg2")" style="text-align:right;">@r.SkillBonusTotal.ToString("N0")</td>
+            </tr>
+            rank++;
+        }
+    </tbody>
+</table>
+
+<partial name="_Pagination" model="@PaginationModel.From(Model.Achievers, p => Url.Action("Detail", new { code = Model.Action.Code, game = Model.Game, page = p, sortBy = Model.SortBy, desc = Model.Descending, vsortBy = Model.VSortBy, vdesc = Model.VDescending })!)" />
+
+@if (Model.Victims is not null)
+{
+    <h2 id="victims">Action Victim Details</h2>
+    <p><strong>Victims of @actName</strong></p>
+
+    <table class="data-table">
+        <thead>
+            <tr class="data-table-head">
+                <td style="text-align:right;">Rank</td>
+                <td><a href="@(VSortUrl("player"))">Player@(VMark("player"))</a></td>
+                <td style="text-align:right;"><a href="@(VSortUrl("count"))">Times Victimized@(VMark("count"))</a></td>
+                <td style="text-align:right;">Skill Bonus Total</td>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int vrank = (Model.Victims.Page - 1) * Model.Victims.PageSize + 1;
+                bool vbg = false;
+            }
+            @foreach (var v in Model.Victims.Items)
+            {
+                string rowClass = vbg ? "bg2" : "bg1";
+                vbg = !vbg;
+                string flagFile = string.IsNullOrEmpty(v.Flag) ? "0" : v.Flag.ToLowerInvariant();
+                <tr>
+                    <td class="@rowClass" style="text-align:right;">@vrank</td>
+                    <td class="@(vbg ? "bg1" : "bg2")">
+                        <img src="/hlstatsimg/flags/@(flagFile).gif" alt="@v.Flag" title="@v.Flag" />&nbsp;
+                        <a asp-controller="Players" asp-action="Profile" asp-route-id="@v.VictimId">@v.PlayerName</a>
+                    </td>
+                    <td class="@rowClass" style="text-align:right;">@v.Count.ToString("N0")</td>
+                    <td class="@(vbg ? "bg1" : "bg2")" style="text-align:right;">@v.SkillBonusTotal.ToString("N0")</td>
+                </tr>
+                vrank++;
+            }
+        </tbody>
+    </table>
+
+    <partial name="_Pagination" model="@PaginationModel.From(Model.Victims, p => Url.Action("Detail", new { code = Model.Action.Code, game = Model.Game, page = Model.Achievers.Page, sortBy = Model.SortBy, desc = Model.Descending, vpage = p, vsortBy = Model.VSortBy, vdesc = Model.VDescending })!)" />
+}
