@@ -1060,6 +1060,10 @@
           <tr>
             <td class="@ksRow" style="text-align:right">@ksRank</td>
             <td class="@ksAlt">
+              @if (!string.IsNullOrEmpty(k.VictimFlag))
+              {
+                <img src="/hlstatsimg/flags/@(k.VictimFlag.ToLower()).gif" alt="@k.VictimFlag" title="@k.VictimFlag" style="vertical-align:middle;" />
+              }
               @if (k.VictimIsBot && Model.HideBotPlayers)
               {
                 @k.VictimName

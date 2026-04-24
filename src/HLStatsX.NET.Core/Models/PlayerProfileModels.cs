@@ -13,7 +13,7 @@ public record FavoriteWeapon(string WeaponCode, string WeaponName);
 public record KillStatRow(
     int VictimId, string VictimName,
     long Kills, long Deaths, long Headshots,
-    bool VictimIsBot = false);
+    bool VictimIsBot = false, string? VictimFlag = null);
 
 public record MapStatRow(
     string Map, long Kills, long Deaths, long Headshots);

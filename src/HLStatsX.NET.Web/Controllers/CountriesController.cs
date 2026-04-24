@@ -17,7 +17,7 @@ public class CountriesController : Controller
 
     public async Task<IActionResult> Index(
         string? game, int page = 1,
-        string sortBy = "skill", bool desc = true,
+        string sortBy = "members", bool desc = true,
         int minMembers = 3,
         CancellationToken ct = default)
     {

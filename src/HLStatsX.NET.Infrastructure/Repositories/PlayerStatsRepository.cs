@@ -214,10 +214,10 @@ public class PlayerStatsRepository : IPlayerStatsRepository
             .Select(g => new { KillerId = g.Key, Deaths = g.LongCount() })
             .ToDictionaryAsync(x => x.KillerId, x => x.Deaths, ct);
 
-        var names = await db.Players
+        var playerInfo = await db.Players
             .Where(p => opponentIds.Contains(p.PlayerId))
-            .Select(p => new { p.PlayerId, p.LastName })
-            .ToDictionaryAsync(p => p.PlayerId, p => p.LastName, ct);
+            .Select(p => new { p.PlayerId, p.LastName, p.Flag })
+            .ToDictionaryAsync(p => p.PlayerId, p => new { p.LastName, p.Flag }, ct);
 
         var botIds = await db.PlayerUniqueIds
             .Where(u => opponentIds.Contains(u.PlayerId) && EF.Functions.Like(u.UniqueId, "BOT%"))
@@ -227,11 +227,12 @@ public class PlayerStatsRepository : IPlayerStatsRepository
         return killsList
             .Select(k => new KillStatRow(
                 k.VictimId,
-                names.GetValueOrDefault(k.VictimId, "Unknown"),
+                playerInfo.GetValueOrDefault(k.VictimId)?.LastName ?? "Unknown",
                 k.Kills,
                 deathsDict.GetValueOrDefault(k.VictimId, 0),
                 k.Headshots,
-                botIds.Contains(k.VictimId)))
+                botIds.Contains(k.VictimId),
+                playerInfo.GetValueOrDefault(k.VictimId)?.Flag))
             .OrderByDescending(r => r.Kills)
             .ToList();
     }
