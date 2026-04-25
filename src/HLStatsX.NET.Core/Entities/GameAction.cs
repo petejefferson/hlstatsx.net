@@ -12,6 +12,8 @@ public class GameAction
     public int Count { get; set; }
     public bool ForPlayerActions { get; set; }
     public bool ForPlayerPlayerActions { get; set; }
+    public bool ForTeamActions { get; set; }
+    public bool ForWorldActions { get; set; }
 
     public Game? GameNavigation { get; set; }
 }

@@ -32,6 +32,7 @@ public class PlayerConfiguration : IEntityTypeConfiguration<Player>
         builder.Property(p => p.LastEvent).HasColumnName("last_event");
         builder.Property(p => p.CreateDate).HasColumnName("createdate");
         builder.Property(p => p.HideRanking).HasColumnName("hideranking");
+        builder.Property(p => p.BlockAvatar).HasColumnName("blockavatar");
         builder.Property(p => p.ActivityScore).HasColumnName("activity");
         builder.Property(p => p.GameRank).HasColumnName("game_rank");
         builder.Property(p => p.Lat).HasColumnName("lat");

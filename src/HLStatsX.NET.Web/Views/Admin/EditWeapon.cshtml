@@ -1,0 +1,14 @@
+@model HLStatsX.NET.Core.Entities.Weapon
+@{ Layout = "_AdminLayout"; var id = ViewContext.RouteData.Values["id"]?.ToString() ?? "0"; }
+<h1>@ViewData["Title"]</h1>
+<form asp-action="EditWeapon" asp-route-id="@id" method="post">
+    @Html.AntiForgeryToken()
+    <input asp-for="Game" type="hidden" />
+    <div class="form-group"><label asp-for="Code">Weapon Code</label><input asp-for="Code" type="text" maxlength="32" /></div>
+    <div class="form-group"><label asp-for="Name">Display Name</label><input asp-for="Name" type="text" maxlength="64" /></div>
+    <div class="form-group"><label asp-for="Modifier">Points Modifier</label><input asp-for="Modifier" type="number" step="0.01" style="width:100px;" /></div>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a href="/Admin/Weapons?game=@Model.Game" class="btn btn-secondary" style="margin-left:8px;">Cancel</a>
+    </div>
+</form>

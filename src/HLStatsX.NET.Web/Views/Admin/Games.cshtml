@@ -1,0 +1,33 @@
+@model IReadOnlyList<HLStatsX.NET.Core.Entities.Game>
+@{
+    ViewData["Title"] = "Games";
+    Layout = "_AdminLayout";
+}
+
+<h1>Games</h1>
+<div class="note-box">Be careful deleting games — this permanently removes all associated servers, players, and events.</div>
+<p><a href="/Admin/Games/Create" class="btn btn-primary">Add Game</a></p>
+
+<table class="admin-table">
+    <thead><tr><th>Code</th><th>Name</th><th>Real Game</th><th>Hidden</th><th>Actions</th></tr></thead>
+    <tbody>
+    @foreach (var g in Model)
+    {
+        <tr>
+            <td><code>@g.Code</code></td>
+            <td>@g.Name</td>
+            <td>@g.RealGame</td>
+            <td>@(g.IsHidden ? "Yes" : "No")</td>
+            <td>
+                <a href="/Admin/Games/Edit/@g.Code" class="btn btn-secondary btn-sm">Edit</a>
+                <form action="/Admin/Games/Delete/@g.Code" method="post" style="display:inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger btn-sm"
+                            onclick="return confirm('Delete game @g.Code and ALL its data? This cannot be undone!')">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+    @if (!Model.Any()) { <tr><td colspan="5">No games configured.</td></tr> }
+    </tbody>
+</table>

@@ -1,0 +1,27 @@
+@model GameScopedViewModel<IReadOnlyList<HLStatsX.NET.Core.Entities.Award>>
+@{
+    ViewData["Title"] = (string)ViewData["Title"]!;
+    Layout = "_AdminLayout";
+    var awardType = ViewData["AwardType"]?.ToString() ?? "W";
+}
+<h1>@ViewData["Title"] — <small>@Model.Game</small></h1>
+<p><a href="/Admin/Awards/@awardType/Create?game=@Model.Game" class="btn btn-primary">Add Award</a></p>
+<table class="admin-table">
+    <thead><tr><th>Code</th><th>Name</th><th>Verb</th><th>Actions</th></tr></thead>
+    <tbody>
+    @foreach (var a in Model.Data)
+    {
+        <tr>
+            <td><code>@a.Code</code></td><td>@a.Name</td><td>@a.Verb</td>
+            <td>
+                <a href="/Admin/Awards/@awardType/Edit/@a.AwardId" class="btn btn-secondary btn-sm">Edit</a>
+                <form action="/Admin/Awards/@awardType/Delete/@a.AwardId?game=@Model.Game" method="post" style="display:inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete?')">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+    @if (!Model.Data.Any()) { <tr><td colspan="4">No awards of this type for @Model.Game.</td></tr> }
+    </tbody>
+</table>

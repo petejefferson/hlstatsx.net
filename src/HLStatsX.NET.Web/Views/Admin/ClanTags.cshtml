@@ -1,0 +1,24 @@
+@model IReadOnlyList<HLStatsX.NET.Core.Entities.ClanTag>
+@{ ViewData["Title"] = "Clan Tags"; Layout = "_AdminLayout"; }
+<h1>Clan Tags</h1>
+<p><a href="/Admin/ClanTags/Create" class="btn btn-primary">Add Clan Tag</a></p>
+<p style="color:#666;font-size:12px;">Patterns are matched against player names to auto-assign clans. Position: EITHER matches anywhere, START = prefix only, END = suffix only.</p>
+<table class="admin-table">
+    <thead><tr><th>Pattern</th><th>Position</th><th>Actions</th></tr></thead>
+    <tbody>
+    @foreach (var t in Model)
+    {
+        <tr>
+            <td>@t.Pattern</td><td>@t.Position</td>
+            <td>
+                <a href="/Admin/ClanTags/Edit/@t.Id" class="btn btn-secondary btn-sm">Edit</a>
+                <form action="/Admin/ClanTags/Delete/@t.Id" method="post" style="display:inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete?')">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+    @if (!Model.Any()) { <tr><td colspan="3">No clan tags configured.</td></tr> }
+    </tbody>
+</table>

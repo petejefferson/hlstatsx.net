@@ -1,0 +1,38 @@
+@model GameScopedViewModel<IReadOnlyList<HLStatsX.NET.Core.Entities.GameAction>>
+@{
+    ViewData["Title"] = "Actions";
+    Layout = "_AdminLayout";
+}
+
+<h1>Actions — <small>@Model.Game</small></h1>
+<p><a href="/Admin/Actions/Create?game=@Model.Game" class="btn btn-primary">Add Action</a></p>
+
+<table class="admin-table">
+    <thead><tr><th>Code</th><th>Description</th><th>Player Pts</th><th>Team Pts</th><th>Flags</th><th>Team</th><th>Actions</th></tr></thead>
+    <tbody>
+    @foreach (var a in Model.Data)
+    {
+        var flags = new List<string>();
+        if (a.ForPlayerActions) flags.Add("PA");
+        if (a.ForPlayerPlayerActions) flags.Add("PPA");
+        if (a.ForTeamActions) flags.Add("TA");
+        if (a.ForWorldActions) flags.Add("WA");
+        <tr>
+            <td><code>@a.Code</code></td>
+            <td>@a.Description</td>
+            <td style="text-align:right;">@a.RewardPlayer</td>
+            <td style="text-align:right;">@a.RewardTeam</td>
+            <td>@string.Join(", ", flags)</td>
+            <td>@a.Team</td>
+            <td>
+                <a href="/Admin/Actions/Edit/@a.ActionId" class="btn btn-secondary btn-sm">Edit</a>
+                <form action="/Admin/Actions/Delete/@a.ActionId?game=@Model.Game" method="post" style="display:inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete?')">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+    @if (!Model.Data.Any()) { <tr><td colspan="7">No actions for @Model.Game.</td></tr> }
+    </tbody>
+</table>

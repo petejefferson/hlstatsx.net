@@ -1,38 +1,68 @@
 @model AdminDashboardViewModel
 @{
-    ViewData["Title"] = "Admin Dashboard";
+    ViewData["Title"] = "Dashboard";
+    Layout = "_AdminLayout";
 }
 
-<h1>Admin Dashboard</h1>
+<h1>Dashboard</h1>
 
-<div class="stats-overview">
-    <div class="stat-card"><h3>Total Players</h3><p>@Model.TotalPlayers</p></div>
-    <div class="stat-card"><h3>Total Clans</h3><p>@Model.TotalClans</p></div>
-    <div class="stat-card"><h3>Active Servers</h3><p>@Model.ActiveServers</p></div>
+<div class="dashboard-cards">
+    <div class="stat-card"><h3>Players</h3><div class="value">@Model.TotalPlayers.ToString("N0")</div></div>
+    <div class="stat-card"><h3>Clans</h3><div class="value">@Model.TotalClans.ToString("N0")</div></div>
+    <div class="stat-card"><h3>Active Servers</h3><div class="value">@Model.ActiveServers</div></div>
 </div>
 
-<section>
-    <h2>Servers <a asp-action="Servers" class="btn-sm">Manage</a></h2>
-    <table class="stats-table">
-        <thead><tr><th>Name</th><th>Address</th><th>Status</th><th>Players</th></tr></thead>
-        <tbody>
-            @foreach (var s in Model.Servers)
-            {
-                <tr>
-                    <td>@s.Name</td>
-                    <td>@s.Address:@s.Port</td>
-                    <td>@(s.IsActive ? "Active" : "Inactive")</td>
-                    <td>@s.ActPlayers</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-</section>
+<div class="section-cards">
+    <div class="section-card">
+        <h4>General Settings</h4>
+        <a href="/Admin/Options">Site Options</a>
+        <a href="/Admin/Users">Admin Users</a>
+        <a href="/Admin/Games">Games</a>
+        <a href="/Admin/ClanTags">Clan Tags</a>
+        <a href="/Admin/HostGroups">Host Groups</a>
+    </div>
+    <div class="section-card">
+        <h4>Game Settings</h4>
+        <a href="/Admin/Servers">Servers</a>
+        <a href="/Admin/Actions">Actions</a>
+        <a href="/Admin/Teams">Teams</a>
+        <a href="/Admin/Roles">Roles</a>
+        <a href="/Admin/Weapons">Weapons</a>
+        <a href="/Admin/Ranks">Ranks</a>
+        <a href="/Admin/Ribbons">Ribbons</a>
+    </div>
+    <div class="section-card">
+        <h4>Awards</h4>
+        <a href="/Admin/Awards/W">Weapon Awards</a>
+        <a href="/Admin/Awards/O">Player Action Awards</a>
+        <a href="/Admin/Awards/P">Player-vs-Player Awards</a>
+        <a href="/Admin/Awards/V">Victim Awards</a>
+    </div>
+    <div class="section-card">
+        <h4>Tools</h4>
+        <a href="/Admin/Tools/EditDetails">Edit Player/Clan</a>
+        <a href="/Admin/Tools/AdminEvents">Admin Events</a>
+        <a href="/Admin/Tools/Reset">Reset Stats</a>
+        <a href="/Admin/Tools/Optimize">DB Optimize</a>
+        <a href="/Admin/Tools/CopySettings">Copy Game Settings</a>
+        <a href="/Admin/Tools/Cleanup">Cleanup Inactive</a>
+    </div>
+</div>
 
-<section>
-    <h2>Quick Links</h2>
-    <ul>
-        <li><a asp-action="Users">Manage Admin Users</a></li>
-        <li><a asp-action="Servers">Manage Servers</a></li>
-    </ul>
-</section>
+<h2>Servers</h2>
+<table class="admin-table">
+    <thead><tr><th>Name</th><th>Address</th><th>Game</th><th>Status</th><th>Players</th></tr></thead>
+    <tbody>
+    @foreach (var s in Model.Servers)
+    {
+        <tr>
+            <td>@s.Name</td>
+            <td>@s.Address:@s.Port</td>
+            <td>@s.Game</td>
+            <td>@(s.IsActive ? "Active" : "Inactive")</td>
+            <td>@s.ActPlayers</td>
+        </tr>
+    }
+    @if (!Model.Servers.Any()) { <tr><td colspan="5">No servers.</td></tr> }
+    </tbody>
+</table>

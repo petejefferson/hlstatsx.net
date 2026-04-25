@@ -1,42 +1,36 @@
-@model IReadOnlyList<Server>
+@model GameScopedViewModel<IReadOnlyList<HLStatsX.NET.Core.Entities.Server>>
 @{
-    ViewData["Title"] = "Manage Servers";
+    ViewData["Title"] = "Servers";
+    Layout = "_AdminLayout";
 }
 
-<h1>Manage Servers</h1>
+<h1>Servers — <small>@Model.Game</small></h1>
+<p>
+    <a href="/Admin/Servers/Create?game=@Model.Game" class="btn btn-primary">Add Server</a>
+</p>
 
-<table class="stats-table">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Address</th>
-            <th>Game</th>
-            <th>Status</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
+<table class="admin-table">
+    <thead><tr><th>Name</th><th>Address</th><th>Game</th><th>Status</th><th>Players</th><th>Actions</th></tr></thead>
     <tbody>
-        @foreach (var s in Model)
-        {
-            <tr>
-                <td>@s.Name</td>
-                <td>@s.Address:@s.Port</td>
-                <td>@s.Game</td>
-                <td>@(s.IsActive ? "Active" : "Inactive")</td>
-                <td>
-                    <form asp-action="DeleteServer" asp-route-id="@s.ServerId" method="post" style="display:inline">
-                        @Html.AntiForgeryToken()
-                        <button type="submit" class="btn-primary" style="font-size:0.8rem;padding:0.2rem 0.6rem;"
-                                onclick="return confirm('Delete server @s.Name?')">Delete</button>
-                    </form>
-                </td>
-            </tr>
-        }
-        @if (!Model.Any())
-        {
-            <tr><td colspan="5">No servers configured.</td></tr>
-        }
+    @foreach (var s in Model.Data)
+    {
+        <tr>
+            <td>@s.Name</td>
+            <td>@s.Address:@s.Port</td>
+            <td>@s.Game</td>
+            <td>@(s.IsActive ? "Active" : "Inactive")</td>
+            <td>@s.ActPlayers</td>
+            <td>
+                <a href="/Admin/Servers/Edit/@s.ServerId" class="btn btn-secondary btn-sm">Edit</a>
+                <a href="/Admin/Servers/Settings/@s.ServerId" class="btn btn-secondary btn-sm">Settings</a>
+                <form action="/Admin/Servers/Delete/@s.ServerId?game=@Model.Game" method="post" style="display:inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger btn-sm"
+                            onclick="return confirm('Delete server @s.Name?')">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+    @if (!Model.Data.Any()) { <tr><td colspan="6">No servers for @Model.Game.</td></tr> }
     </tbody>
 </table>
-
-<p><a asp-action="Dashboard">&larr; Dashboard</a></p>

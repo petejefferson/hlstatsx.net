@@ -1,0 +1,39 @@
+@using HLStatsX.NET.Core.Entities
+@{
+    ViewData["Title"] = "Copy Game Settings";
+    Layout = "_AdminLayout";
+    var games = ViewData["Games"] as IReadOnlyList<Game> ?? new List<Game>();
+    var log = ViewData["Log"] as IReadOnlyList<string>;
+}
+
+<h1>Copy Game Settings</h1>
+<p>Copies actions, teams, roles, weapons, ranks, ribbons, and awards from one game to another.</p>
+
+@if (log is not null && log.Any())
+{
+    <div class="alert-success">
+        <ul style="margin:4px 0 0 16px;">
+            @foreach (var msg in log) { <li>@msg</li> }
+        </ul>
+    </div>
+}
+
+<form asp-action="CopySettings" method="post">
+    @Html.AntiForgeryToken()
+    <div class="form-group">
+        <label>Copy FROM game:</label>
+        <select name="fromGame">
+            @foreach (var g in games) { <option value="@g.Code">@g.Code — @g.Name</option> }
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Copy TO game:</label>
+        <select name="toGame">
+            @foreach (var g in games) { <option value="@g.Code">@g.Code — @g.Name</option> }
+        </select>
+    </div>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-danger"
+                onclick="return confirm('This will replace all game settings in the target game. Continue?')">Copy Settings</button>
+    </div>
+</form>

@@ -1,0 +1,17 @@
+@model HLStatsX.NET.Core.Entities.Role
+@{ Layout = "_AdminLayout"; var id = ViewContext.RouteData.Values["id"]?.ToString() ?? "0"; }
+<h1>@ViewData["Title"]</h1>
+<form asp-action="EditRole" asp-route-id="@id" method="post">
+    @Html.AntiForgeryToken()
+    <input asp-for="Game" type="hidden" />
+    <div class="form-group"><label asp-for="Code">Role Code</label><input asp-for="Code" type="text" maxlength="32" /></div>
+    <div class="form-group"><label asp-for="Name">Role Name</label><input asp-for="Name" type="text" maxlength="64" /></div>
+    <div class="form-group">
+        <input type="hidden" name="Hidden" value="0" />
+        <label><input type="checkbox" name="Hidden" value="1" @(Model.Hidden == "1" ? "checked" : "") /> Hide role</label>
+    </div>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a href="/Admin/Roles?game=@Model.Game" class="btn btn-secondary" style="margin-left:8px;">Cancel</a>
+    </div>
+</form>

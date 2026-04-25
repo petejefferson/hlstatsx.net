@@ -1,0 +1,16 @@
+@model HLStatsX.NET.Core.Entities.Ribbon
+@{ Layout = "_AdminLayout"; var id = ViewContext.RouteData.Values["id"]?.ToString() ?? "0"; }
+<h1>@ViewData["Title"]</h1>
+<form asp-action="EditRibbon" asp-route-id="@id" method="post">
+    @Html.AntiForgeryToken()
+    <input asp-for="Game" type="hidden" />
+    <div class="form-group"><label asp-for="RibbonName">Ribbon Name</label><input asp-for="RibbonName" type="text" maxlength="50" /></div>
+    <div class="form-group"><label asp-for="Image">Image filename</label><input asp-for="Image" type="text" maxlength="50" /></div>
+    <div class="form-group"><label asp-for="AwardCode">Trigger Award Code</label><input asp-for="AwardCode" type="text" maxlength="50" /></div>
+    <div class="form-group"><label asp-for="AwardCount">Awards Needed</label><input asp-for="AwardCount" type="number" style="width:100px;" /></div>
+    <div class="form-group"><label asp-for="Special">Special Logic (0=none)</label><input asp-for="Special" type="number" style="width:80px;" /></div>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a href="/Admin/Ribbons?game=@Model.Game" class="btn btn-secondary" style="margin-left:8px;">Cancel</a>
+    </div>
+</form>

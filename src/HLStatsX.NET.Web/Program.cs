@@ -3,6 +3,7 @@ using HLStatsX.NET.Core.Interfaces.Services;
 using HLStatsX.NET.Infrastructure.Data;
 using HLStatsX.NET.Infrastructure.Repositories;
 using HLStatsX.NET.Infrastructure.Services;
+using HLStatsX.NET.Web.Middleware;
 using HLStatsX.NET.Web.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
@@ -49,6 +50,7 @@ builder.Services.AddScoped<ICountryRepository, CountryRepository>();
 builder.Services.AddScoped<IGameRepository, GameRepository>();
 builder.Services.AddScoped<IActionRepository, ActionRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+builder.Services.AddScoped<IAdminRepository, AdminRepository>();
 
 // Services
 builder.Services.AddScoped<IPlayerService, PlayerService>();
@@ -57,6 +59,7 @@ builder.Services.AddScoped<IServerService, ServerService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<IAwardService, AwardService>();
 builder.Services.AddScoped<ICountryService, CountryService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
 
 // Cookie auth for admin panel
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -85,6 +88,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
+app.UseMiddleware<AdminAutoLoginMiddleware>();
 app.UseAuthorization();
 
 app.MapControllerRoute(

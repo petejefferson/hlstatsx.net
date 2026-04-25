@@ -1,0 +1,26 @@
+@model HLStatsX.NET.Core.Entities.RibbonTrigger
+@using HLStatsX.NET.Core.Entities
+@{
+    Layout = "_AdminLayout";
+    var ribbons = ViewData["Ribbons"] as IReadOnlyList<Ribbon> ?? new List<Ribbon>();
+    var game = Context.Request.Query["game"].ToString();
+    var id = ViewContext.RouteData.Values["id"]?.ToString() ?? "0";
+}
+<h1>@ViewData["Title"]</h1>
+<form asp-action="EditRibbonTrigger" asp-route-id="@id" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="game" value="@game" />
+    <div class="form-group">
+        <label asp-for="RibbonId">Ribbon</label>
+        <select asp-for="RibbonId">
+            @foreach (var r in ribbons) { <option value="@r.RibbonId" selected="@(r.RibbonId == Model.RibbonId ? "selected" : null)">@r.RibbonName</option> }
+        </select>
+    </div>
+    <div class="form-group"><label asp-for="TriggerCode">Award Code</label><input asp-for="TriggerCode" type="text" maxlength="64" /></div>
+    <div class="form-group"><label asp-for="TriggerValue">Count Required</label><input asp-for="TriggerValue" type="number" style="width:100px;" /></div>
+    <div class="form-group"><label asp-for="TriggerType">Special Type (optional)</label><input asp-for="TriggerType" type="text" maxlength="32" /></div>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a href="/Admin/RibbonTriggers?game=@game" class="btn btn-secondary" style="margin-left:8px;">Cancel</a>
+    </div>
+</form>

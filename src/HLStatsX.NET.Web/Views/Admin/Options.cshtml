@@ -1,0 +1,127 @@
+@model Dictionary<string, string>
+@{
+    ViewData["Title"] = "Site Options";
+    Layout = "_AdminLayout";
+}
+
+@functions {
+    string Val(string key) => Model.TryGetValue(key, out var v) ? v : string.Empty;
+    string Sel(string key, string val) => Val(key) == val ? "selected" : null!;
+}
+
+<h1>Site Options</h1>
+<div class="note-box">Options marked with * require a restart of the Perl daemon to fully take effect.</div>
+
+<form method="post" asp-action="Options">
+    @Html.AntiForgeryToken()
+
+    <h2>Site Settings</h2>
+    <div class="form-group"><label>Site Name</label><input type="text" name="sitename" value="@Val("sitename")" /></div>
+    <div class="form-group"><label>Site URL</label><input type="text" name="siteurl" value="@Val("siteurl")" /></div>
+    <div class="form-group"><label>Contact URL</label><input type="text" name="contact" value="@Val("contact")" /></div>
+    <div class="form-group"><label>Show Banner</label><select name="bannerdisplay"><option value="1" selected="@Sel("bannerdisplay","1")">Yes</option><option value="0" selected="@Sel("bannerdisplay","0")">No</option></select></div>
+    <div class="form-group"><label>Banner file</label><input type="text" name="bannerfile" value="@Val("bannerfile")" /></div>
+    <div class="form-group"><label>Use tabs in player profile</label><select name="playerinfo_tabs"><option value="1" selected="@Sel("playerinfo_tabs","1")">Yes</option><option value="0" selected="@Sel("playerinfo_tabs","0")">No</option></select></div>
+    <div class="form-group"><label>AJAX accordion server list</label><select name="slider"><option value="1" selected="@Sel("slider","1")">Yes</option><option value="0" selected="@Sel("slider","0")">No</option></select></div>
+    <div class="form-group"><label>Show Chat nav-link</label><select name="nav_globalchat"><option value="1" selected="@Sel("nav_globalchat","1")">Yes</option><option value="0" selected="@Sel("nav_globalchat","0")">No</option></select></div>
+    <div class="form-group"><label>Show Banned Players nav-link</label><select name="nav_cheaters"><option value="1" selected="@Sel("nav_cheaters","1")">Yes</option><option value="0" selected="@Sel("nav_cheaters","0")">No</option></select></div>
+    <div class="form-group"><label>SourceBans URL</label><input type="text" name="sourcebans_address" value="@Val("sourcebans_address")" /></div>
+    <div class="form-group"><label>Forum URL</label><input type="text" name="forum_address" value="@Val("forum_address")" /></div>
+    <div class="form-group"><label>Show hitbox flash animation</label><select name="show_weapon_target_flash"><option value="1" selected="@Sel("show_weapon_target_flash","1")">Yes</option><option value="0" selected="@Sel("show_weapon_target_flash","0")">No</option></select></div>
+    <div class="form-group"><label>Show server load summaries</label><select name="show_server_load_image"><option value="1" selected="@Sel("show_server_load_image","1")">Yes</option><option value="0" selected="@Sel("show_server_load_image","0")">No</option></select></div>
+    <div class="form-group"><label>Show query count in footer</label><select name="showqueries"><option value="1" selected="@Sel("showqueries","1")">Yes</option><option value="0" selected="@Sel("showqueries","0")">No</option></select></div>
+    <div class="form-group"><label>Forum sig background (1-11 or random)</label><input type="text" name="sigbackground" value="@Val("sigbackground")" /></div>
+    <div class="form-group"><label>Use mod_rewrite for forum sig image</label><select name="modrewrite"><option value="1" selected="@Sel("modrewrite","1")">Yes</option><option value="0" selected="@Sel("modrewrite","0")">No</option></select></div>
+
+    <h2>GeoIP &amp; Google Map</h2>
+    <div class="form-group"><label>Show features requiring GeoIP</label><select name="countrydata"><option value="1" selected="@Sel("countrydata","1")">Yes</option><option value="0" selected="@Sel("countrydata","0")">No</option></select></div>
+    <div class="form-group"><label>Show Google world map</label><select name="show_google_map"><option value="1" selected="@Sel("show_google_map","1")">Yes</option><option value="0" selected="@Sel("show_google_map","0")">No</option></select></div>
+    <div class="form-group"><label>Google Maps Region</label><input type="text" name="google_map_region" value="@Val("google_map_region")" /></div>
+    <div class="form-group"><label>Google Maps Type</label>
+        <select name="google_map_type">
+            @foreach (var t in new[] { "ROADMAP", "SATELLITE", "HYBRID", "TERRAIN" })
+            { <option value="@t" selected="@Sel("google_map_type", t)">@t</option> }
+        </select>
+    </div>
+    <div class="form-group"><label>GeoIP source *</label>
+        <select name="UseGeoIPBinary">
+            <option value="0" selected="@Sel("UseGeoIPBinary","0")">MySQL database</option>
+            <option value="1" selected="@Sel("UseGeoIPBinary","1")">Binary file</option>
+        </select>
+    </div>
+
+    <h2>Awards Settings</h2>
+    <div class="form-group"><label>Show daily awards on game frontpage</label><select name="gamehome_show_awards"><option value="1" selected="@Sel("gamehome_show_awards","1")">Yes</option><option value="0" selected="@Sel("gamehome_show_awards","0")">No</option></select></div>
+    <div class="form-group"><label>Daily Awards column count</label><input type="text" name="awarddailycols" value="@Val("awarddailycols")" style="width:80px;" /></div>
+    <div class="form-group"><label>Global Awards column count</label><input type="text" name="awardglobalcols" value="@Val("awardglobalcols")" style="width:80px;" /></div>
+    <div class="form-group"><label>Player Ranks column count</label><input type="text" name="awardrankscols" value="@Val("awardrankscols")" style="width:80px;" /></div>
+    <div class="form-group"><label>Ribbons column count</label><input type="text" name="awardribbonscols" value="@Val("awardribbonscols")" style="width:80px;" /></div>
+
+    <h2>Ranking Settings</h2>
+    <div class="form-group"><label>Ranking type *</label>
+        <select name="rankingtype">
+            <option value="skill" selected="@Sel("rankingtype","skill")">Skill points</option>
+            <option value="kills" selected="@Sel("rankingtype","kills")">Kill count</option>
+        </select>
+    </div>
+    <div class="form-group"><label>Auto-hide inactive players after N days * (default 28)</label><input type="text" name="MinActivity" value="@Val("MinActivity")" style="width:80px;" /></div>
+
+    <h2>Visual Style</h2>
+    <div class="form-group"><label>Server load graph background color (RRGGBB)</label><input type="text" name="graphbg_load" value="@Val("graphbg_load")" style="width:100px;" /></div>
+    <div class="form-group"><label>Server load graph text color (RRGGBB)</label><input type="text" name="graphtxt_load" value="@Val("graphtxt_load")" style="width:100px;" /></div>
+    <div class="form-group"><label>Trend graph background color (RRGGBB)</label><input type="text" name="graphbg_trend" value="@Val("graphbg_trend")" style="width:100px;" /></div>
+    <div class="form-group"><label>Trend graph text color (RRGGBB)</label><input type="text" name="graphtxt_trend" value="@Val("graphtxt_trend")" style="width:100px;" /></div>
+    <div class="form-group"><label>Display style selector for users</label><select name="display_style_selector"><option value="1" selected="@Sel("display_style_selector","1")">Yes</option><option value="0" selected="@Sel("display_style_selector","0")">No</option></select></div>
+    <div class="form-group"><label>Enable game list icons</label><select name="display_gamelist"><option value="1" selected="@Sel("display_gamelist","1")">Yes</option><option value="0" selected="@Sel("display_gamelist","0")">No</option></select></div>
+
+    <h2>Daemon Settings</h2>
+    <div class="form-group"><label>Player tracking mode *</label>
+        <select name="Mode">
+            <option value="SteamID" selected="@Sel("Mode","SteamID")">Steam ID (recommended)</option>
+            <option value="PlayerName" selected="@Sel("Mode","PlayerName")">Player Name</option>
+            <option value="IP" selected="@Sel("Mode","IP")">IP Address</option>
+        </select>
+    </div>
+    <div class="form-group"><label>Only track configured servers *</label><select name="AllowOnlyConfigServers"><option value="1" selected="@Sel("AllowOnlyConfigServers","1")">Yes</option><option value="0" selected="@Sel("AllowOnlyConfigServers","0")">No</option></select></div>
+    <div class="form-group"><label>Auto-delete events older than N days *</label><input type="text" name="DeleteDays" value="@Val("DeleteDays")" style="width:80px;" /></div>
+    <div class="form-group"><label>Resolve player IPs to hostnames *</label><select name="DNSResolveIP"><option value="1" selected="@Sel("DNSResolveIP","1")">Yes</option><option value="0" selected="@Sel("DNSResolveIP","0")">No</option></select></div>
+    <div class="form-group"><label>DNS timeout (seconds) *</label><input type="text" name="DNSTimeout" value="@Val("DNSTimeout")" style="width:80px;" /></div>
+    <div class="form-group"><label>Error notification e-mail *</label><input type="text" name="MailTo" value="@Val("MailTo")" /></div>
+    <div class="form-group"><label>Allow Rcon commands *</label><select name="Rcon"><option value="1" selected="@Sel("Rcon","1")">Yes</option><option value="0" selected="@Sel("Rcon","0")">No</option></select></div>
+    <div class="form-group"><label>Ignore Rcon from same IP *</label><select name="RconIgnoreSelf"><option value="1" selected="@Sel("RconIgnoreSelf","1")">Yes</option><option value="0" selected="@Sel("RconIgnoreSelf","0")">No</option></select></div>
+    <div class="form-group"><label>Record Rcon to admin events *</label><select name="RconRecord"><option value="1" selected="@Sel("RconRecord","1")">Yes</option><option value="0" selected="@Sel("RconRecord","0")">No</option></select></div>
+    <div class="form-group"><label>Use log timestamp *</label><select name="UseTimestamp"><option value="1" selected="@Sel("UseTimestamp","1")">Yes</option><option value="0" selected="@Sel("UseTimestamp","0")">No</option></select></div>
+    <div class="form-group"><label>Track daily stats trend *</label><select name="TrackStatsTrend"><option value="1" selected="@Sel("TrackStatsTrend","1")">Yes</option><option value="0" selected="@Sel("TrackStatsTrend","0")">No</option></select></div>
+    <div class="form-group"><label>Global banning *</label><select name="GlobalBanning"><option value="1" selected="@Sel("GlobalBanning","1")">Yes</option><option value="0" selected="@Sel("GlobalBanning","0")">No</option></select></div>
+    <div class="form-group"><label>Log player chat *</label><select name="LogChat"><option value="1" selected="@Sel("LogChat","1")">Yes</option><option value="0" selected="@Sel("LogChat","0")">No</option></select></div>
+    <div class="form-group"><label>Log admin chat *</label><select name="LogChatAdmins"><option value="1" selected="@Sel("LogChatAdmins","1")">Yes</option><option value="0" selected="@Sel("LogChatAdmins","0")">No</option></select></div>
+    <div class="form-group"><label>Broadcast chat *</label>
+        <select name="GlobalChat">
+            <option value="0" selected="@Sel("GlobalChat","0")">None</option>
+            <option value="1" selected="@Sel("GlobalChat","1")">All players</option>
+            <option value="2" selected="@Sel("GlobalChat","2")">Admins only</option>
+        </select>
+    </div>
+
+    <h2>Point Calculation</h2>
+    <div class="form-group"><label>Max skill gain per frag * (default 25)</label><input type="text" name="SkillMaxChange" value="@Val("SkillMaxChange")" style="width:80px;" /></div>
+    <div class="form-group"><label>Min skill gain per frag * (default 2)</label><input type="text" name="SkillMinChange" value="@Val("SkillMinChange")" style="width:80px;" /></div>
+    <div class="form-group"><label>Kills before regular points * (default 50)</label><input type="text" name="PlayerMinKills" value="@Val("PlayerMinKills")" style="width:80px;" /></div>
+    <div class="form-group"><label>Cap skill by K:D ratio *</label><select name="SkillRatioCap"><option value="1" selected="@Sel("SkillRatioCap","1")">Yes</option><option value="0" selected="@Sel("SkillRatioCap","0")">No</option></select></div>
+
+    <h2>Paths</h2>
+    <div class="form-group"><label>Map download URL (%MAP%, %GAME%)</label><input type="text" name="map_dlurl" value="@Val("map_dlurl")" style="width:400px;" /></div>
+
+    <h2>Proxy Settings</h2>
+    <div class="form-group"><label>Daemon auth key *</label><input type="text" name="Proxy_Key" value="@Val("Proxy_Key")" /></div>
+    <div class="form-group"><label>Proxy daemon list (IP:port, comma-separated) *</label><input type="text" name="Proxy_Daemons" value="@Val("Proxy_Daemons")" style="width:400px;" /></div>
+
+    <h2>Hit Counter</h2>
+    <div class="form-group"><label>Visit cookie timeout (minutes)</label><input type="text" name="counter_visit_timeout" value="@Val("counter_visit_timeout")" style="width:80px;" /></div>
+    <div class="form-group"><label>Current visit count</label><input type="text" name="counter_visits" value="@Val("counter_visits")" style="width:100px;" /></div>
+    <div class="form-group"><label>Current page hit count</label><input type="text" name="counter_hits" value="@Val("counter_hits")" style="width:100px;" /></div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save Options</button>
+    </div>
+</form>

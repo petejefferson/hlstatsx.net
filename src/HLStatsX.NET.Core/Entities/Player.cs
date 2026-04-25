@@ -26,6 +26,7 @@ public class Player
     public int LastEvent { get; set; }
     public int CreateDate { get; set; }
     public int HideRanking { get; set; }
+    public int BlockAvatar { get; set; }
     public int ActivityScore { get; set; }
     public int? GameRank { get; set; }
     public int KillStreak { get; set; }

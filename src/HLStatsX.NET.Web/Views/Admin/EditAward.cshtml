@@ -1,0 +1,50 @@
+@model HLStatsX.NET.Core.Entities.Award
+@using HLStatsX.NET.Core.Entities
+@{
+    Layout = "_AdminLayout";
+    var awardType = ViewData["AwardType"]?.ToString() ?? "W";
+    var weapons = ViewData["Weapons"] as IReadOnlyList<Weapon> ?? new List<Weapon>();
+    var actions = ViewData["Actions"] as IReadOnlyList<GameAction> ?? new List<GameAction>();
+    var id = ViewContext.RouteData.Values["id"]?.ToString() ?? "0";
+}
+<h1>@ViewData["Title"]</h1>
+<form asp-action="EditAward" asp-route-type="@awardType" asp-route-id="@id" method="post">
+    @Html.AntiForgeryToken()
+    <input asp-for="Game" type="hidden" />
+    <input asp-for="AwardType" type="hidden" value="@awardType" />
+
+    @if (awardType == "W")
+    {
+        <div class="form-group">
+            <label asp-for="Code">Weapon / Special Code</label>
+            <select asp-for="Code">
+                <option value="latency" selected="@(Model.Code=="latency"?"selected":null)">* Latency</option>
+                <option value="mostkills" selected="@(Model.Code=="mostkills"?"selected":null)">* Most Kills</option>
+                <option value="bonuspoints" selected="@(Model.Code=="bonuspoints"?"selected":null)">* Bonus Points</option>
+                <option value="suicide" selected="@(Model.Code=="suicide"?"selected":null)">* Suicides</option>
+                <option value="teamkills" selected="@(Model.Code=="teamkills"?"selected":null)">* Team Kills</option>
+                <option value="connectiontime" selected="@(Model.Code=="connectiontime"?"selected":null)">* Connection Time</option>
+                <option value="killstreak" selected="@(Model.Code=="killstreak"?"selected":null)">* Kill Streak</option>
+                <option value="deathstreak" selected="@(Model.Code=="deathstreak"?"selected":null)">* Death Streak</option>
+                <option value="allsentrykills" selected="@(Model.Code=="allsentrykills"?"selected":null)">* All Sentry Kills (TF2)</option>
+                @foreach (var w in weapons) { <option value="@w.Code" selected="@(w.Code==Model.Code?"selected":null)">@w.Name (@w.Code)</option> }
+            </select>
+        </div>
+    }
+    else
+    {
+        <div class="form-group">
+            <label asp-for="Code">Action Code</label>
+            <select asp-for="Code">
+                @foreach (var a in actions) { <option value="@a.Code" selected="@(a.Code==Model.Code?"selected":null)">@(a.Description ?? a.Code)</option> }
+            </select>
+        </div>
+    }
+
+    <div class="form-group"><label asp-for="Name">Award Name</label><input asp-for="Name" type="text" maxlength="128" /></div>
+    <div class="form-group"><label asp-for="Verb">Verb (plural)</label><input asp-for="Verb" type="text" maxlength="64" /></div>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a href="/Admin/Awards/@awardType?game=@Model.Game" class="btn btn-secondary" style="margin-left:8px;">Cancel</a>
+    </div>
+</form>

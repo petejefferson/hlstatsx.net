@@ -1,0 +1,23 @@
+@model GameScopedViewModel<IReadOnlyList<HLStatsX.NET.Core.Entities.Weapon>>
+@{ ViewData["Title"] = "Weapons"; Layout = "_AdminLayout"; }
+<h1>Weapons — <small>@Model.Game</small></h1>
+<p><a href="/Admin/Weapons/Create?game=@Model.Game" class="btn btn-primary">Add Weapon</a></p>
+<table class="admin-table">
+    <thead><tr><th>Code</th><th>Name</th><th>Modifier</th><th>Actions</th></tr></thead>
+    <tbody>
+    @foreach (var w in Model.Data)
+    {
+        <tr>
+            <td><code>@w.Code</code></td><td>@w.Name</td><td>@w.Modifier.ToString("F2")</td>
+            <td>
+                <a href="/Admin/Weapons/Edit/@w.WeaponId" class="btn btn-secondary btn-sm">Edit</a>
+                <form action="/Admin/Weapons/Delete/@w.WeaponId?game=@Model.Game" method="post" style="display:inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete?')">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+    @if (!Model.Data.Any()) { <tr><td colspan="4">No weapons for @Model.Game.</td></tr> }
+    </tbody>
+</table>

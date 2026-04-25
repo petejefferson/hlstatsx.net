@@ -22,6 +22,10 @@ public class GameActionConfiguration : IEntityTypeConfiguration<GameAction>
             .HasConversion(v => v ? "1" : "0", v => v == "1");
         builder.Property(a => a.ForPlayerPlayerActions).HasColumnName("for_PlayerPlayerActions")
             .HasConversion(v => v ? "1" : "0", v => v == "1");
+        builder.Property(a => a.ForTeamActions).HasColumnName("for_TeamActions")
+            .HasConversion(v => v ? "1" : "0", v => v == "1");
+        builder.Property(a => a.ForWorldActions).HasColumnName("for_WorldActions")
+            .HasConversion(v => v ? "1" : "0", v => v == "1");
 
         builder.HasOne(a => a.GameNavigation)
             .WithMany(g => g.Actions)

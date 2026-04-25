@@ -1,0 +1,50 @@
+@model ResetViewModel
+@using HLStatsX.NET.Core.Entities
+@{
+    ViewData["Title"] = "Reset Stats";
+    Layout = "_AdminLayout";
+    var games = ViewData["Games"] as IReadOnlyList<Game> ?? new List<Game>();
+    var log = ViewData["Log"] as IReadOnlyList<string>;
+}
+
+<h1>Reset Stats</h1>
+<div class="note-box" style="border-left-color:#c0392b;background:#fff0f0;">
+    <strong>Warning:</strong> These operations permanently delete or reset data. Make a database backup before proceeding.
+</div>
+
+@if (log is not null && log.Any())
+{
+    <div class="alert-success">
+        <strong>Reset complete:</strong>
+        <ul style="margin:4px 0 0 16px;">
+            @foreach (var msg in log) { <li>@msg</li> }
+        </ul>
+    </div>
+}
+
+<form asp-action="Reset" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="form-group">
+        <label asp-for="Game">Game (leave blank for all games)</label>
+        <select asp-for="Game">
+            <option value="">-- All Games --</option>
+            @foreach (var g in games) { <option value="@g.Code" selected="@(g.Code==Model.Game?"selected":null)">@g.Code — @g.Name</option> }
+        </select>
+    </div>
+
+    <h2>Select Operations</h2>
+    <div class="form-group"><label><input asp-for="ClearAwards" type="checkbox" /> Clear daily/global award winners and player award/ribbon history</label></div>
+    <div class="form-group"><label><input asp-for="ClearHistory" type="checkbox" /> Clear player skill history (Players_History table)</label></div>
+    <div class="form-group"><label><input asp-for="ClearSkill" type="checkbox" /> Reset all player skill points to 1000</label></div>
+    <div class="form-group"><label><input asp-for="ClearCounts" type="checkbox" /> Reset player counts (kills, deaths, headshots, etc.) to 0</label></div>
+    <div class="form-group"><label><input asp-for="ClearMapData" type="checkbox" /> Reset map data (kills per map)</label></div>
+    <div class="form-group"><label><input asp-for="ClearBans" type="checkbox" /> Remove all bans (set hideranking to 0)</label></div>
+    <div class="form-group"><label><input asp-for="ClearEvents" type="checkbox" /> Delete all event records (Events_* tables)</label></div>
+    <div class="form-group"><label><input asp-for="DeletePlayers" type="checkbox" /> <strong style="color:#c0392b;">Delete all players</strong> (irreversible)</label></div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-danger"
+                onclick="return confirm('Are you sure? This will permanently modify the database.')">Execute Reset</button>
+    </div>
+</form>

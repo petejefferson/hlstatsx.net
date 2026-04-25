@@ -1,0 +1,19 @@
+@model HLStatsX.NET.Core.Entities.ClanTag
+@{ Layout = "_AdminLayout"; }
+<h1>@ViewData["Title"]</h1>
+<form asp-action="CreateClanTag" method="post">
+    @Html.AntiForgeryToken()
+    <div class="form-group"><label asp-for="Pattern">Pattern</label><input asp-for="Pattern" type="text" maxlength="64" /></div>
+    <div class="form-group">
+        <label asp-for="Position">Match Position</label>
+        <select asp-for="Position">
+            <option value="EITHER">EITHER (anywhere in name)</option>
+            <option value="START">START (prefix only)</option>
+            <option value="END">END (suffix only)</option>
+        </select>
+    </div>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Add</button>
+        <a href="/Admin/ClanTags" class="btn btn-secondary" style="margin-left:8px;">Cancel</a>
+    </div>
+</form>

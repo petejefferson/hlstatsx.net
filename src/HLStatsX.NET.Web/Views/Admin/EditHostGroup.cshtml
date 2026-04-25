@@ -1,0 +1,12 @@
+@model HLStatsX.NET.Core.Entities.HostGroup
+@{ Layout = "_AdminLayout"; var id = ViewContext.RouteData.Values["id"]?.ToString() ?? "0"; }
+<h1>@ViewData["Title"]</h1>
+<form asp-action="EditHostGroup" asp-route-id="@id" method="post">
+    @Html.AntiForgeryToken()
+    <div class="form-group"><label asp-for="Pattern">Host Pattern</label><input asp-for="Pattern" type="text" maxlength="128" /></div>
+    <div class="form-group"><label asp-for="Name">Group Name</label><input asp-for="Name" type="text" maxlength="128" /></div>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a href="/Admin/HostGroups" class="btn btn-secondary" style="margin-left:8px;">Cancel</a>
+    </div>
+</form>

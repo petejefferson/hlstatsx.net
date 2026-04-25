@@ -1,0 +1,53 @@
+@model HLStatsX.NET.Core.Entities.Award
+@using HLStatsX.NET.Core.Entities
+@{
+    Layout = "_AdminLayout";
+    var awardType = ViewData["AwardType"]?.ToString() ?? "W";
+    var weapons = ViewData["Weapons"] as IReadOnlyList<Weapon> ?? new List<Weapon>();
+    var actions = ViewData["Actions"] as IReadOnlyList<GameAction> ?? new List<GameAction>();
+}
+<h1>@ViewData["Title"]</h1>
+<form asp-action="CreateAward" asp-route-type="@awardType" method="post">
+    @Html.AntiForgeryToken()
+    <input asp-for="Game" type="hidden" />
+    <input asp-for="AwardType" type="hidden" value="@awardType" />
+
+    @if (awardType == "W")
+    {
+        <div class="form-group">
+            <label asp-for="Code">Weapon / Special Code</label>
+            <select asp-for="Code">
+                <option value="latency">* Latency</option>
+                <option value="mostkills">* Most Kills</option>
+                <option value="bonuspoints">* Bonus Points</option>
+                <option value="suicide">* Suicides</option>
+                <option value="teamkills">* Team Kills</option>
+                <option value="connectiontime">* Connection Time</option>
+                <option value="killstreak">* Kill Streak</option>
+                <option value="deathstreak">* Death Streak</option>
+                <option value="allsentrykills">* All Sentry Kills (TF2)</option>
+                @foreach (var w in weapons) { <option value="@w.Code">@w.Name (@w.Code)</option> }
+            </select>
+        </div>
+    }
+    else if (awardType is "O" or "P" or "V")
+    {
+        <div class="form-group">
+            <label asp-for="Code">Action Code</label>
+            <select asp-for="Code">
+                @foreach (var a in actions) { <option value="@a.Code">@(a.Description ?? a.Code)</option> }
+            </select>
+        </div>
+    }
+    else
+    {
+        <div class="form-group"><label asp-for="Code">Code</label><input asp-for="Code" type="text" maxlength="64" /></div>
+    }
+
+    <div class="form-group"><label asp-for="Name">Award Name</label><input asp-for="Name" type="text" maxlength="128" /></div>
+    <div class="form-group"><label asp-for="Verb">Verb (plural, e.g. "kills")</label><input asp-for="Verb" type="text" maxlength="64" /></div>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Add Award</button>
+        <a href="/Admin/Awards/@awardType?game=@Model.Game" class="btn btn-secondary" style="margin-left:8px;">Cancel</a>
+    </div>
+</form>

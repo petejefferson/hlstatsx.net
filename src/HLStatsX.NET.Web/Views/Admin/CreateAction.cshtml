@@ -1,0 +1,35 @@
+@model HLStatsX.NET.Core.Entities.GameAction
+@using HLStatsX.NET.Core.Entities
+@{
+    Layout = "_AdminLayout";
+    var teams = ViewData["Teams"] as IReadOnlyList<Team> ?? new List<Team>();
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<form asp-action="CreateAction" method="post">
+    @Html.AntiForgeryToken()
+    <input asp-for="Game" type="hidden" />
+    <div class="form-group"><label asp-for="Code">Action Code</label><input asp-for="Code" type="text" maxlength="64" /></div>
+    <div class="form-group"><label asp-for="Description">Description</label><input asp-for="Description" type="text" maxlength="128" style="width:400px;" /></div>
+    <div class="form-group"><label asp-for="RewardPlayer">Player Points Reward</label><input asp-for="RewardPlayer" type="number" style="width:80px;" /></div>
+    <div class="form-group"><label asp-for="RewardTeam">Team Points Reward</label><input asp-for="RewardTeam" type="number" style="width:80px;" /></div>
+    <div class="form-group">
+        <label asp-for="Team">Team (optional)</label>
+        <select asp-for="Team">
+            <option value="">-- none --</option>
+            @foreach (var t in teams) { <option value="@t.Code">@t.Name (@t.Code)</option> }
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Action Types</label>
+        <label><input asp-for="ForPlayerActions" type="checkbox" /> Player Action</label>
+        <label style="margin-left:12px;"><input asp-for="ForPlayerPlayerActions" type="checkbox" /> Player-vs-Player Action</label>
+        <label style="margin-left:12px;"><input asp-for="ForTeamActions" type="checkbox" /> Team Action</label>
+        <label style="margin-left:12px;"><input asp-for="ForWorldActions" type="checkbox" /> World Action</label>
+    </div>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Add Action</button>
+        <a href="/Admin/Actions?game=@Model.Game" class="btn btn-secondary" style="margin-left:8px;">Cancel</a>
+    </div>
+</form>

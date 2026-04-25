@@ -1,0 +1,22 @@
+@model HLStatsX.NET.Core.Entities.Clan
+@{
+    ViewData["Title"] = $"Edit Clan: {Model.Name}";
+    Layout = "_AdminLayout";
+    var id = ViewContext.RouteData.Values["id"]?.ToString() ?? "0";
+}
+
+<h1>Edit Clan: <strong>@Model.Name</strong></h1>
+
+<form asp-action="EditClan" asp-route-id="@id" method="post">
+    @Html.AntiForgeryToken()
+    <input asp-for="Game" type="hidden" />
+    <div class="form-group"><label asp-for="Name">Clan Name</label><input asp-for="Name" type="text" maxlength="64" /></div>
+    <div class="form-group"><label asp-for="Tag">Clan Tag</label><input asp-for="Tag" type="text" maxlength="32" /></div>
+    <div class="form-group"><label asp-for="Homepage">Homepage URL</label><input asp-for="Homepage" type="text" style="width:300px;" /></div>
+    <div class="form-group"><label asp-for="MapRegion">Map Region</label><input asp-for="MapRegion" type="text" maxlength="64" /></div>
+    <div class="form-group"><label><input asp-for="IsHidden" type="checkbox" /> Hide from clan list</label></div>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a href="/Admin/Tools/EditDetails" class="btn btn-secondary" style="margin-left:8px;">Cancel</a>
+    </div>
+</form>

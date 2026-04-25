@@ -1,0 +1,19 @@
+@model HLStatsX.NET.Core.Entities.ClanTag
+@{ Layout = "_AdminLayout"; var id = ViewContext.RouteData.Values["id"]?.ToString() ?? "0"; }
+<h1>@ViewData["Title"]</h1>
+<form asp-action="EditClanTag" asp-route-id="@id" method="post">
+    @Html.AntiForgeryToken()
+    <div class="form-group"><label asp-for="Pattern">Pattern</label><input asp-for="Pattern" type="text" maxlength="64" /></div>
+    <div class="form-group">
+        <label asp-for="Position">Match Position</label>
+        <select asp-for="Position">
+            <option value="EITHER" selected="@(Model.Position=="EITHER"?"selected":null)">EITHER</option>
+            <option value="START" selected="@(Model.Position=="START"?"selected":null)">START</option>
+            <option value="END" selected="@(Model.Position=="END"?"selected":null)">END</option>
+        </select>
+    </div>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a href="/Admin/ClanTags" class="btn btn-secondary" style="margin-left:8px;">Cancel</a>
+    </div>
+</form>

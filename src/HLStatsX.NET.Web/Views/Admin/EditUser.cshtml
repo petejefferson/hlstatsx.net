@@ -1,0 +1,33 @@
+@model EditAdminUserViewModel
+@{
+    Layout = "_AdminLayout";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<form asp-action="EditUser" method="post">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="alert-danger" style="display:none"></div>
+
+    <div class="form-group">
+        <label>Username</label>
+        <input type="text" value="@Model.Username" readonly style="background:#eee;width:200px;" />
+    </div>
+    <div class="form-group">
+        <label>New Password (leave blank to keep current)</label>
+        <input asp-for="NewPassword" type="password" />
+        <span asp-validation-for="NewPassword" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label>Confirm New Password</label>
+        <input asp-for="ConfirmPassword" type="password" />
+    </div>
+    <div class="form-group">
+        <label>Access Level (1-100; 80=Restricted, 100=Admin)</label>
+        <input asp-for="AccLevel" type="number" min="1" max="100" style="width:80px;" />
+    </div>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a href="/Admin/Users" class="btn btn-secondary" style="margin-left:8px;">Cancel</a>
+    </div>
+</form>

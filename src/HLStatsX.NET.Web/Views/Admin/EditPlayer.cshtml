@@ -1,0 +1,56 @@
+@model EditPlayerViewModel
+@{
+    ViewData["Title"] = $"Edit Player: {Model.Player.LastName}";
+    Layout = "_AdminLayout";
+    var id = ViewContext.RouteData.Values["id"]?.ToString() ?? "0";
+}
+
+<h1>Edit Player: <strong>@Model.Player.LastName</strong></h1>
+<p><a href="/@Model.Player.Game/Players/Profile/@Model.Player.PlayerId" target="_blank" class="btn btn-secondary btn-sm">View Profile</a></p>
+
+<form asp-action="EditPlayer" asp-route-id="@id" method="post">
+    @Html.AntiForgeryToken()
+    <div class="form-group"><label>Real Name</label><input type="text" name="FullName" value="@Model.Player.FullName" style="width:300px;" /></div>
+    <div class="form-group"><label>E-mail</label><input type="text" name="Email" value="@Model.Player.Email" style="width:300px;" /></div>
+    <div class="form-group"><label>Homepage URL</label><input type="text" name="Homepage" value="@Model.Player.Homepage" style="width:300px;" /></div>
+    <div class="form-group"><label>Country Flag Code</label><input type="text" name="Flag" value="@Model.Player.Flag" style="width:80px;" /></div>
+    <div class="form-group"><label>Skill Points</label><input type="number" name="Skill" value="@Model.Player.Skill" style="width:100px;" /></div>
+    <div class="form-group"><label>Kills</label><input type="number" name="Kills" value="@Model.Player.Kills" style="width:100px;" /></div>
+    <div class="form-group"><label>Deaths</label><input type="number" name="Deaths" value="@Model.Player.Deaths" style="width:100px;" /></div>
+    <div class="form-group"><label>Headshots</label><input type="number" name="Headshots" value="@Model.Player.Headshots" style="width:100px;" /></div>
+    <div class="form-group"><label>Suicides</label><input type="number" name="Suicides" value="@Model.Player.Suicides" style="width:100px;" /></div>
+    <div class="form-group">
+        <label>Ranking Status</label>
+        <select name="HideRanking">
+            <option value="0" selected="@(Model.Player.HideRanking==0?"selected":null)">Visible</option>
+            <option value="1" selected="@(Model.Player.HideRanking==1?"selected":null)">Hidden</option>
+            <option value="2" selected="@(Model.Player.HideRanking==2?"selected":null)">Flagged as Banned</option>
+            <option value="3" selected="@(Model.Player.HideRanking==3?"selected":null)">Inactive (auto)</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Force Default Avatar</label>
+        <select name="BlockAvatar">
+            <option value="0" selected="@(Model.Player.BlockAvatar==0?"selected":null)">No</option>
+            <option value="1" selected="@(Model.Player.BlockAvatar==1?"selected":null)">Yes</option>
+        </select>
+    </div>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a href="/Admin/Tools/EditDetails" class="btn btn-secondary" style="margin-left:8px;">Cancel</a>
+    </div>
+</form>
+
+@if (Model.Ips.Any())
+{
+    <h2 style="margin-top:20px;">Player IP Addresses</h2>
+    <table class="admin-table" style="max-width:400px;">
+        <thead><tr><th>IP Address</th><th>Last Used</th></tr></thead>
+        <tbody>
+        @foreach (var (ip, lastUsed) in Model.Ips)
+        {
+            <tr><td>@ip</td><td>@lastUsed.ToString("yyyy-MM-dd HH:mm")</td></tr>
+        }
+        </tbody>
+    </table>
+}

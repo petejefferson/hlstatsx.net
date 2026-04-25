@@ -31,6 +31,8 @@ public class HLStatsDbContext : DbContext
     public DbSet<Country> Countries => Set<Country>();
     public DbSet<Option> Options => Set<Option>();
     public DbSet<AdminUser> AdminUsers => Set<AdminUser>();
+    public DbSet<HostGroup> HostGroups => Set<HostGroup>();
+    public DbSet<GameSupported> GamesSupported => Set<GameSupported>();
     public DbSet<Livestat> Livestats => Set<Livestat>();
     public DbSet<ServerLoad> ServerLoads => Set<ServerLoad>();
     public DbSet<Trend> Trends => Set<Trend>();

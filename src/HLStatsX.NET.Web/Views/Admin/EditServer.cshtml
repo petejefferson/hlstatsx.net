@@ -1,0 +1,25 @@
+@model ServerFormViewModel
+@using HLStatsX.NET.Core.Entities
+@{
+    Layout = "_AdminLayout";
+    var games = ViewData["Games"] as IReadOnlyList<Game> ?? new List<Game>();
+    var id = ViewContext.RouteData.Values["id"]?.ToString() ?? "0";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<form asp-action="EditServer" asp-route-id="@id" method="post">
+    @Html.AntiForgeryToken()
+    <div class="form-group"><label>Game</label><input type="text" value="@Model.Game" readonly style="background:#eee;width:120px;" /></div>
+    <div class="form-group"><label asp-for="Name">Server Name</label><input asp-for="Name" type="text" /></div>
+    <div class="form-group"><label asp-for="Address">IP Address</label><input asp-for="Address" type="text" /></div>
+    <div class="form-group"><label asp-for="Port">Port</label><input asp-for="Port" type="number" style="width:100px;" /></div>
+    <div class="form-group"><label asp-for="PublicAddress">Public Address</label><input asp-for="PublicAddress" type="text" /></div>
+    <div class="form-group"><label asp-for="RconPassword">Rcon Password</label><input asp-for="RconPassword" type="text" /></div>
+    <div class="form-group"><label asp-for="SortOrder">Sort Order</label><input asp-for="SortOrder" type="number" style="width:80px;" /></div>
+    <input type="hidden" asp-for="Game" />
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a href="/Admin/Servers?game=@Model.Game" class="btn btn-secondary" style="margin-left:8px;">Cancel</a>
+    </div>
+</form>

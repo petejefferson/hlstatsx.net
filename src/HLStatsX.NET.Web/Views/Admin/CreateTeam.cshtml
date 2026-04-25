@@ -1,0 +1,19 @@
+@model HLStatsX.NET.Core.Entities.Team
+@{ Layout = "_AdminLayout"; }
+<h1>@ViewData["Title"]</h1>
+<form asp-action="CreateTeam" method="post">
+    @Html.AntiForgeryToken()
+    <input asp-for="Game" type="hidden" />
+    <div class="form-group"><label asp-for="Code">Team Code</label><input asp-for="Code" type="text" maxlength="32" /></div>
+    <div class="form-group"><label asp-for="Name">Team Name</label><input asp-for="Name" type="text" maxlength="64" /></div>
+    <div class="form-group"><label asp-for="PlayerlistColor">Text Color (hex)</label><input asp-for="PlayerlistColor" type="text" maxlength="7" placeholder="#FFFFFF" /></div>
+    <div class="form-group"><label asp-for="PlayerlistBgcolor">Background Color (hex)</label><input asp-for="PlayerlistBgcolor" type="text" maxlength="7" placeholder="#000000" /></div>
+    <div class="form-group">
+        <input type="hidden" name="Hidden" value="0" />
+        <label><input type="checkbox" name="Hidden" value="1" /> Hide team</label>
+    </div>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Add Team</button>
+        <a href="/Admin/Teams?game=@Model.Game" class="btn btn-secondary" style="margin-left:8px;">Cancel</a>
+    </div>
+</form>

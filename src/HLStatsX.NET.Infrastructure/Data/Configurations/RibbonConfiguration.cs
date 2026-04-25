@@ -24,7 +24,7 @@ public class RibbonTriggerConfiguration : IEntityTypeConfiguration<RibbonTrigger
 {
     public void Configure(EntityTypeBuilder<RibbonTrigger> builder)
     {
-        builder.ToTable("hlstats_Ribbons_Triggers");
+        builder.ToTable("hlstats_Ribbons_Trigger");
         builder.HasKey(t => t.TriggerId);
         builder.Property(t => t.TriggerId).HasColumnName("triggerId");
         builder.Property(t => t.RibbonId).HasColumnName("ribbonId");

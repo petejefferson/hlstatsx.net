@@ -1,0 +1,24 @@
+@model GameScopedViewModel<IReadOnlyList<HLStatsX.NET.Core.Entities.Ribbon>>
+@{ ViewData["Title"] = "Ribbons"; Layout = "_AdminLayout"; }
+<h1>Ribbons — <small>@Model.Game</small></h1>
+<p><a href="/Admin/Ribbons/Create?game=@Model.Game" class="btn btn-primary">Add Ribbon</a></p>
+<table class="admin-table">
+    <thead><tr><th>Name</th><th>Award Code</th><th>Awards Needed</th><th>Special</th><th>Image</th><th>Actions</th></tr></thead>
+    <tbody>
+    @foreach (var r in Model.Data)
+    {
+        <tr>
+            <td>@r.RibbonName</td><td>@r.AwardCode</td><td style="text-align:right;">@r.AwardCount</td>
+            <td>@r.Special</td><td>@r.Image</td>
+            <td>
+                <a href="/Admin/Ribbons/Edit/@r.RibbonId" class="btn btn-secondary btn-sm">Edit</a>
+                <form action="/Admin/Ribbons/Delete/@r.RibbonId?game=@Model.Game" method="post" style="display:inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete?')">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+    @if (!Model.Data.Any()) { <tr><td colspan="6">No ribbons for @Model.Game.</td></tr> }
+    </tbody>
+</table>

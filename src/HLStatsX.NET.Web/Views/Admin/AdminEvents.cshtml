@@ -1,0 +1,50 @@
+@model AdminEventsViewModel
+@{
+    ViewData["Title"] = "Admin Events";
+    Layout = "_AdminLayout";
+}
+
+<h1>Admin Events</h1>
+
+<form method="get" asp-action="AdminEvents" style="margin-bottom:12px;">
+    <label>Filter by type:</label>
+    <select name="type" onchange="this.form.submit()">
+        <option value="">All Events</option>
+        <option value="Rcon" selected="@(Model.EventType=="Rcon"?"selected":null)">Rcon</option>
+        <option value="Admin" selected="@(Model.EventType=="Admin"?"selected":null)">Admin</option>
+    </select>
+</form>
+
+<table class="admin-table">
+    <thead><tr><th>Type</th><th>Time</th><th>Server</th><th>Map</th><th>Message</th></tr></thead>
+    <tbody>
+    @foreach (var e in Model.Events)
+    {
+        <tr>
+            <td>@e.EventType</td>
+            <td>@e.EventTime.ToString("yyyy-MM-dd HH:mm")</td>
+            <td>@e.ServerName</td>
+            <td>@e.Map</td>
+            <td style="font-size:11px;">@e.Message</td>
+        </tr>
+    }
+    @if (!Model.Events.Any()) { <tr><td colspan="5">No events found.</td></tr> }
+    </tbody>
+</table>
+
+@if (Model.TotalPages > 1)
+{
+    <div style="margin-top:10px;">
+        @for (int p = 1; p <= Model.TotalPages; p++)
+        {
+            if (p == Model.Page)
+            {
+                <strong style="margin-right:6px;">@p</strong>
+            }
+            else
+            {
+                <a href="/Admin/Tools/AdminEvents?type=@Model.EventType&page=@p" style="margin-right:6px;">@p</a>
+            }
+        }
+    </div>
+}

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — HLStatsX Admin</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; font-size: 13px; background: #f4f4f4; }
+        .admin-wrapper { display: flex; min-height: 100vh; }
+        .admin-sidebar { width: 220px; background: #1a1a2e; color: #ccc; flex-shrink: 0; padding: 0; }
+        .admin-sidebar .brand { background: #16213e; padding: 14px 16px; font-size: 15px; font-weight: bold; color: #fff; border-bottom: 1px solid #0f3460; }
+        .admin-sidebar .user-info { padding: 8px 16px; font-size: 11px; color: #888; border-bottom: 1px solid #0f3460; }
+        .admin-sidebar h4 { margin: 0; padding: 10px 16px 4px; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #666; }
+        .admin-sidebar a { display: block; padding: 5px 16px 5px 24px; color: #aaa; text-decoration: none; font-size: 12px; }
+        .admin-sidebar a:hover, .admin-sidebar a.active { background: #0f3460; color: #fff; }
+        .admin-sidebar .game-selector { padding: 6px 16px; }
+        .admin-sidebar .game-selector select { width: 100%; background: #0f3460; color: #ccc; border: 1px solid #333; padding: 3px; font-size: 12px; }
+        .admin-main { flex: 1; display: flex; flex-direction: column; }
+        .admin-topbar { background: #16213e; color: #ccc; padding: 8px 20px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; border-bottom: 2px solid #0f3460; }
+        .admin-topbar a { color: #aaa; text-decoration: none; }
+        .admin-topbar a:hover { color: #fff; }
+        .admin-content { padding: 20px; flex: 1; }
+        .admin-content h1 { font-size: 20px; margin: 0 0 16px; color: #333; border-bottom: 1px solid #ddd; padding-bottom: 8px; }
+        .admin-content h2 { font-size: 15px; color: #444; margin: 16px 0 8px; }
+        .alert-success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 8px 14px; margin-bottom: 12px; border-radius: 3px; }
+        .alert-warning { background: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 8px 14px; margin-bottom: 12px; border-radius: 3px; }
+        .alert-danger { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 8px 14px; margin-bottom: 12px; border-radius: 3px; }
+        table.admin-table { border-collapse: collapse; width: 100%; margin-bottom: 12px; }
+        table.admin-table th { background: #1a1a2e; color: #fff; padding: 6px 10px; text-align: left; font-size: 12px; }
+        table.admin-table td { padding: 5px 10px; border-bottom: 1px solid #e0e0e0; vertical-align: middle; }
+        table.admin-table tr:nth-child(even) td { background: #f9f9f9; }
+        table.admin-table tr:hover td { background: #eef4ff; }
+        .btn { display: inline-block; padding: 4px 12px; border: none; border-radius: 3px; cursor: pointer; font-size: 12px; text-decoration: none; }
+        .btn-primary { background: #0f3460; color: #fff; }
+        .btn-primary:hover { background: #16213e; color: #fff; }
+        .btn-danger { background: #c0392b; color: #fff; }
+        .btn-danger:hover { background: #96281b; }
+        .btn-secondary { background: #555; color: #fff; }
+        .btn-secondary:hover { background: #333; }
+        .btn-sm { padding: 2px 8px; font-size: 11px; }
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: block; font-weight: bold; font-size: 12px; margin-bottom: 3px; color: #333; }
+        .form-group input[type=text], .form-group input[type=password], .form-group select, .form-group textarea { padding: 5px 8px; border: 1px solid #ccc; font-size: 12px; width: 300px; }
+        .form-group input[type=checkbox] { margin-right: 6px; }
+        .form-actions { margin-top: 16px; padding-top: 10px; border-top: 1px solid #eee; }
+        .back-link { margin-top: 12px; display: inline-block; color: #0f3460; font-size: 12px; }
+        .note-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 8px 12px; margin-bottom: 12px; font-size: 12px; }
+        .dashboard-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .stat-card { background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 14px; text-align: center; }
+        .stat-card h3 { margin: 0 0 6px; font-size: 12px; color: #666; text-transform: uppercase; }
+        .stat-card .value { font-size: 28px; font-weight: bold; color: #1a1a2e; }
+        .section-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin-bottom: 16px; }
+        .section-card { background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 12px; }
+        .section-card h4 { margin: 0 0 8px; font-size: 13px; color: #1a1a2e; }
+        .section-card a { display: block; padding: 3px 0; color: #0f3460; font-size: 12px; text-decoration: none; }
+        .section-card a:hover { text-decoration: underline; }
+        .daemon-note { color: #888; font-size: 11px; }
+    </style>
+</head>
+<body>
+<div class="admin-wrapper">
+    <nav class="admin-sidebar">
+        <div class="brand">HLStatsX Admin</div>
+        <div class="user-info">Logged in as <strong>pete</strong> (Level 100)</div>
+
+        <h4>General</h4>
+        <a href="/Admin/Dashboard">Dashboard</a>
+        <a href="/Admin/Options">Site Options</a>
+        <a href="/Admin/Users">Admin Users</a>
+        <a href="/Admin/Games">Games</a>
+        <a href="/Admin/ClanTags">Clan Tags</a>
+        <a href="/Admin/HostGroups">Host Groups</a>
+
+        <h4>Game Settings</h4>
+        @{
+            var currentGame = ViewData["AdminGame"]?.ToString() ?? Context.Request.Query["game"].ToString();
+            if (string.IsNullOrEmpty(currentGame)) currentGame = "";
+        }
+        <div class="game-selector">
+            <select id="gameSelect" onchange="switchGame(this.value)">
+                <option value="">-- select game --</option>
+            </select>
+        </div>
+        <a href="@("/Admin/Servers" + (string.IsNullOrEmpty(currentGame) ? "" : "?game=" + currentGame))">Servers</a>
+        <a href="@("/Admin/Actions" + (string.IsNullOrEmpty(currentGame) ? "" : "?game=" + currentGame))">Actions</a>
+        <a href="@("/Admin/Teams" + (string.IsNullOrEmpty(currentGame) ? "" : "?game=" + currentGame))">Teams</a>
+        <a href="@("/Admin/Roles" + (string.IsNullOrEmpty(currentGame) ? "" : "?game=" + currentGame))">Roles</a>
+        <a href="@("/Admin/Weapons" + (string.IsNullOrEmpty(currentGame) ? "" : "?game=" + currentGame))">Weapons</a>
+        <a href="@("/Admin/Ranks" + (string.IsNullOrEmpty(currentGame) ? "" : "?game=" + currentGame))">Ranks</a>
+        <a href="@("/Admin/Ribbons" + (string.IsNullOrEmpty(currentGame) ? "" : "?game=" + currentGame))">Ribbons</a>
+        <a href="@("/Admin/RibbonTriggers" + (string.IsNullOrEmpty(currentGame) ? "" : "?game=" + currentGame))">Ribbon Triggers</a>
+        <a href="@("/Admin/Awards/W" + (string.IsNullOrEmpty(currentGame) ? "" : "?game=" + currentGame))">Awards: Weapons</a>
+        <a href="@("/Admin/Awards/O" + (string.IsNullOrEmpty(currentGame) ? "" : "?game=" + currentGame))">Awards: Player Actions</a>
+        <a href="@("/Admin/Awards/P" + (string.IsNullOrEmpty(currentGame) ? "" : "?game=" + currentGame))">Awards: PlyrPlyr</a>
+        <a href="@("/Admin/Awards/V" + (string.IsNullOrEmpty(currentGame) ? "" : "?game=" + currentGame))">Awards: Victims</a>
+
+        <h4>Tools</h4>
+        <a href="/Admin/Tools/EditDetails">Edit Player/Clan</a>
+        <a href="/Admin/Tools/AdminEvents">Admin Events</a>
+        <a href="/Admin/Tools/Reset">Reset Stats</a>
+        <a href="/Admin/Tools/Optimize">DB Optimize</a>
+        <a href="/Admin/Tools/CopySettings">Copy Game Settings</a>
+        <a href="/Admin/Tools/Cleanup">Cleanup Inactive</a>
+
+        <h4>Site</h4>
+        <a href="/">View Site</a>
+        <form method="post" action="/Admin/Logout" style="margin:0;padding: 0 0 16px 0;">
+            @Html.AntiForgeryToken()
+            <button type="submit" style="background:none;border:none;cursor:pointer;padding:5px 16px 5px 24px;color:#aaa;font-size:12px;width:100%;text-align:left;">Logout</button>
+        </form>
+    </nav>
+
+    <div class="admin-main">
+        <div class="admin-topbar">
+            <span>HLStatsX.NET Administration</span>
+            <span>@ViewData["Title"]</span>
+        </div>
+        <div class="admin-content">
+            @if (TempData["Success"] is string success)
+            {
+                <div class="alert-success">@success</div>
+            }
+            @if (TempData["Error"] is string error)
+            {
+                <div class="alert-danger">@error</div>
+            }
+            @RenderBody()
+        </div>
+    </div>
+</div>
+<script>
+    // Populate game selector from games API and keep current game selected
+    (async function () {
+        try {
+            const resp = await fetch('/Admin/GamesList');
+            const games = await resp.json();
+            const sel = document.getElementById('gameSelect');
+            const current = '@currentGame';
+            games.forEach(g => {
+                const opt = document.createElement('option');
+                opt.value = g.code;
+                opt.text = g.name;
+                if (g.code === current) opt.selected = true;
+                sel.appendChild(opt);
+            });
+        } catch {}
+    })();
+
+    function switchGame(code) {
+        if (!code) return;
+        const path = window.location.pathname;
+        const url = new URL(window.location.href);
+        url.searchParams.set('game', code);
+        window.location.href = url.toString();
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+@model IReadOnlyList<HLStatsX.NET.Core.Entities.HostGroup>
+@{ ViewData["Title"] = "Host Groups"; Layout = "_AdminLayout"; }
+<h1>Host Groups</h1>
+<p><a href="/Admin/HostGroups/Create" class="btn btn-primary">Add Host Group</a></p>
+<table class="admin-table">
+    <thead><tr><th>Pattern</th><th>Group Name</th><th>Actions</th></tr></thead>
+    <tbody>
+    @foreach (var h in Model)
+    {
+        <tr>
+            <td>@h.Pattern</td><td>@h.Name</td>
+            <td>
+                <a href="/Admin/HostGroups/Edit/@h.Id" class="btn btn-secondary btn-sm">Edit</a>
+                <form action="/Admin/HostGroups/Delete/@h.Id" method="post" style="display:inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete?')">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+    @if (!Model.Any()) { <tr><td colspan="3">No host groups configured.</td></tr> }
+    </tbody>
+</table>

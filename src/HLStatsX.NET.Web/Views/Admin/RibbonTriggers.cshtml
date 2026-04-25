@@ -1,0 +1,30 @@
+@model GameScopedViewModel<IReadOnlyList<HLStatsX.NET.Core.Entities.RibbonTrigger>>
+@using HLStatsX.NET.Core.Entities
+@{
+    ViewData["Title"] = "Ribbon Triggers";
+    Layout = "_AdminLayout";
+    var ribbons = ViewData["Ribbons"] as IReadOnlyList<Ribbon> ?? new List<Ribbon>();
+}
+<h1>Ribbon Triggers — <small>@Model.Game</small></h1>
+<p><a href="/Admin/RibbonTriggers/Create?game=@Model.Game" class="btn btn-primary">Add Trigger</a></p>
+<table class="admin-table">
+    <thead><tr><th>Ribbon</th><th>Award Code</th><th>Count</th><th>Special</th><th>Actions</th></tr></thead>
+    <tbody>
+    @foreach (var t in Model.Data)
+    {
+        var ribbonName = ribbons.FirstOrDefault(r => r.RibbonId == t.RibbonId)?.RibbonName ?? t.RibbonId.ToString();
+        <tr>
+            <td>@ribbonName</td><td>@t.TriggerCode</td>
+            <td style="text-align:right;">@t.TriggerValue</td><td>@t.TriggerType</td>
+            <td>
+                <a href="/Admin/RibbonTriggers/Edit/@t.TriggerId?game=@Model.Game" class="btn btn-secondary btn-sm">Edit</a>
+                <form action="/Admin/RibbonTriggers/Delete/@t.TriggerId?game=@Model.Game" method="post" style="display:inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete?')">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+    @if (!Model.Data.Any()) { <tr><td colspan="5">No ribbon triggers for @Model.Game.</td></tr> }
+    </tbody>
+</table>

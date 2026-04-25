@@ -1,0 +1,23 @@
+@model GameScopedViewModel<IReadOnlyList<HLStatsX.NET.Core.Entities.Rank>>
+@{ ViewData["Title"] = "Ranks"; Layout = "_AdminLayout"; }
+<h1>Ranks — <small>@Model.Game</small></h1>
+<p><a href="/Admin/Ranks/Create?game=@Model.Game" class="btn btn-primary">Add Rank</a></p>
+<table class="admin-table">
+    <thead><tr><th>Name</th><th>Min Kills</th><th>Max Kills</th><th>Image</th><th>Actions</th></tr></thead>
+    <tbody>
+    @foreach (var r in Model.Data)
+    {
+        <tr>
+            <td>@r.RankName</td><td style="text-align:right;">@r.MinKills</td><td style="text-align:right;">@r.MaxKills</td><td>@r.Image</td>
+            <td>
+                <a href="/Admin/Ranks/Edit/@r.RankId" class="btn btn-secondary btn-sm">Edit</a>
+                <form action="/Admin/Ranks/Delete/@r.RankId?game=@Model.Game" method="post" style="display:inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete?')">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+    @if (!Model.Data.Any()) { <tr><td colspan="5">No ranks for @Model.Game.</td></tr> }
+    </tbody>
+</table>

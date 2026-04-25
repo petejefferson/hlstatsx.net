@@ -1,0 +1,61 @@
+@model ServerSettingsViewModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["AdminGame"] = Model.Server.Game;
+}
+
+<h1>Server Config: @Model.Server.Name</h1>
+<p style="color:#666;font-size:12px;">@Model.Server.Address:@Model.Server.Port — @Model.Server.Game</p>
+
+<form asp-action="SaveServerSettings" asp-route-id="@Model.Server.ServerId" method="post">
+    @Html.AntiForgeryToken()
+    @if (Model.Config.Any())
+    {
+        <table class="admin-table">
+            <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+            <tbody>
+            @foreach (var c in Model.Config)
+            {
+                <tr>
+                    <td>@c.ConfigKey</td>
+                    <td><input type="text" name="cfg_@c.ConfigKey" value="@c.ConfigValue" style="width:300px;" /></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save Config</button>
+        </div>
+    }
+    else
+    {
+        <p>No configuration parameters set for this server.</p>
+    }
+</form>
+
+<hr style="margin:20px 0;" />
+<h2>Copy Config From Another Server</h2>
+<form asp-action="CopyServerSettings" asp-route-id="@Model.Server.ServerId" asp-route-fromId="0" method="post" id="copyForm">
+    @Html.AntiForgeryToken()
+    <div class="form-group">
+        <label>Copy settings from:</label>
+        <select id="copyFrom" onchange="document.getElementById('copyForm').action='/Admin/Servers/Settings/@Model.Server.ServerId/CopyFrom/' + this.value">
+            <option value="0">-- select server --</option>
+            @foreach (var s in Model.AllServers.Where(s => s.ServerId != Model.Server.ServerId))
+            {
+                <option value="@s.ServerId">@s.Name (@s.Address:@s.Port)</option>
+            }
+        </select>
+        <button type="submit" class="btn btn-secondary" style="margin-left:8px;"
+                onclick="return confirm('This will replace all config for this server.')">Copy</button>
+    </div>
+</form>
+
+<h2>Reset to Defaults</h2>
+<form asp-action="ResetServerSettings" asp-route-id="@Model.Server.ServerId" method="post">
+    @Html.AntiForgeryToken()
+    <button type="submit" class="btn btn-danger"
+            onclick="return confirm('Reset all config to game defaults?')">Reset to Defaults</button>
+</form>
+
+<a href="/Admin/Servers?game=@Model.Server.Game" class="back-link">&larr; Back to Servers</a>

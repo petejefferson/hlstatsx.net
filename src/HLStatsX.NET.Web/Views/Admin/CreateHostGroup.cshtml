@@ -1,0 +1,12 @@
+@model HLStatsX.NET.Core.Entities.HostGroup
+@{ Layout = "_AdminLayout"; }
+<h1>@ViewData["Title"]</h1>
+<form asp-action="CreateHostGroup" method="post">
+    @Html.AntiForgeryToken()
+    <div class="form-group"><label asp-for="Pattern">Host Pattern (wildcard)</label><input asp-for="Pattern" type="text" maxlength="128" /></div>
+    <div class="form-group"><label asp-for="Name">Group Name</label><input asp-for="Name" type="text" maxlength="128" /></div>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Add</button>
+        <a href="/Admin/HostGroups" class="btn btn-secondary" style="margin-left:8px;">Cancel</a>
+    </div>
+</form>
