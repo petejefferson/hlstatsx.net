@@ -16,5 +16,7 @@ public class TrendConfiguration : IEntityTypeConfiguration<Trend>
         builder.Property(t => t.Kills).HasColumnName("kills");
         builder.Property(t => t.Headshots).HasColumnName("headshots");
         builder.Property(t => t.Servers).HasColumnName("servers");
+        builder.Property(t => t.ActSlots).HasColumnName("act_slots");
+        builder.Property(t => t.MaxSlots).HasColumnName("max_slots");
     }
 }

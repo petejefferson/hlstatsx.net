@@ -30,6 +30,7 @@ public class HomeController : Controller
         var livestats    = await _serverService.GetAllLivestatsAsync(game, ct);
         var dailyAwards  = await _awardService.GetDailyAwardsAsync(game, ct);
         var serverLoad   = await _serverService.GetServerLoadAsync(game, 100, ct);
+        var trendSeries  = await _serverService.GetTrendSeriesAsync(game, 24, ct);
         var teamsList    = await _serverService.GetTeamsAsync(game, ct);
         var teams        = teamsList.ToDictionary(t => t.Code, t => t);
 
@@ -47,7 +48,8 @@ public class HomeController : Controller
             livestats,
             dailyAwards,
             serverLoad,
-            teams);
+            teams,
+            trendSeries);
 
         return View(model);
     }

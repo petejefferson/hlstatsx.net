@@ -8,4 +8,6 @@ public class Trend
     public int Kills { get; set; }
     public int Headshots { get; set; }
     public int Servers { get; set; }
+    public int ActSlots { get; set; }
+    public int MaxSlots { get; set; }
 }
