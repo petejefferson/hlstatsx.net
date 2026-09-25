@@ -1,0 +1,16 @@
+@using HLStatsX.NET.Core.Entities
+@model IReadOnlyList<Game>
+@{
+    var currentGame = ViewData["CurrentGame"]?.ToString();
+}
+@foreach (var g in Model)
+{
+    var isActive = g.Code == currentGame;
+    <a href="@Url.Action("Index", "Home", new { game = g.Code })"
+       class="game-tab@(isActive ? " game-tab-active" : "")"
+       title="@g.Name">
+        <img src="@(Url.Content("~/hlstatsimg/games/") + g.Code + "/game.png")"
+             alt="@g.Name"
+             onerror="this.style.display='none'" />
+    </a>
+}

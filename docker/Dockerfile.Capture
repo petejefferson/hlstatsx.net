@@ -1,0 +1,24 @@
+# --- Build stage ---
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+COPY src/HLStatsX.NET.Capture/HLStatsX.NET.Capture.csproj src/HLStatsX.NET.Capture/
+
+RUN dotnet restore src/HLStatsX.NET.Capture/HLStatsX.NET.Capture.csproj
+
+COPY . .
+RUN dotnet publish src/HLStatsX.NET.Capture/HLStatsX.NET.Capture.csproj \
+        -c Release -r linux-x64 --no-self-contained -o /app/publish
+
+# --- Runtime stage ---
+FROM mcr.microsoft.com/dotnet/runtime:10.0 AS runtime
+WORKDIR /app
+
+COPY --from=build /app/publish .
+
+VOLUME ["/var/log/hlstatsx"]
+
+# Game servers send logs over UDP
+EXPOSE 27500/udp
+
+ENTRYPOINT ["dotnet", "HLStatsX.NET.Capture.dll"]

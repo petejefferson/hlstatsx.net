@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="description"
+    content="A welcome article for HLStatsX.NET covering what the project is, why the legacy Perl and PHP stack needed a rewrite, and why modern .NET is a strong fit."
+  />
+  <title>HLStatsX.NET - Welcome</title>
+  <link rel="stylesheet" href="site.css" />
+  <style>
+    body { line-height: 1.65; }
+
+    .hero { min-height: 48px; height: auto; }
+
+    .page-header { padding: 1.4rem 0 1.1rem; }
+    .page-header h1 { font-size: 1.75rem; line-height: 1.15; letter-spacing: -0.03em; margin-bottom: 0.45rem; }
+    .page-header .subtitle { max-width: 860px; font-size: 0.92rem; }
+
+    .meta-row { margin-top: 0.8rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .meta-pill { background: var(--accent); border: 1px solid var(--border); border-radius: 999px; color: var(--muted); font-size: 0.75rem; padding: 3px 10px; }
+
+    main { padding: 1.8rem 0 2.25rem; }
+
+    .intro-grid, .proof-grid, .reason-grid, .choice-grid { display: grid; gap: 14px; }
+    .intro-grid { grid-template-columns: minmax(0, 1.7fr) minmax(300px, 1fr); align-items: start; }
+    .reason-grid, .choice-grid { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    .proof-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+
+    .card, .article-card, .pullquote, .source-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+    .article-card, .source-card { padding: 1.2rem 1.25rem; }
+    .card { padding: 1rem 1.05rem; }
+    .card h3, .article-card h3, .source-card h3 { font-size: 0.92rem; margin-bottom: 0.55rem; line-height: 1.35; }
+    .card p + p, .article-card p + p { margin-top: 0.8rem; }
+
+    .lede { font-size: 1.02rem; color: var(--text); }
+    .summary-list, .source-list { margin-left: 1rem; }
+    .summary-list li + li, .source-list li + li { margin-top: 0.5rem; }
+
+    .stat { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 0.35rem; }
+    .stat-value { font-size: 1.5rem; line-height: 1; font-weight: 700; color: var(--highlight); margin-bottom: 0.45rem; }
+    .stat-note { color: var(--muted); font-size: 0.82rem; }
+
+    .kicker { color: var(--muted); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.45rem; }
+
+    .pullquote { margin-top: 1rem; padding: 1.15rem 1.25rem; border-left: 4px solid var(--highlight); font-size: 1rem; font-weight: 600; line-height: 1.6; }
+    .pullquote span { display: block; margin-top: 0.6rem; font-size: 0.8rem; font-weight: 500; color: var(--muted); }
+
+    .note-band { background: #FFFBEB; border: 1px solid #FCD34D; border-left: 4px solid #D97706; border-radius: var(--radius); padding: 1rem 1.15rem; box-shadow: var(--shadow); color: #78350F; }
+    .note-band strong { color: #451A03; }
+
+    .source-list a { word-break: break-word; }
+    sup a { font-size: 0.72rem; font-weight: 700; }
+
+    footer { border-top: 1px solid var(--border); margin-top: 2.25rem; padding: 1.1rem 0 2rem; color: var(--muted); font-size: 0.8rem; }
+
+    @media (max-width: 900px) { .intro-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 640px) {
+      .hero { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+      .hero-nav { margin-left: 0.75rem; }
+      .page-header h1 { font-size: 1.45rem; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="container" style="display:flex;align-items:center;width:100%;">
+      <a class="hero-brand" href="welcome.html">🎮 HLStatsX.NET</a>
+      <nav class="hero-nav">
+        <a href="why-the-rewrite.html">Why the Rewrite</a>
+        <a href="feature-parity.html">Feature Parity</a>
+        <a href="future-work.html">Future Work</a>
+        <a href="https://github.com/petejefferson/hlstatsx.net" target="_blank" rel="noopener">GitHub ↗</a>
+      </nav>
+    </div>
+  </header>
+
+  <header class="page-header">
+    <div class="container">
+      <h1>Welcome to HLStatsX.NET</h1>
+      <p class="subtitle">
+        A modern rewrite of HLstatsX Community Edition for Half-Life engine games, built to preserve what made the
+        original useful while replacing the parts that made it increasingly hard to maintain, extend, and deploy.
+      </p>
+      <div class="meta-row">
+        <span class="meta-pill">Research-driven overview</span>
+        <span class="meta-pill">Legacy Perl + PHP to .NET 10</span>
+        <span class="meta-pill">Web, daemon, and scheduled workers</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="intro-grid">
+      <article class="article-card">
+        <p class="lede">
+          HLstatsX has always been more than a scoreboard. It is a real-time stats and ranking system built around the
+          culture of community servers: kills, sessions, awards, ranks, chat, clans, map performance, and the long tail
+          of game-specific events that keep old multiplayer communities alive. The original Community Edition earned its
+          place because it solved a real problem well - parse the stream of server logs, put the data somewhere durable,
+          and turn it into a site people actually want to check.<sup><a href="#src-1">[1]</a></sup>
+        </p>
+        <p>
+          HLStatsX.NET starts from that same respect for the original design. The point is not to reinterpret the
+          product into something unrecognizable. The point is to keep the feature set, the data model, and the spirit of
+          HLstatsX intact while giving it a platform that matches modern software expectations. In the current codebase,
+          that shows up as a deliberate split into a web app, a real-time daemon, an awards worker, a core domain
+          layer, and an infrastructure layer, all targeting .NET 10.<sup><a href="#src-2">[2]</a></sup>
+        </p>
+      </article>
+
+      <aside class="card">
+        <div class="kicker">At a glance</div>
+        <ul class="summary-list">
+          <li><strong>Legacy stack:</strong> Perl daemon, PHP frontend, MySQL database.<sup><a href="#src-1">[1]</a></sup></li>
+          <li><strong>Rewrite target:</strong> ASP.NET Core web app plus .NET worker services for the daemon and awards processing.<sup><a href="#src-2">[2]</a></sup></li>
+          <li><strong>Primary goal:</strong> full feature parity with the PHP implementation, not a partial redesign.<sup><a href="#src-2">[2]</a></sup></li>
+          <li><strong>Why now:</strong> the upstream Community Edition repo is archived, while forks continue to exist mainly to keep the stack compatible with newer platform changes.<sup><a href="#src-1">[1]</a></sup></li>
+        </ul>
+      </aside>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">What this project actually is</h2>
+      <article class="article-card">
+        <p>
+          The simplest description is still the best one: HLstatsX Community Edition is a real-time statistics and
+          ranking system for Source engine based games. Its historical architecture is equally direct: a Perl daemon
+          parses streamed game logs, MySQL stores the resulting data, and a PHP site renders the public and admin
+          interfaces.<sup><a href="#src-1">[1]</a></sup>
+        </p>
+        <p>
+          HLStatsX.NET keeps that model, but updates the way it is expressed in code. The current repository already
+          reflects a cleaner, service-based structure: <strong>HLStatsX.NET.Web</strong> for the site,
+          <strong>HLStatsX.NET.Daemon</strong> for live log ingestion, <strong>HLStatsX.NET.Awards</strong> for batch
+          maintenance tasks, <strong>HLStatsX.NET.Core</strong> for interfaces and shared models, and
+          <strong>HLStatsX.NET.Infrastructure</strong> for EF Core and MySQL access.<sup><a href="#src-2">[2]</a></sup>
+        </p>
+        <p>
+          That is an important distinction. This is not a marketing rewrite that only covers the public pages. It is an
+          attempt to replace the entire operational shape of HLstatsX: the web UI, the daemon, and the maintenance jobs
+          that make the statistics credible over time.
+        </p>
+      </article>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">Why a rewrite was needed</h2>
+      <div class="reason-grid">
+        <article class="card">
+          <div class="kicker">Reason 1</div>
+          <h3>One product was spread across multiple aging runtimes</h3>
+          <p>
+            The original system works by combining Perl, PHP, MySQL, and a large amount of game-specific logic. That
+            split made sense in its time, but it means maintainers have to keep several mental models and deployment
+            assumptions alive at once. Every operational improvement becomes a cross-stack exercise.
+          </p>
+        </article>
+
+        <article class="card">
+          <div class="kicker">Reason 2</div>
+          <h3>Maintenance had drifted into compatibility work</h3>
+          <p>
+            The archived Community Edition README points users to newer forks for updated PHP compatibility, and even
+            highlights GeoIP2 work driven by changing external requirements.<sup><a href="#src-1">[1]</a></sup> That is
+            a strong sign that keeping the old stack alive was consuming effort that could otherwise go into actual
+            features and long-term cleanup.
+          </p>
+        </article>
+
+        <article class="card">
+          <div class="kicker">Reason 3</div>
+          <h3>Legacy code can preserve behavior while still blocking progress</h3>
+          <p>
+            HLstatsX is full of details that matter: ranking rules, event handlers, map and weapon breakdowns, awards,
+            admin tools, live stats, and game-specific special cases. The legacy PHP pages and Perl handlers remain an
+            excellent behavioral specification, but they are not an ideal foundation for the next decade of
+            development.<sup><a href="#src-2">[2]</a></sup>
+          </p>
+        </article>
+
+        <article class="card">
+          <div class="kicker">Reason 4</div>
+          <h3>Modern users expect stronger deployment and security defaults</h3>
+          <p>
+            Community software now lives in containers, cloud VMs, reverse-proxied Linux hosts, and automated CI
+            pipelines. It also needs safer defaults around authentication, cross-site scripting, and CSRF. Rewriting on
+            a modern framework is not just a style preference; it is an operational upgrade.<sup><a href="#src-3">[3]</a></sup><sup><a href="#src-6">[6]</a></sup>
+          </p>
+        </article>
+      </div>
+
+      <blockquote class="pullquote">
+        The old HLstatsX stack proved the product idea. The rewrite exists because the maintenance model no longer fits
+        how people build, host, secure, and contribute to software today.
+        <span>That is a preservation argument as much as a modernization argument.</span>
+      </blockquote>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">Why .NET is a sound choice</h2>
+      <div class="choice-grid">
+        <article class="card">
+          <div class="kicker">Platform fit</div>
+          <h3>One ecosystem for web and background services</h3>
+          <p>
+            Microsoft positions ASP.NET Core as cross-platform, open source, fast, secure, and suitable for apps and
+            services that run on Windows, Linux, and macOS.<sup><a href="#src-3">[3]</a></sup> The same .NET platform
+            also supports long-running worker services with built-in hosting, configuration, DI, and logging.<sup><a href="#src-4">[4]</a></sup>
+          </p>
+        </article>
+
+        <article class="card">
+          <div class="kicker">Architecture fit</div>
+          <h3>It maps naturally onto HLStatsX's real shape</h3>
+          <p>
+            HLstatsX is not just a website. It needs a web UI, a log-processing daemon, and scheduled maintenance jobs.
+            .NET handles all three with a consistent hosting model. That makes it a better fit than forcing the project
+            to remain split between unrelated stacks.
+          </p>
+        </article>
+
+        <article class="card">
+          <div class="kicker">Support fit</div>
+          <h3>.NET 10 gives the rewrite a stable runway</h3>
+          <p>
+            The current repository targets .NET 10, and Microsoft's support policy lists .NET 10 as an LTS release with
+            support through November 14, 2028.<sup><a href="#src-2">[2]</a></sup><sup><a href="#src-5">[5]</a></sup> For a
+            long-lived community project, predictable servicing matters.
+          </p>
+        </article>
+
+        <article class="card">
+          <div class="kicker">Operations fit</div>
+          <h3>Modern deployment stops being a side quest</h3>
+          <p>
+            Worker services are explicitly documented for long-running background processing and containerized
+            deployment.<sup><a href="#src-4">[4]</a></sup> The HLStatsX.NET project guide already points toward Docker
+            and reverse-proxy hosting, which is exactly the sort of hosting model a modern game-community project should
+            be ready for.<sup><a href="#src-2">[2]</a></sup>
+          </p>
+        </article>
+
+        <article class="card">
+          <div class="kicker">Security fit</div>
+          <h3>Safer framework defaults are part of the payoff</h3>
+          <p>
+            ASP.NET Core documents built-in protections and guidance for issues such as XSS and CSRF, along with
+            standard authentication support.<sup><a href="#src-3">[3]</a></sup><sup><a href="#src-6">[6]</a></sup> A rewrite
+            cannot fix every design choice automatically, but it does move the project onto a platform with first-class
+            security primitives.
+          </p>
+        </article>
+
+        <article class="card">
+          <div class="kicker">Developer fit</div>
+          <h3>Clarity beats nostalgia</h3>
+          <p>
+            A strongly typed, testable C# codebase with explicit layers is simply easier to reason about than a hybrid
+            of procedural PHP pages and Perl event handlers when you want new contributors, safer refactors, and fewer
+            accidental regressions.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">Why this rewrite already feels real</h2>
+      <div class="proof-grid">
+        <article class="card">
+          <div class="stat">Projects</div>
+          <div class="stat-value">5</div>
+          <p class="stat-note">
+            Web, daemon, awards, core, and infrastructure projects are already separated in the current solution.
+          </p>
+        </article>
+
+        <article class="card">
+          <div class="stat">Target framework</div>
+          <div class="stat-value">net10.0</div>
+          <p class="stat-note">
+            Every main project and the test project currently target .NET 10.
+          </p>
+        </article>
+
+        <article class="card">
+          <div class="stat">Database access</div>
+          <div class="stat-value">MySQL + EF Core</div>
+          <p class="stat-note">
+            The rewrite keeps compatibility with the established HLstatsX data world while using modern data access and
+            DI patterns.
+          </p>
+        </article>
+
+        <article class="card">
+          <div class="stat">Parity strategy</div>
+          <div class="stat-value">Spec first</div>
+          <p class="stat-note">
+            The PHP implementation remains the authoritative reference, which helps the rewrite preserve behavior instead
+            of losing it.
+          </p>
+        </article>
+      </div>
+
+      <article class="article-card" style="margin-top: 14px;">
+        <p>
+          Just as importantly, the rewrite is not starting from zero. The project guide shows broad feature coverage
+          already in place across player rankings, profiles, clans, weapons, maps, servers, awards, search, and major
+          parts of the admin and daemon story, with the remaining gaps narrowed to specific pages and deferred
+          subsystems rather than missing foundations.<sup><a href="#src-2">[2]</a></sup>
+        </p>
+        <p>
+          That matters because a serious rewrite needs more than good intentions. It needs proof that the replacement
+          can actually absorb the weirdness of the original system. HLStatsX.NET already looks like a codebase that
+          understands that responsibility.
+        </p>
+      </article>
+    </section>
+
+    <section class="section">
+      <div class="note-band">
+        <strong>The important thing to understand:</strong> this rewrite is not rejecting HLstatsX's history. It is
+        taking the old behavior seriously enough to preserve it, while moving the implementation onto a stack that is
+        easier to host, easier to extend, easier to test, and more realistic to maintain.
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">Welcome, then, to the next version of a very old idea</h2>
+      <article class="article-card">
+        <p>
+          The best community software usually survives because somebody decides it is still worth caring for after the
+          original environment has moved on. That is what HLStatsX.NET feels like: not a flashy replacement for its own
+          sake, but a careful argument that classic game communities deserve software built for the present, not frozen
+          in the assumptions of the past.
+        </p>
+        <p>
+          If the legacy Perl and PHP code proved that HLstatsX could become part of server culture, this rewrite argues
+          that it can still matter in a modern stack. And .NET is a sound choice precisely because it lets the project
+          treat web delivery, long-running background work, deployment, security, and maintainability as parts of the
+          same system instead of separate battles.
+        </p>
+      </article>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">Sources and research notes</h2>
+      <div class="source-card">
+        <ol class="source-list">
+          <li id="src-1">
+            Archived <strong>HLstatsX Community Edition</strong> README describing the original architecture and current
+            archived status:
+            <a href="https://raw.githubusercontent.com/NomisCZ/hlstatsx-community-edition/master/README.md">
+              https://raw.githubusercontent.com/NomisCZ/hlstatsx-community-edition/master/README.md
+            </a>
+          </li>
+          <li id="src-2">
+            Current <strong>HLStatsX.NET</strong> local repository review, including project structure, feature map,
+            .NET 10 targets, and deployment notes from <code>CLAUDE.md</code>, project files, and program startup code.
+          </li>
+          <li id="src-3">
+            Official Microsoft <strong>ASP.NET Core</strong> overview:
+            <a href="https://dotnet.microsoft.com/en-us/apps/aspnet">
+              https://dotnet.microsoft.com/en-us/apps/aspnet
+            </a>
+          </li>
+          <li id="src-4">
+            Microsoft Learn documentation for <strong>.NET worker services</strong>:
+            <a href="https://learn.microsoft.com/en-us/dotnet/core/extensions/workers">
+              https://learn.microsoft.com/en-us/dotnet/core/extensions/workers
+            </a>
+          </li>
+          <li id="src-5">
+            Official <strong>.NET support policy</strong>, including .NET 10 LTS lifecycle:
+            <a href="https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core">
+              https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core
+            </a>
+          </li>
+          <li id="src-6">
+            Microsoft Learn guidance on <strong>CSRF protection in ASP.NET Core</strong>:
+            <a href="https://learn.microsoft.com/en-us/aspnet/core/security/anti-request-forgery">
+              https://learn.microsoft.com/en-us/aspnet/core/security/anti-request-forgery
+            </a>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <footer>
+      Written as a standalone blog-style page for the HLStatsX.NET project workspace.
+    </footer>
+  </main>
+</body>
+</html>

@@ -1,0 +1,22 @@
+.git
+.vs
+.github
+.claude
+
+# Build output (nested under src/* — must use ** to match at any depth)
+**/bin
+**/obj
+
+# Local config (secrets — never bake into the image)
+**/appsettings.Development.json
+**/appsettings.Production.json
+**/.env
+
+# Project artefacts that aren't needed for the web build
+legacy
+reference
+enhancements
+progress
+
+# Test project (not needed for the web build)
+tests

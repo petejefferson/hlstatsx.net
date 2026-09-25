@@ -1,0 +1,36 @@
+@model GameScopedViewModel<IReadOnlyList<HLStatsX.NET.Core.Entities.Server>>
+@{
+    ViewData["Title"] = "Servers";
+    Layout = "_AdminLayout";
+}
+
+<h1>Servers — <small>@Model.Game</small></h1>
+<p>
+    <a href="@Url.Action("CreateServer", "Admin", new { game = Model.Game })" class="btn btn-primary">Add Server</a>
+</p>
+
+<table class="admin-table">
+    <thead><tr><th>Name</th><th>Address</th><th>Game</th><th>Status</th><th>Players</th><th>Actions</th></tr></thead>
+    <tbody>
+    @foreach (var s in Model.Data)
+    {
+        <tr>
+            <td>@s.Name</td>
+            <td>@s.Address:@s.Port</td>
+            <td>@s.Game</td>
+            <td>@(s.IsActive ? "Active" : "Inactive")</td>
+            <td>@s.ActPlayers</td>
+            <td>
+                <a href="@Url.Action("EditServer", "Admin", new { id = s.ServerId })" class="btn btn-secondary btn-sm">Edit</a>
+                <a href="@Url.Action("ServerSettings", "Admin", new { id = s.ServerId })" class="btn btn-secondary btn-sm">Settings</a>
+                <form action="@Url.Action("DeleteServer", "Admin", new { id = s.ServerId, game = Model.Game })" method="post" style="display:inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger btn-sm"
+                            onclick="return confirm('Delete server @s.Name?')">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+    @if (!Model.Data.Any()) { <tr><td colspan="6">No servers for @Model.Game.</td></tr> }
+    </tbody>
+</table>

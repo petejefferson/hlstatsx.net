@@ -1,0 +1,13 @@
+services:
+  capture:
+    image: petejuk/hlstatsx-capture:latest
+    ports:
+      - "27501:27501/udp"
+    volumes:
+      - ./logs:/var/log/hlstatsx
+    environment:
+      - Capture__Port=27501
+      - Capture__ForwardHost=your-server-ip
+      - Capture__ForwardPort=27500
+      - Capture__LogFile=/var/log/hlstatsx/capture.log
+    restart: unless-stopped

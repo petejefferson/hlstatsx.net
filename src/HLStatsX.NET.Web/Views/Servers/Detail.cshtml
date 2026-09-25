@@ -1,0 +1,492 @@
+@model ServerDetailViewModel
+@{
+    ViewData["Title"] = Model.Server.Name;
+
+    var s = Model.Server;
+    long elapsed = s.MapStarted > 0 ? DateTimeOffset.UtcNow.ToUnixTimeSeconds() - s.MapStarted : 0;
+    if (elapsed < 0) elapsed = 0;
+    string mapTime = $"{elapsed / 3600:D2}:{elapsed % 3600 / 60:D2}:{elapsed % 60:D2}";
+    double hpk = s.Kills > 0 ? (double)s.Headshots / s.Kills : 0.0;
+
+    var chartLabels = System.Text.Json.JsonSerializer.Serialize(
+        Model.ServerLoad.Select(x => x.DateTime.ToString("HH:mm")));
+    var chartData = System.Text.Json.JsonSerializer.Serialize(
+        Model.ServerLoad.Select(x => x.ActPlayers));
+    var chartMaps = System.Text.Json.JsonSerializer.Serialize(
+        Model.ServerLoad.Select(x => x.Map ?? ""));
+    var chartMax = Model.ServerLoad.Any() ? Model.ServerLoad.Max(x => x.MaxPlayers) : 32;
+
+    var trendLabels = System.Text.Json.JsonSerializer.Serialize(
+        Model.TrendSeries.Select(x => DateTimeOffset.FromUnixTimeSeconds(x.Timestamp).LocalDateTime.ToString("HH:mm")));
+    var trendActSlots = System.Text.Json.JsonSerializer.Serialize(
+        Model.TrendSeries.Select(x => x.ActSlots));
+    var trendMaxSlots = System.Text.Json.JsonSerializer.Serialize(
+        Model.TrendSeries.Select(x => x.MaxSlots));
+    var trendKills = System.Text.Json.JsonSerializer.Serialize(
+        Model.TrendSeries.Select(x => x.Kills));
+    var trendHeadshots = System.Text.Json.JsonSerializer.Serialize(
+        Model.TrendSeries.Select(x => x.Headshots));
+    var trendPlayers = System.Text.Json.JsonSerializer.Serialize(
+        Model.TrendSeries.Select(x => x.Players));
+    var trendMaxY = Model.TrendSeries.Any() ? Model.TrendSeries.Max(x => x.MaxSlots) : 32;
+}
+
+<h2>@s.Name</h2>
+
+<table class="data-table" style="margin-bottom:0;">
+    <tr class="data-table-head">
+        <td>
+            Tracking <strong>@Model.TotalPlayers.ToString("N0")</strong> players
+            @if (Model.NewPlayersLast24h >= 0)
+            {
+                <text>(<strong>+@Model.NewPlayersLast24h.ToString("N0")</strong> new players last 24h) </text>
+            }
+            <span class="stat-summary-extended">
+            with <strong>@Model.Stats.TotalKills.ToString("N0")</strong> kills
+            @if (Model.Stats.NewKillsLast24h >= 0)
+            {
+                <text>(<strong>+@Model.Stats.NewKillsLast24h.ToString("N0")</strong> last 24h) </text>
+            }
+            and <strong>@Model.Stats.TotalHeadshots.ToString("N0")</strong> headshots
+            (<strong>@Model.Stats.HeadshotPercent.ToString("F2")%</strong>)
+            on <strong>@Model.Stats.TotalServers.ToString("N0")</strong> server@(Model.Stats.TotalServers == 1 ? "" : "s")
+            </span>
+        </td>
+    </tr>
+</table>
+
+@if (Model.TrendSeries.Any())
+{
+    <section class="chart-section" style="margin-bottom:1rem;">
+        <p style="text-align:right;font-size:0.8rem;color:var(--muted);margin-bottom:0.25rem;">
+            New Players Last 24h: <strong>@(Model.NewPlayersLast24h >= 0 ? "+" + Model.NewPlayersLast24h.ToString("N0") : "N/A")</strong>
+            &nbsp; Last 1h: <strong>@(Model.NewPlayersLast1h >= 0 ? "+" + Model.NewPlayersLast1h.ToString("N0") : "N/A")</strong>
+        </p>
+        <div class="chart-container">
+            <canvas id="trendChart"></canvas>
+        </div>
+    </section>
+}
+
+<table class="data-table" style="margin-bottom:0;">
+    <thead>
+        <tr class="data-table-head">
+            <th style="width:37%;text-align:left;">Server</th>
+            <th class="ls-responsive-hide" style="width:23%;text-align:left;">Address</th>
+            <th style="width:6%;text-align:center;">Map</th>
+            <th style="width:6%;text-align:center;">Played</th>
+            <th style="width:10%;text-align:center;">Players</th>
+            <th class="ls-responsive-hide" style="width:6%;text-align:center;">Kills</th>
+            <th class="ls-responsive-hide" style="width:6%;text-align:center;">Headshots</th>
+            <th class="ls-responsive-hide" style="width:6%;text-align:center;">Hpk</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr class="bg1">
+            <td><img src="@(Url.Content("~/hlstatsimg/games/") + s.Game + "/game.png")" alt="@s.Game" title="@s.Game" style="vertical-align:middle;" /> <strong>@s.Name</strong></td>
+            <td class="ls-responsive-hide">
+                @s.DisplayAddress
+                <a href="steam://connect/@s.DisplayAddress">(Join)</a>
+            </td>
+            <td style="text-align:center;">@s.ActMap</td>
+            <td style="text-align:center;">@mapTime</td>
+            <td style="text-align:center;">@s.ActPlayers / @s.MaxPlayers</td>
+            <td class="ls-responsive-hide" style="text-align:center;">@s.Kills.ToString("N0")</td>
+            <td class="ls-responsive-hide" style="text-align:center;">@s.Headshots.ToString("N0")</td>
+            <td class="ls-responsive-hide" style="text-align:center;">@hpk.ToString("F4")</td>
+        </tr>
+    </tbody>
+</table>
+
+<section class="chart-section">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.25rem;flex-wrap:wrap;gap:0.35rem;">
+        <span style="font-size:0.8rem;color:var(--muted)">
+            Average Players Last 24h: <strong>@Model.AvgPlayersLast24h.ToString("F1")</strong>
+            &nbsp; Last 1h: <strong>@Model.AvgPlayersLast1h.ToString("F1")</strong>
+        </span>
+        <span id="loadRangeTabs" style="display:flex;gap:4px;">
+            <button class="btn-small load-range-btn active-range" data-range="1">24h</button>
+            <button class="btn-small load-range-btn" data-range="2">1 Week</button>
+            <button class="btn-small load-range-btn" data-range="3">1 Month</button>
+            <button class="btn-small load-range-btn" data-range="4">1 Year</button>
+        </span>
+    </div>
+    <div class="chart-container">
+        <canvas id="activityChart"></canvas>
+        <div id="chartLoader" style="display:none;position:absolute;inset:0;background:rgba(255,255,255,0.7);align-items:center;justify-content:center;font-size:0.85rem;color:#555;">
+            Loading&hellip;
+        </div>
+    </div>
+</section>
+
+@if (Model.Livestats.Any())
+{
+    <section>
+        <table class="livestats-table">
+            <thead>
+                <tr class="livestats-head">
+                    <th style="width:3%;">#</th>
+                    <th style="width:35%;text-align:left;">Player</th>
+                    <th colspan="3" style="width:8%;">Kills</th>
+                    <th class="ls-responsive-hide" style="width:5%;">Hs</th>
+                    <th class="ls-responsive-hide" style="width:7%;">HS:K</th>
+                    <th class="ls-responsive-hide" style="width:6%;">Acc</th>
+                    <th class="ls-responsive-hide" style="width:10%;">Time</th>
+                    <th class="ls-responsive-hide" style="width:6%;">+/-</th>
+                    <th style="width:7%;">Skill</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var teamGroup in Model.PlayersByTeam)
+            {
+                var team = Model.GetTeam(teamGroup.Key);
+                bool isUnassigned = team is null;
+                var bgColor  = team?.PlayerlistBgcolor ?? "#D5D5D5";
+                var txtColor = team?.PlayerlistColor   ?? "#050505";
+                var teamName = team?.Name is { Length: > 0 } n ? n : teamGroup.Key;
+                var rowStyle  = $"background:{bgColor};color:{txtColor};";
+                var footStyle = $"background:{bgColor};color:{txtColor};border-top:1px {txtColor} solid;";
+
+                int j = 1;
+                @foreach (var ls in teamGroup)
+                {
+                    <tr style="@rowStyle">
+                        <td>@(isUnassigned ? "" : j.ToString())</td>
+                        <td style="text-align:left;">
+                            @if (!ls.IsSourceTV)
+                            {
+                                var flagFile = string.IsNullOrEmpty(ls.CliFlag) ? "0.gif" : ls.CliFlag.ToLowerInvariant() + ".gif";
+                                var flagAlt  = string.IsNullOrEmpty(ls.CliCountry) ? "" : ls.CliCountry;
+                                <img src="@(Url.Content("~/hlstatsimg/flags/") + flagFile)" alt="@flagAlt" title="@flagAlt" />@:
+                            }
+                            @{ var lsName = ls.IsBot ? ls.Name + " (BOT)" : ls.Name; }
+                            @if (ls.PlayerId > 0 && !ls.IsSourceTV)
+                            {
+                                <a style="color:@txtColor"
+                                   asp-controller="Players" asp-action="Profile" asp-route-id="@ls.PlayerId">@lsName</a>
+                            }
+                            else { @lsName }
+                        </td>
+                        <td style="text-align:right;">@ls.Kills</td>
+                        <td>:</td>
+                        <td style="text-align:left;">@ls.Deaths</td>
+                        <td class="ls-responsive-hide">@ls.Headshots</td>
+                        <td class="ls-responsive-hide">@ls.HeadshotPercent.ToString("F2")</td>
+                        <td class="ls-responsive-hide">@ls.Accuracy.ToString("F0")%</td>
+                        <td class="ls-responsive-hide">@ls.ConnectedFormatted</td>
+                        <td class="ls-responsive-hide">@ls.SkillChange</td>
+                        <td>@ls.Skill.ToString("N0")</td>
+                    </tr>
+                    j++;
+                }
+
+                @if (!isUnassigned)
+                {
+                    var teamKills  = teamGroup.Sum(p => p.Kills);
+                    var teamDeaths = teamGroup.Sum(p => p.Deaths);
+                    var teamHs     = teamGroup.Sum(p => p.Headshots);
+                    var teamShots  = teamGroup.Sum(p => p.Shots);
+                    var teamHits   = teamGroup.Sum(p => p.Hits);
+                    var teamHsk    = teamKills > 0 ? ((double)teamHs / teamKills).ToString("F2") : "0.00";
+                    var teamAcc    = teamShots > 0 ? ((double)teamHits / teamShots * 100).ToString("F0") + "%" : "0%";
+                    var teamSkill  = teamGroup.Any() ? ((int)teamGroup.Average(p => p.Skill)).ToString("N0") : "-";
+                    <tr style="@footStyle">
+                        <td>&nbsp;</td>
+                        <td style="text-align:left;"><strong>@teamName</strong></td>
+                        <td style="text-align:right;">@teamKills</td>
+                        <td>:</td>
+                        <td style="text-align:left;">@teamDeaths</td>
+                        <td class="ls-responsive-hide">@teamHs</td>
+                        <td class="ls-responsive-hide">@teamHsk</td>
+                        <td class="ls-responsive-hide">@teamAcc</td>
+                        <td class="ls-responsive-hide">&nbsp;</td>
+                        <td class="ls-responsive-hide">-</td>
+                        <td>@teamSkill</td>
+                    </tr>
+                }
+            }
+            </tbody>
+        </table>
+    </section>
+}
+else
+{
+    <section>
+        <p>No players online right now.</p>
+    </section>
+}
+
+@if (Model.DailyAwards.Any())
+{
+    <section>
+        <h2>Daily Awards &mdash; @(Model.DailyAwardsDate?.ToString("dddd, MMMM d") ?? "Unknown Date")</h2>
+        <table class="data-table">
+            <thead>
+                <tr class="data-table-head">
+                    <th style="text-align:left;">Award</th>
+                    <th style="text-align:left;">Winner</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ int awardRow = 0; }
+                @foreach (var a in Model.DailyAwards)
+                {
+                    <tr class="@(awardRow % 2 == 0 ? "bg1" : "bg2")">
+                        <td><a asp-controller="Awards" asp-action="DailyAwardDetail" asp-route-id="@a.AwardId" asp-route-game="@Model.Game">@a.Name</a></td>
+                        <td>
+                            @if (a.DailyWinner is not null)
+                            {
+                                @if (!string.IsNullOrEmpty(a.DailyWinner.Flag))
+                                {
+                                    <img src="@(Url.Content("~/hlstatsimg/flags/") + a.DailyWinner.Flag.ToLowerInvariant() + ".gif")"
+                                         alt="@a.DailyWinner.Country" title="@a.DailyWinner.Country" />
+                                }
+                                <a asp-controller="Players" asp-action="Profile"
+                                   asp-route-id="@a.DailyWinner.PlayerId"><strong>@a.DailyWinner.LastName</strong></a>
+                                @($" ({a.DailyWinnerCount} {a.Verb})")
+                            }
+                            else
+                            {
+                                <text>&nbsp;&nbsp; <em>No Award Winner</em></text>
+                            }
+                        </td>
+                    </tr>
+                    awardRow++;
+                }
+            </tbody>
+        </table>
+    </section>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+
+    @if (Model.TrendSeries.Any())
+    {
+        <script>
+        (function () {
+            const isMobile = window.innerWidth <= 768;
+            const labels      = @Html.Raw(trendLabels);
+            const actSlots    = @Html.Raw(trendActSlots);
+            const maxSlots    = @Html.Raw(trendMaxSlots);
+            const kills       = @Html.Raw(trendKills);
+            const headshots   = @Html.Raw(trendHeadshots);
+            const players     = @Html.Raw(trendPlayers);
+
+            new Chart(document.getElementById('trendChart'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'Active Players',
+                            data: actSlots,
+                            borderColor: '#0000FF',
+                            backgroundColor: 'rgba(0,0,255,0.08)',
+                            borderWidth: 1.5,
+                            pointRadius: 0,
+                            fill: false,
+                            tension: 0.2,
+                            yAxisID: 'ySlots'
+                        },
+                        {
+                            label: 'Max Slots',
+                            data: maxSlots,
+                            borderColor: '#696969',
+                            borderWidth: 1,
+                            borderDash: [4, 3],
+                            pointRadius: 0,
+                            fill: false,
+                            tension: 0,
+                            yAxisID: 'ySlots'
+                        },
+                        {
+                            label: 'Kills',
+                            data: kills,
+                            borderColor: '#FFA500',
+                            borderWidth: 1,
+                            pointRadius: 0,
+                            fill: false,
+                            tension: 0.2,
+                            yAxisID: 'yCounts'
+                        },
+                        {
+                            label: 'Headshots',
+                            data: headshots,
+                            borderColor: '#99AAAA',
+                            borderWidth: 1,
+                            pointRadius: 0,
+                            fill: false,
+                            tension: 0.2,
+                            yAxisID: 'yCounts'
+                        },
+                        {
+                            label: 'Registered Players',
+                            data: players,
+                            borderColor: '#CC0000',
+                            borderWidth: 1,
+                            pointRadius: 0,
+                            fill: false,
+                            tension: 0.2,
+                            yAxisID: 'yCounts'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { display: true, position: 'top', labels: { boxWidth: 12, font: { size: isMobile ? 8 : 11 } } }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#333', maxTicksLimit: 8, font: { size: isMobile ? 8 : 11 } },
+                            grid: { color: '#ddd' },
+                            title: { display: true, text: 'Time', color: '#555', font: { size: isMobile ? 8 : 11 } }
+                        },
+                        ySlots: {
+                            type: 'linear',
+                            position: 'left',
+                            beginAtZero: true,
+                            ticks: { color: '#333', stepSize: 4, font: { size: isMobile ? 8 : 11 } },
+                            grid: { color: '#ddd' },
+                            title: { display: true, text: 'Players', color: '#555', font: { size: isMobile ? 8 : 11 } }
+                        },
+                        yCounts: {
+                            type: 'linear',
+                            position: 'right',
+                            beginAtZero: false,
+                            ticks: { color: '#999', callback: v => v >= 1000 ? (v / 1000) + 'K' : v, font: { size: isMobile ? 8 : 11 } },
+                            grid: { drawOnChartArea: false },
+                            title: { display: true, text: 'Cumulative', color: '#999', font: { size: isMobile ? 8 : 11 } }
+                        }
+                    }
+                }
+            });
+        })();
+        </script>
+    }
+
+    <style>
+    .load-range-btn { cursor:pointer; background:var(--surface-hover); color:var(--highlight); border-color:var(--highlight); }
+    .active-range { background:#3A5570; color:#fff; border-color:#3A5570; }
+    </style>
+    <script>
+    (function () {
+            const isMobile = window.innerWidth <= 768;
+            const mobileStep = isMobile ? 8 : 1;
+            function thin(arr) { return arr.filter((_, i) => i % mobileStep === 0); }
+
+            const serverId = @s.ServerId;
+            const loadChartBase = '@Url.Action("LoadChart", "Servers")';
+            let currentMaps = thin(@Html.Raw(chartMaps));
+
+            function buildMapSegments(maps) {
+                const segs = [];
+                let last = null;
+                for (let i = 0; i < maps.length; i++) {
+                    const m = maps[i] && maps[i] !== '+' ? maps[i] : null;
+                    if (m && m !== last) { segs.push({ startIndex: i, map: m }); last = m; }
+                }
+                return segs;
+            }
+
+            const mapOverlayPlugin = {
+                id: 'mapOverlay',
+                afterDraw(chart) {
+                    const segs = buildMapSegments(currentMaps);
+                    if (!segs.length) return;
+                    const { ctx, chartArea: { top, bottom, left, right }, scales: { x } } = chart;
+                    ctx.save();
+                    ctx.beginPath(); ctx.rect(left, top, right - left, bottom - top); ctx.clip();
+                    const bands = ['rgba(91,154,173,0.10)', 'rgba(91,154,173,0.22)'];
+                    for (let s = 0; s < segs.length; s++) {
+                        const seg = segs[s];
+                        const xStart = seg.startIndex > 0 ? x.getPixelForValue(seg.startIndex) : left;
+                        const xEnd = s + 1 < segs.length ? x.getPixelForValue(segs[s + 1].startIndex) : right;
+                        ctx.fillStyle = bands[s % 2];
+                        ctx.fillRect(xStart, top, xEnd - xStart, bottom - top);
+                        ctx.save();
+                        ctx.font = (isMobile ? '8px' : '11px') + ' sans-serif'; ctx.fillStyle = 'rgba(50,50,50,0.65)';
+                        ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+                        ctx.translate((xStart + xEnd) / 2, top); ctx.rotate(-Math.PI / 2);
+                        ctx.fillText(seg.map, -6, 0);
+                        ctx.restore();
+                    }
+                    ctx.restore();
+                }
+            };
+
+            const chart = new Chart(document.getElementById('activityChart'), {
+                type: 'line',
+                plugins: [mapOverlayPlugin],
+                data: {
+                    labels: thin(@Html.Raw(chartLabels)),
+                    datasets: [{
+                        label: 'Players',
+                        data: thin(@Html.Raw(chartData)),
+                        backgroundColor: 'rgba(171,204,214,0.4)',
+                        borderColor: '#5b9aad',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    const map = currentMaps[ctx.dataIndex];
+                                    const mapLabel = map && map !== '+' ? ` — ${map}` : '';
+                                    return `${ctx.parsed.y} players${mapLabel}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#333', maxTicksLimit: 8, font: { size: isMobile ? 8 : 11 } },
+                            grid: { color: '#ddd' },
+                            title: { display: true, text: 'Time', color: '#555', font: { size: isMobile ? 8 : 11 } }
+                        },
+                        y: {
+                            ticks: { color: '#333', stepSize: 4, font: { size: isMobile ? 8 : 11 } },
+                            grid: { color: '#ddd' },
+                            beginAtZero: true,
+                            max: @chartMax,
+                            title: { display: true, text: 'Players', color: '#555', font: { size: isMobile ? 8 : 11 } }
+                        }
+                    }
+                }
+            });
+
+            const chartLoader = document.getElementById('chartLoader');
+            document.querySelectorAll('.load-range-btn').forEach(btn => {
+                btn.addEventListener('click', async function () {
+                    document.querySelectorAll('.load-range-btn').forEach(b => b.classList.remove('active-range'));
+                    this.classList.add('active-range');
+                    const range = this.dataset.range;
+                    chartLoader.style.display = 'flex';
+                    try {
+                        const resp = await fetch(`${loadChartBase}/${serverId}?range=${range}`);
+                        const rows = await resp.json();
+                        currentMaps = thin(rows.map(r => r.map));
+                        chart.data.labels = thin(rows.map(r => r.label));
+                        chart.data.datasets[0].data = thin(rows.map(r => r.actPlayers));
+                        chart.options.scales.y.max = rows.reduce((m, r) => Math.max(m, r.maxPlayers), 0) || undefined;
+                        chart.update();
+                    } finally {
+                        chartLoader.style.display = 'none';
+                    }
+                });
+            });
+    })();
+    </script>
+}

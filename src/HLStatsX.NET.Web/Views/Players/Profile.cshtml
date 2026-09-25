@@ -1,0 +1,1213 @@
+@model PlayerProfileViewModel
+@using HLStatsX.NET.Core.Models
+@inject Microsoft.Extensions.Configuration.IConfiguration Config
+@{
+    ViewData["Title"] = Model.Player.LastName;
+
+    var imgRoot      = Url.Content("~/hlstatsimg");
+    var scheme       = Context.Request.Scheme;
+    var sigAbsUrl    = Url.Action("Sig",     "Players", new { id = Model.Player.PlayerId }, scheme)!;
+    var profileAbsUrl = Url.Action("Profile", "Players", new { id = Model.Player.PlayerId }, scheme)!;
+    var defaultSigText = $"[url={profileAbsUrl}][img]{sigAbsUrl}[/img][/url]";
+    var previewMode  = Config.GetValue<bool>("HLStatsX:PreviewMode");
+}
+
+<h1>
+    @if (!previewMode && !string.IsNullOrEmpty(Model.Player.Flag))
+    {
+        <img src="@(Url.Content("~/hlstatsimg/flags/") + Model.Player.Flag.ToLower() + ".gif")" alt="@Model.Player.Country" title="@Model.Player.Country" style="vertical-align:middle;" />
+    }
+    @(Model.Player.IsBot ? Model.Player.LastName + " (BOT)" : Model.Player.LastName)
+    <small class="text-muted">&mdash; #@Model.Rank @if (Model.CurrentRank != null) { <span>(@Model.CurrentRank.RankName)</span> }</small>
+</h1>
+
+<div class="profile-tabs" id="profileTabs">
+    <a href="#tab-general" class="tab-link active">General</a>
+    <a href="#tab-teams" class="tab-link">Teams &amp; Actions</a>
+    <a href="#tab-weapons" class="tab-link">Weapons</a>
+    <a href="#tab-maps" class="tab-link">Maps &amp; Servers</a>
+    <a href="#tab-kills" class="tab-link">Kill Stats</a>
+</div>
+
+<div id="tab-general" class="tab-panel active">
+  <section class="profile-card">
+      @{
+          var steamUniqueId = Model.Player.UniqueIds.FirstOrDefault()?.UniqueId;
+          bool isBot = steamUniqueId?.StartsWith("BOT", StringComparison.OrdinalIgnoreCase) == true;
+      }
+      <table class="data-table">
+        <colgroup><col style="width:200px"><col><col style="width:170px"></colgroup>
+        <tr class="data-table-head">
+          <td colspan="3">Player Profile</td>
+        </tr>
+        <tr class="bg1">
+          <td colspan="2">
+            @if (!previewMode && !string.IsNullOrEmpty(Model.Player.Flag))
+            {
+              <img src="@(Url.Content("~/hlstatsimg/flags/") + Model.Player.Flag.ToLower() + ".gif")" alt="@Model.Player.Country" title="@Model.Player.Country" style="vertical-align:middle;" />
+            }
+            <strong>@(Model.Player.IsBot ? Model.Player.LastName + " (BOT)" : Model.Player.LastName)</strong>
+          </td>
+          <td id="player_avatar" rowspan="13" style="text-align:center;vertical-align:top;padding:8px;">
+            @if (Model.Player.IsBot)
+            {
+              <img src="~/hlstatsimg/bot.png" style="height:158px;width:158px;" alt="Bot" />
+            }
+            else if (!previewMode && Model.Steam64Id.HasValue)
+            {
+              <img src="@(Url.Action("Avatar", "Players", new { steam64 = Model.Steam64Id.Value }))"
+                   style="height:158px;width:158px;" alt="Steam Community Avatar"
+                   onerror="this.style.display='none'" />
+            }
+          </td>
+        </tr>
+        <tr class="bg2">
+          <td>Location:</td>
+          <td>
+            @if (previewMode) { <em>hidden</em> }
+            else if (!string.IsNullOrEmpty(Model.Player.Country))
+            {
+              @if (!string.IsNullOrEmpty(Model.Player.City)) { <text>@Model.Player.City, </text> }
+              @Model.Player.Country
+            }
+            else { <text>(Unknown)</text> }
+          </td>
+        </tr>
+        <tr class="bg1">
+          <td>Steam:</td>
+          <td>
+            @if (previewMode) { <em>hidden</em> }
+            else if (steamUniqueId != null && !isBot && Model.Steam64Id.HasValue)
+            {
+              <a href="http://steamcommunity.com/profiles/@(Model.Steam64Id)" target="_blank">STEAM_0:@steamUniqueId</a>
+            }
+            else if (steamUniqueId != null)
+            {
+              <text>@steamUniqueId</text>
+            }
+          </td>
+        </tr>
+        <tr class="bg2">
+          <td>Karma:</td>
+          <td>
+            @if (Model.Player.HideRanking == 2) { <span style="color:red;font-weight:bold;">Banned</span> }
+            else { <span style="color:green;font-weight:bold;">In good standing</span> }
+          </td>
+        </tr>
+        <tr class="bg1">
+          <td>Member of Clan:</td>
+          <td>
+            @if (Model.Player.Clan is not null) { <a asp-controller="Clans" asp-action="Profile" asp-route-id="@Model.Player.Clan.ClanId">@Model.Player.Clan.Name</a> }
+            else { <text>(None)</text> }
+          </td>
+        </tr>
+        <tr class="bg2">
+          <td>Real Name:</td>
+          <td>
+            @if (!string.IsNullOrEmpty(Model.Player.FullName)) { <strong>@Model.Player.FullName</strong> }
+            else { <em>(Not Specified)</em> }
+          </td>
+        </tr>
+        <tr class="bg1">
+          <td>Home Page:</td>
+          <td>
+            @if (!string.IsNullOrEmpty(Model.Player.Homepage)) { <a href="@Model.Player.Homepage" rel="nofollow noopener" target="_blank">@Model.Player.Homepage</a> }
+            else { <em>(Not Specified)</em> }
+          </td>
+        </tr>
+        <tr class="bg2">
+          <td>Last Connect:*</td>
+          <td>@(Model.LastConnect.HasValue ? Model.LastConnect.Value.ToString("ddd. MMM. d, yyyy @ HH:mm:ss") : "(Unknown)")</td>
+        </tr>
+        <tr class="bg1">
+          <td>Connection Time:</td>
+          <td>@RazorHelpers.FormatTimeFull(Model.Player.ConnectionTime)</td>
+        </tr>
+        <tr class="bg2">
+          <td>Average Ping:*</td>
+          <td>
+            @if (Model.Ping != null) { <text>@Model.Ping.AvgPing ms (Latency: @Model.Ping.AvgLatency ms)</text> }
+            else { <text>-</text> }
+          </td>
+        </tr>
+        <tr class="bg1">
+          <td>Favorite Server:*</td>
+          <td>
+            @if (Model.FavoriteServer != null) { <a asp-controller="Servers" asp-action="Detail" asp-route-id="@Model.FavoriteServer.ServerId">@Model.FavoriteServer.ServerName</a> }
+            else { <text>-</text> }
+          </td>
+        </tr>
+        <tr class="bg2">
+          <td>Favorite Map:*</td>
+          <td>@if (Model.FavoriteMap != null) { <a asp-controller="Maps" asp-action="Detail" asp-route-name="@Model.FavoriteMap">@Model.FavoriteMap</a> } else { <text>-</text> }</td>
+        </tr>
+        <tr class="bg1">
+          <td>Favorite Weapon:*</td>
+          <td>
+            @if (Model.FavoriteWeapon is not null)
+            {
+              <a asp-controller="Weapons" asp-action="Detail" asp-route-code="@(Model.FavoriteWeapon.WeaponCode)" asp-route-game="@(Model.Player.Game)">
+                <img src="@(Url.Content("~/hlstatsimg/games/") + Model.Player.Game + "/weapons/" + Model.FavoriteWeapon.WeaponCode + ".gif")"
+                     alt="@Model.FavoriteWeapon.WeaponName" title="@Model.FavoriteWeapon.WeaponName"
+                     style="vertical-align:middle;max-height:24px;"
+                     onerror="this.style.display='none'" />
+              </a>
+            }
+            else { <text>-</text> }
+          </td>
+        </tr>
+      </table>
+  </section>
+
+  <div class="profile-section">
+    <section class="profile-stats-summary">
+      <table class="stats-table">
+        <colgroup><col style="width:200px"><col></colgroup>
+        <thead><tr class="data-table-head"><td colspan="2">Statistics Summary</td></tr></thead>
+        <tr>
+          <th>Activity</th>
+          <td>
+            <activity-meter value="@Model.Player.ActivityScore" />
+            @Model.Player.ActivityScore%
+          </td>
+        </tr>
+        <tr><th>Points</th><td><strong>@Model.Player.Skill.ToString("N0")</strong></td></tr>
+        <tr><th>Rank</th><td>
+            @if (Model.Player.HideRanking == 1) { <text>Hidden</text> }
+            else if (Model.Player.HideRanking == 2) { <span class="text-danger">Banned</span> }
+            else if (Model.Player.ActivityScore == 0) { <text>Not active</text> }
+            else { <strong>#@Model.Rank.ToString("N0")</strong> }
+        </td></tr>
+        <tr><th>Kills per Minute</th><td>
+            @(Model.Player.ConnectionTime > 0 ? Model.Player.KillsPerMinute.ToString("F2") : "-")
+        </td></tr>
+        <tr><th>Kills per Death</th><td>@Model.Player.KillDeathRatio (@Model.RealStats.RealKpd*)</td></tr>
+        <tr><th>Headshots per Kill</th><td>@Model.Player.HeadshotPercent% (@Model.RealStats.RealHpk.ToString("F2")*)</td></tr>
+        <tr><th>Weapon Accuracy</th><td>@Model.Player.Accuracy%</td></tr>
+        <tr><th>Headshots</th><td>@Model.Player.Headshots.ToString("N0") (@Model.RealStats.RealHeadshots.ToString("N0")*)</td></tr>
+        <tr><th>Kills</th><td>@Model.Player.Kills.ToString("N0") (@Model.RealStats.RealKills.ToString("N0")*)</td></tr>
+        <tr><th>Deaths</th><td>@Model.Player.Deaths.ToString("N0") (@Model.RealStats.RealDeaths.ToString("N0")*)</td></tr>
+        <tr><th>Longest Kill Streak</th><td>@Model.Player.KillStreak.ToString("N0")</td></tr>
+        <tr><th>Longest Death Streak</th><td>@Model.Player.DeathStreak.ToString("N0")</td></tr>
+        <tr><th>Suicides</th><td>@Model.Player.Suicides.ToString("N0")</td></tr>
+        <tr><th>Teammate Kills</th><td>@Model.Player.Teamkills.ToString("N0") (@Model.RealStats.RealTeamkills.ToString("N0")*)</td></tr>
+      </table>
+      <p>
+        <a asp-action="History" asp-route-id="@Model.Player.PlayerId">Events</a> |
+        <a asp-action="Sessions" asp-route-id="@Model.Player.PlayerId">Sessions</a> |
+        <a asp-action="Awards" asp-route-id="@Model.Player.PlayerId">Awards (@Model.Awards.Count)</a> |
+        <a asp-controller="Chat" asp-action="PlayerHistory" asp-route-id="@Model.Player.PlayerId">Chat History</a>
+      </p>
+      <p>
+        <a asp-controller="Search" asp-action="Index" asp-route-q="@Model.Player.LastName" asp-route-st="player" asp-route-game="@Model.Player.Game">Find other players with the same name</a>
+      </p>
+    </section>
+  </div>
+
+  <div class="profile-section">
+    <h2>Miscellaneous Statistics</h2>
+    <div class="profile-two-col">
+      <section style="height:100%;">
+        <table class="data-table" style="height:100%;">
+          <thead><tr class="data-table-head"><td>Player Trend</td></tr></thead>
+          <tbody>
+            <tr class="bg1">
+              <td style="text-align:center;padding:8px;">
+                @if (Model.TrendData.Count < 2)
+                {
+                  <em>Not enough session data to display a trend.</em>
+                }
+                else
+                {
+                  <div style="position:relative;width:100%;height:200px;">
+                    <canvas id="trendChart" style="background:#1a1a1a;border-radius:4px;"></canvas>
+                  </div>
+                }
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section style="height:100%;">
+        <table class="data-table" style="height:100%;">
+          <thead><tr class="data-table-head"><td colspan="2">Forum Signature</td></tr></thead>
+          <tbody>
+            <tr class="bg1">
+              <td style="text-align:center;padding:12px;">
+                <img src="@(Url.Action("Sig", "Players", new { id = Model.Player.PlayerId }))"
+                     alt="Forum signature" title="Copy &amp; paste the URL below into your forum signature" />
+                <br /><br />
+                <a href="#" onclick="setSigText(1);return false;">bbCode 1 (phpBB, SMF)</a>
+                &nbsp;|&nbsp;
+                <a href="#" onclick="setSigText(2);return false;">bbCode 2 (IPB)</a>
+                &nbsp;|&nbsp;
+                <a href="#" onclick="setSigText(0);return false;">Direct Image</a>
+                <br />
+                <textarea id="siglink" rows="2" style="width:95%;margin-top:6px;" readonly
+                          onclick="this.select()">@defaultSigText</textarea>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+  </div>
+
+  <div class="profile-section">
+    <h2>Ranks</h2>
+    <div class="profile-two-col">
+      <section style="height:100%;">
+        <table class="stats-table" style="height:100%;">
+          <thead>
+            <tr><th colspan="2">Current rank: <strong>@(Model.CurrentRank?.RankName ?? "Unranked")</strong></th></tr>
+          </thead>
+          <tbody>
+            @if (Model.CurrentRank?.Image != null)
+            {
+            <tr><td colspan="2" style="text-align:center;">
+              <img src="@(Url.Content("~/hlstatsimg/ranks/") + Model.CurrentRank.Image + ".png")" alt="@Model.CurrentRank.RankName" title="@Model.CurrentRank.RankName" />
+            </td></tr>
+            }
+            <tr>
+              <td style="width:60%;">
+                @if (Model.NextRank != null)
+                {
+                  <activity-meter value="@Model.RankPercent" style="width:100%;" />
+                }
+              </td>
+              <td style="width:40%;">
+                @if (Model.NextRank != null)
+                {
+                  <text>Kills needed: <strong>@Model.RankKillsNeeded (@Model.RankPercent%)</strong></text>
+                }
+                else
+                {
+                  <strong>Maximum rank achieved!</strong>
+                }
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section style="height:100%;">
+        <table class="stats-table" style="height:100%;">
+          <thead><tr><th>Rank history</th></tr></thead>
+          <tbody>
+            <tr><td style="text-align:center;">
+              @if (Model.PastRanks.Count == 0)
+              {
+                <em>No previous ranks.</em>
+              }
+              else
+              {
+                @foreach (var pr in Model.PastRanks)
+                {
+                  <img src="@(Url.Content("~/hlstatsimg/ranks/") + pr.Image + "_small.png")" alt="@pr.RankName" title="@pr.RankName" style="margin:2px;" />
+                }
+              }
+            </td></tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+  </div>
+  @if (Model.AllRibbons.Any() || Model.GlobalAwards.Any())
+  {
+  <div class="profile-section">
+    <h2>Awards <small style="font-size:0.7em;font-weight:normal;">(hover for name)</small></h2>
+    <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;">
+      @if (Model.AllRibbons.Any())
+      {
+      <div style="flex:2 1 0;">
+        <table class="data-table">
+          <thead><tr class="data-table-head"><td>Ribbons</td></tr></thead>
+          <tbody>
+            <tr class="bg1">
+              <td style="text-align:center;padding:8px;">
+                @foreach (var r in Model.AllRibbons)
+                {
+                  var ribbonSrc = r.Earned && r.Image != null
+                      ? $"{imgRoot}/games/{Model.Player.Game}/ribbons/{r.Image}"
+                      : $"{imgRoot}/games/{Model.Player.Game}/ribbons/noaward.png";
+                  <img src="@ribbonSrc" alt="@r.RibbonName" title="@r.RibbonName" style="border:0;margin:2px;" />
+                }
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      }
+      @if (Model.GlobalAwards.Any())
+      {
+      <div style="flex:1 1 0;">
+        <table class="data-table">
+          <thead><tr class="data-table-head"><td>Global Awards</td></tr></thead>
+          <tbody>
+            <tr class="bg1">
+              <td style="text-align:center;padding:8px;">
+                @foreach (var a in Model.GlobalAwards)
+                {
+                  var gaImg = $"{imgRoot}/games/{Model.Player.Game}/gawards/{a.AwardType.ToLower()}_{a.Code.ToLower()}.png";
+                  <img src="@gaImg" alt="@a.Name" title="@a.Name" style="border:0;margin:2px;" />
+                }
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      }
+    </div>
+  </div>
+  }
+
+@{
+    string AlSortUrl(string field)
+    {
+        bool nextDesc = Model.AliasSortBy == field ? !Model.AliasDesc : true;
+        return Url.Action("Profile", new { id = Model.Player.PlayerId,
+            alSort = field, alDesc = nextDesc })! + "#tab-general";
+    }
+    string AlMark(string field) => Model.AliasSortBy == field ? (Model.AliasDesc ? " ▼" : " ▲") : "";
+}
+@if (Model.Aliases.Count > 1)
+  {
+  <h2>Aliases</h2>
+  <table class="data-table">
+    <thead>
+      <tr class="data-table-head">
+        <th class="rank-col">Rank</th>
+        <th><a href="@(AlSortUrl("name"))">Name@(AlMark("name"))</a></th>
+        <th style="text-align:right"><a href="@(AlSortUrl("time"))">Time@(AlMark("time"))</a></th>
+        <th style="text-align:right"><a href="@(AlSortUrl("lastuse"))">Last Use@(AlMark("lastuse"))</a></th>
+        <th style="text-align:right"><a href="@(AlSortUrl("kills"))">Kills@(AlMark("kills"))</a></th>
+        <th style="text-align:right"><a href="@(AlSortUrl("deaths"))">Deaths@(AlMark("deaths"))</a></th>
+        <th style="text-align:right"><a href="@(AlSortUrl("kd"))">K:D@(AlMark("kd"))</a></th>
+        <th style="text-align:right"><a href="@(AlSortUrl("headshots"))">Headshots@(AlMark("headshots"))</a></th>
+        <th style="text-align:right"><a href="@(AlSortUrl("hsk"))">HS:K@(AlMark("hsk"))</a></th>
+        <th style="text-align:right"><a href="@(AlSortUrl("suicides"))">Suicides@(AlMark("suicides"))</a></th>
+        <th style="text-align:right"><a href="@(AlSortUrl("accuracy"))">Accuracy@(AlMark("accuracy"))</a></th>
+      </tr>
+    </thead>
+    <tbody>
+      @{ int aliasRank = 0; bool alAlt = false; }
+      @foreach (var a in Model.Aliases)
+      {
+        string alRow = (alAlt = !alAlt) ? "bg1" : "bg2";
+        aliasRank++;
+        <tr>
+          <td class="@alRow rank-col">@(aliasRank).</td>
+          <td class="@alRow">@a.Name</td>
+          <td class="@alRow" style="text-align:right">@RazorHelpers.FormatTimeFull(a.ConnectionTime)</td>
+          <td class="@alRow" style="text-align:right">@(a.LastUse.HasValue ? a.LastUse.Value.ToString("yyyy-MM-dd") : "-")</td>
+          <td class="@alRow" style="text-align:right">@a.Kills.ToString("N0")</td>
+          <td class="@alRow" style="text-align:right">@a.Deaths.ToString("N0")</td>
+          <td class="@alRow" style="text-align:right">@a.KdRatio</td>
+          <td class="@alRow" style="text-align:right">@a.Headshots.ToString("N0")</td>
+          <td class="@alRow" style="text-align:right">@a.HsKRatio</td>
+          <td class="@alRow" style="text-align:right">@a.Suicides.ToString("N0")</td>
+          <td class="@alRow" style="text-align:right">@a.Accuracy%</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+  }
+
+</div>
+
+<div id="tab-teams" class="tab-panel" style="display:none;">
+@{
+    string PaSortUrl(string field)
+    {
+        bool nextDesc = Model.PlayerActionSortBy == field ? !Model.PlayerActionDesc : true;
+        return Url.Action("Profile", new { id = Model.Player.PlayerId,
+            paSort  = field,                              paDesc  = nextDesc,
+            pavSort = Model.PlayerActionVictimSortBy,     pavDesc = Model.PlayerActionVictimDesc,
+            tsSort  = Model.TeamSortBy,                   tsDesc  = Model.TeamDesc,
+            rsSort  = Model.RoleSortBy,                   rsDesc  = Model.RoleDesc,
+            ksSort  = Model.KillStatsSortBy,              ksDesc  = Model.KillStatsDesc,  ksLimit = Model.KillLimit,  ksPage = Model.KillStats.Page,
+            mpSort  = Model.MapSortBy,                    mpDesc  = Model.MapDesc,
+            spSort  = Model.ServerSortBy,                 spDesc  = Model.ServerDesc,
+            wuSort  = Model.WeaponUsageSortBy,            wuDesc  = Model.WeaponUsageDesc,
+            wsSort  = Model.WeaponStatsmeSortBy,          wsDesc  = Model.WeaponStatsmeDesc,
+            wtSort  = Model.WeaponTargetSortBy,           wtDesc  = Model.WeaponTargetDesc })! + "#tab-teams";
+    }
+    string PaMark(string field) => Model.PlayerActionSortBy == field ? (Model.PlayerActionDesc ? " ▼" : " ▲") : "";
+
+    string PavSortUrl(string field)
+    {
+        bool nextDesc = Model.PlayerActionVictimSortBy == field ? !Model.PlayerActionVictimDesc : true;
+        return Url.Action("Profile", new { id = Model.Player.PlayerId,
+            paSort  = Model.PlayerActionSortBy,           paDesc  = Model.PlayerActionDesc,
+            pavSort = field,                              pavDesc = nextDesc,
+            tsSort  = Model.TeamSortBy,                   tsDesc  = Model.TeamDesc,
+            rsSort  = Model.RoleSortBy,                   rsDesc  = Model.RoleDesc,
+            ksSort  = Model.KillStatsSortBy,              ksDesc  = Model.KillStatsDesc,  ksLimit = Model.KillLimit,  ksPage = Model.KillStats.Page,
+            mpSort  = Model.MapSortBy,                    mpDesc  = Model.MapDesc,
+            spSort  = Model.ServerSortBy,                 spDesc  = Model.ServerDesc,
+            wuSort  = Model.WeaponUsageSortBy,            wuDesc  = Model.WeaponUsageDesc,
+            wsSort  = Model.WeaponStatsmeSortBy,          wsDesc  = Model.WeaponStatsmeDesc,
+            wtSort  = Model.WeaponTargetSortBy,           wtDesc  = Model.WeaponTargetDesc })! + "#tab-teams";
+    }
+    string PavMark(string field) => Model.PlayerActionVictimSortBy == field ? (Model.PlayerActionVictimDesc ? " ▼" : " ▲") : "";
+
+    string TsSortUrl(string field)
+    {
+        bool nextDesc = Model.TeamSortBy == field ? !Model.TeamDesc : true;
+        return Url.Action("Profile", new { id = Model.Player.PlayerId,
+            paSort  = Model.PlayerActionSortBy,           paDesc  = Model.PlayerActionDesc,
+            pavSort = Model.PlayerActionVictimSortBy,     pavDesc = Model.PlayerActionVictimDesc,
+            tsSort  = field,                              tsDesc  = nextDesc,
+            rsSort  = Model.RoleSortBy,                   rsDesc  = Model.RoleDesc,
+            ksSort  = Model.KillStatsSortBy,              ksDesc  = Model.KillStatsDesc,  ksLimit = Model.KillLimit,  ksPage = Model.KillStats.Page,
+            mpSort  = Model.MapSortBy,                    mpDesc  = Model.MapDesc,
+            spSort  = Model.ServerSortBy,                 spDesc  = Model.ServerDesc,
+            wuSort  = Model.WeaponUsageSortBy,            wuDesc  = Model.WeaponUsageDesc,
+            wsSort  = Model.WeaponStatsmeSortBy,          wsDesc  = Model.WeaponStatsmeDesc,
+            wtSort  = Model.WeaponTargetSortBy,           wtDesc  = Model.WeaponTargetDesc })! + "#tab-teams";
+    }
+    string TsMark(string field) => Model.TeamSortBy == field ? (Model.TeamDesc ? " ▼" : " ▲") : "";
+
+    string RsSortUrl(string field)
+    {
+        bool nextDesc = Model.RoleSortBy == field ? !Model.RoleDesc : true;
+        return Url.Action("Profile", new { id = Model.Player.PlayerId,
+            paSort  = Model.PlayerActionSortBy,           paDesc  = Model.PlayerActionDesc,
+            pavSort = Model.PlayerActionVictimSortBy,     pavDesc = Model.PlayerActionVictimDesc,
+            tsSort  = Model.TeamSortBy,                   tsDesc  = Model.TeamDesc,
+            rsSort  = field,                              rsDesc  = nextDesc,
+            ksSort  = Model.KillStatsSortBy,              ksDesc  = Model.KillStatsDesc,  ksLimit = Model.KillLimit,  ksPage = Model.KillStats.Page,
+            mpSort  = Model.MapSortBy,                    mpDesc  = Model.MapDesc,
+            spSort  = Model.ServerSortBy,                 spDesc  = Model.ServerDesc,
+            wuSort  = Model.WeaponUsageSortBy,            wuDesc  = Model.WeaponUsageDesc,
+            wsSort  = Model.WeaponStatsmeSortBy,          wsDesc  = Model.WeaponStatsmeDesc,
+            wtSort  = Model.WeaponTargetSortBy,           wtDesc  = Model.WeaponTargetDesc })! + "#tab-teams";
+    }
+    string RsMark(string field) => Model.RoleSortBy == field ? (Model.RoleDesc ? " ▼" : " ▲") : "";
+}
+
+  @* ── Player Actions ── *@
+  @if (Model.PlayerActions.Any())
+  {
+  <h2>Player Actions *</h2>
+  <table class="data-table">
+    <thead>
+      <tr class="data-table-head">
+        <th>Rank</th>
+        <th><a href="@(PaSortUrl("action"))">Action@(PaMark("action"))</a></th>
+        <th style="text-align:right"><a href="@(PaSortUrl("count"))">Earned@(PaMark("count"))</a></th>
+        <th style="text-align:right"><a href="@(PaSortUrl("points"))">Accumulated Points@(PaMark("points"))</a></th>
+      </tr>
+    </thead>
+    <tbody>
+      @{int paRank = 1; bool paBg = false;}
+      @foreach (var a in Model.PlayerActions)
+      {
+        string paRow = paBg ? "bg2" : "bg1"; paBg = !paBg;
+        <tr class="@paRow">
+          <td class="rank-col">@(paRank).</td>
+          <td>@a.Description</td>
+          <td style="text-align:right">@a.Count.ToString("N0") times</td>
+          <td style="text-align:right">@a.AccumulatedPoints.ToString("N0")</td>
+        </tr>
+        paRank++;
+      }
+    </tbody>
+  </table>
+  <br />
+  }
+
+  @* ── Victims of Player-Player Actions ── *@
+  @if (Model.PlayerActionVictims.Any())
+  {
+  <h2>Victims of Player-Player Actions *</h2>
+  <table class="data-table">
+    <thead>
+      <tr class="data-table-head">
+        <th>Rank</th>
+        <th><a href="@(PavSortUrl("action"))">Action@(PavMark("action"))</a></th>
+        <th style="text-align:right"><a href="@(PavSortUrl("count"))">Earned Against@(PavMark("count"))</a></th>
+        <th style="text-align:right"><a href="@(PavSortUrl("points"))">Accumulated Points@(PavMark("points"))</a></th>
+      </tr>
+    </thead>
+    <tbody>
+      @{int pavRank = 1; bool pavBg = false;}
+      @foreach (var a in Model.PlayerActionVictims)
+      {
+        string pavRow = pavBg ? "bg2" : "bg1"; pavBg = !pavBg;
+        <tr class="@pavRow">
+          <td class="rank-col">@(pavRank).</td>
+          <td>@a.Description</td>
+          <td style="text-align:right">@a.Count.ToString("N0") times</td>
+          <td style="text-align:right">@a.AccumulatedPoints.ToString("N0")</td>
+        </tr>
+        pavRank++;
+      }
+    </tbody>
+  </table>
+  <br />
+  }
+
+  @* ── Team Selection ── *@
+  <h2>Team Selection *</h2>
+  @if (!Model.TeamSelection.Any())
+  {
+    <p>No team data available.</p>
+  }
+  else
+  {
+    <table class="data-table">
+      <thead>
+        <tr class="data-table-head">
+          <th>Rank</th>
+          <th><a href="@(TsSortUrl("team"))">Team@(TsMark("team"))</a></th>
+          <th style="text-align:right"><a href="@(TsSortUrl("joined"))">Joined@(TsMark("joined"))</a></th>
+          <th style="text-align:right">%</th>
+          <th>Ratio</th>
+        </tr>
+      </thead>
+      <tbody>
+        @{int teamRank = 1; bool teamBg = false;}
+        @foreach (var t in Model.TeamSelection)
+        {
+          string teamRow = teamBg ? "bg2" : "bg1"; teamBg = !teamBg;
+          double pct = t.TotalJoins > 0 ? (double)t.JoinCount / t.TotalJoins * 100 : 0;
+          <tr class="@teamRow">
+            <td class="rank-col">@(teamRank).</td>
+            <td>@t.TeamName</td>
+            <td style="text-align:right">@t.JoinCount times</td>
+            <td style="text-align:right">@pct.ToString("F2")%</td>
+            <td><activity-meter value="@pct" /></td>
+          </tr>
+          teamRank++;
+        }
+      </tbody>
+    </table>
+    <br />
+  }
+
+  @* ── Role Selection ── *@
+  <h2>Role Selection *</h2>
+  @if (!Model.RoleSelection.Any())
+  {
+    <p>No role data available.</p>
+  }
+  else
+  {
+    <table class="data-table">
+      <thead>
+        <tr class="data-table-head">
+          <th>Rank</th>
+          <th><a href="@(RsSortUrl("role"))">Role@(RsMark("role"))</a></th>
+          <th style="text-align:right"><a href="@(RsSortUrl("joined"))">Joined@(RsMark("joined"))</a></th>
+          <th style="text-align:right">%</th>
+          <th>Ratio</th>
+          <th style="text-align:right"><a href="@(RsSortUrl("kills"))">Kills@(RsMark("kills"))</a></th>
+          <th style="text-align:right"><a href="@(RsSortUrl("deaths"))">Deaths@(RsMark("deaths"))</a></th>
+          <th style="text-align:right"><a href="@(RsSortUrl("kpd"))">K:D@(RsMark("kpd"))</a></th>
+        </tr>
+      </thead>
+      <tbody>
+        @{int roleRank = 1; bool roleBg = false;}
+        @foreach (var r in Model.RoleSelection)
+        {
+          string roleRow = roleBg ? "bg2" : "bg1"; roleBg = !roleBg;
+          double rolePct = r.TotalJoins > 0 ? (double)r.JoinCount / r.TotalJoins * 100 : 0;
+          <tr class="@roleRow">
+            <td class="rank-col">@(roleRank).</td>
+            <td>
+              @if (!string.IsNullOrEmpty(r.RoleImage))
+              {
+                <img src="@(Url.Content("~/hlstatsimg/games/") + Model.Player.Game + "/roles/" + Uri.EscapeDataString(r.RoleImage) + ".png")" alt="@r.RoleCode" />
+              }
+              @r.RoleName
+            </td>
+            <td style="text-align:right">@r.JoinCount times</td>
+            <td style="text-align:right">@(rolePct > 0 ? $"{rolePct:F2}%" : "-")</td>
+            <td><activity-meter value="@rolePct" /></td>
+            <td style="text-align:right">@r.Kills.ToString("N0")</td>
+            <td style="text-align:right">@r.Deaths.ToString("N0")</td>
+            <td style="text-align:right">@(r.Deaths == 0 ? r.Kills.ToString("N0") : $"{(double)r.Kills / r.Deaths:F2}")</td>
+          </tr>
+          roleRank++;
+        }
+      </tbody>
+    </table>
+    <br />
+  }
+</div>
+
+<div id="tab-weapons" class="tab-panel" style="display:none;">
+@{
+    string WuSortUrl(string field)
+    {
+        bool nextDesc = Model.WeaponUsageSortBy == field ? !Model.WeaponUsageDesc : true;
+        return Url.Action("Profile", new { id = Model.Player.PlayerId,
+            wuSort = field, wuDesc = nextDesc,
+            wsSort = Model.WeaponStatsmeSortBy, wsDesc = Model.WeaponStatsmeDesc,
+            wtSort = Model.WeaponTargetSortBy,  wtDesc = Model.WeaponTargetDesc })! + "#tab-weapons";
+    }
+    string WuMark(string field) => Model.WeaponUsageSortBy == field ? (Model.WeaponUsageDesc ? " ▼" : " ▲") : "";
+
+    string WsSortUrl(string field)
+    {
+        bool nextDesc = Model.WeaponStatsmeSortBy == field ? !Model.WeaponStatsmeDesc : true;
+        return Url.Action("Profile", new { id = Model.Player.PlayerId,
+            wuSort = Model.WeaponUsageSortBy, wuDesc = Model.WeaponUsageDesc,
+            wsSort = field, wsDesc = nextDesc,
+            wtSort = Model.WeaponTargetSortBy,  wtDesc = Model.WeaponTargetDesc })! + "#tab-weapons";
+    }
+    string WsMark(string field) => Model.WeaponStatsmeSortBy == field ? (Model.WeaponStatsmeDesc ? " ▼" : " ▲") : "";
+
+    string WtSortUrl(string field)
+    {
+        bool nextDesc = Model.WeaponTargetSortBy == field ? !Model.WeaponTargetDesc : true;
+        return Url.Action("Profile", new { id = Model.Player.PlayerId,
+            wuSort = Model.WeaponUsageSortBy, wuDesc = Model.WeaponUsageDesc,
+            wsSort = Model.WeaponStatsmeSortBy, wsDesc = Model.WeaponStatsmeDesc,
+            wtSort = field, wtDesc = nextDesc })! + "#tab-weapons";
+    }
+    string WtMark(string field) => Model.WeaponTargetSortBy == field ? (Model.WeaponTargetDesc ? " ▼" : " ▲") : "";
+}
+
+  @* ── Weapon Usage ── *@
+  @if (Model.WeaponStats.Any())
+  {
+    long wuRealKills = Model.RealStats.RealKills > 0 ? Model.RealStats.RealKills : 1;
+    long wuRealHS    = Model.RealStats.RealHeadshots > 0 ? Model.RealStats.RealHeadshots : 1;
+    <h2>Weapon Usage *</h2>
+    <table class="data-table">
+      <thead>
+        <tr class="data-table-head">
+          <th>Rank</th>
+          <th><a href="@(WuSortUrl("weapon"))">Weapon@(WuMark("weapon"))</a></th>
+          <th style="text-align:right"><a href="@(WuSortUrl("modifier"))">Modifier@(WuMark("modifier"))</a></th>
+          <th style="text-align:right"><a href="@(WuSortUrl("kills"))">Kills@(WuMark("kills"))</a></th>
+          <th style="text-align:right"><a href="@(WuSortUrl("kpercent"))">%@(WuMark("kpercent"))</a></th>
+          <th><a href="@(WuSortUrl("kpercent"))">Ratio@(WuMark("kpercent"))</a></th>
+          <th style="text-align:right"><a href="@(WuSortUrl("headshots"))">Headshots@(WuMark("headshots"))</a></th>
+          <th style="text-align:right"><a href="@(WuSortUrl("hpercent"))">%@(WuMark("hpercent"))</a></th>
+          <th><a href="@(WuSortUrl("hpercent"))">Ratio@(WuMark("hpercent"))</a></th>
+          <th style="text-align:right"><a href="@(WuSortUrl("hpk"))">HS:K@(WuMark("hpk"))</a></th>
+        </tr>
+      </thead>
+      <tbody>
+        @{int wuRank = 1; bool wuBg = false;}
+        @foreach (var w in Model.WeaponStats)
+        {
+          string wuRow = wuBg ? "bg2" : "bg1"; wuBg = !wuBg;
+          double kpct = Math.Round((double)w.Kills / wuRealKills * 100, 2);
+          double hpct = Math.Round((double)w.Headshots / wuRealHS * 100, 2);
+          double hpk  = w.Kills > 0 ? Math.Round((double)w.Headshots / w.Kills, 2) : 0;
+          string imgSrc = $"{imgRoot}/games/{Model.Player.Game}/weapons/{w.WeaponCode.ToLower()}.gif";
+          <tr class="@wuRow">
+            <td class="rank-col">@(wuRank).</td>
+            <td style="text-align:center">
+              @if (w.WeaponId.HasValue)
+              {
+                <a asp-controller="Weapons" asp-action="Detail" asp-route-id="@w.WeaponId">
+                  <img src="@imgSrc" width="90" height="17" alt="@w.WeaponName" title="@w.WeaponName" />
+                </a>
+              }
+              else
+              {
+                <img src="@imgSrc" width="90" height="17" alt="@w.WeaponName" title="@w.WeaponName" />
+              }
+            </td>
+            <td style="text-align:right">@w.Modifier.ToString("F2")</td>
+            <td style="text-align:right">@w.Kills.ToString("N0")</td>
+            <td style="text-align:right">@(kpct.ToString("F2"))%</td>
+            <td><activity-meter value="@kpct" /></td>
+            <td style="text-align:right">@w.Headshots.ToString("N0")</td>
+            <td style="text-align:right">@(hpct.ToString("F2"))%</td>
+            <td><activity-meter value="@hpct" /></td>
+            <td style="text-align:right">@(hpk.ToString("F2"))</td>
+          </tr>
+          wuRank++;
+        }
+      </tbody>
+    </table>
+    <br />
+  }
+
+  @* ── Weapon Statistics (StatsMe) ── *@
+  @if (Model.WeaponStatsme.Any())
+  {
+    <h2>Weapon Statistics *</h2>
+    <table class="data-table">
+      <thead>
+        <tr class="data-table-head">
+          <th>Rank</th>
+          <th><a href="@(WsSortUrl("weapon"))">Weapon@(WsMark("weapon"))</a></th>
+          <th style="text-align:right"><a href="@(WsSortUrl("shots"))">Shots@(WsMark("shots"))</a></th>
+          <th style="text-align:right"><a href="@(WsSortUrl("hits"))">Hits@(WsMark("hits"))</a></th>
+          <th style="text-align:right"><a href="@(WsSortUrl("damage"))">Damage@(WsMark("damage"))</a></th>
+          <th style="text-align:right"><a href="@(WsSortUrl("headshots"))">Headshots@(WsMark("headshots"))</a></th>
+          <th style="text-align:right"><a href="@(WsSortUrl("kills"))">Kills@(WsMark("kills"))</a></th>
+          <th style="text-align:right"><a href="@(WsSortUrl("kdr"))">K:D@(WsMark("kdr"))</a></th>
+          <th style="text-align:right"><a href="@(WsSortUrl("accuracy"))">Accuracy@(WsMark("accuracy"))</a></th>
+          <th style="text-align:right"><a href="@(WsSortUrl("dph"))">Dmg/Hit@(WsMark("dph"))</a></th>
+          <th style="text-align:right"><a href="@(WsSortUrl("spk"))">Shots/Kill@(WsMark("spk"))</a></th>
+        </tr>
+      </thead>
+      <tbody>
+        @{int wsRank = 1; bool wsBg = false;}
+        @foreach (var w in Model.WeaponStatsme)
+        {
+          string wsRow = wsBg ? "bg2" : "bg1"; wsBg = !wsBg;
+          string wsImg = $"{imgRoot}/games/{Model.Player.Game}/weapons/{w.WeaponCode.ToLower()}.gif";
+          <tr class="@wsRow">
+            <td class="rank-col">@(wsRank).</td>
+            <td style="text-align:center">
+              @if (w.WeaponId.HasValue)
+              {
+                <a asp-controller="Weapons" asp-action="Detail" asp-route-id="@w.WeaponId">
+                  <img src="@wsImg" width="90" height="17" alt="@w.WeaponName" title="@w.WeaponName" />
+                </a>
+              }
+              else
+              {
+                <img src="@wsImg" width="90" height="17" alt="@w.WeaponName" title="@w.WeaponName" />
+              }
+            </td>
+            <td style="text-align:right">@w.Shots.ToString("N0")</td>
+            <td style="text-align:right">@w.Hits.ToString("N0")</td>
+            <td style="text-align:right">@w.Damage.ToString("N0")</td>
+            <td style="text-align:right">@w.Headshots.ToString("N0")</td>
+            <td style="text-align:right">@w.Kills.ToString("N0")</td>
+            <td style="text-align:right">@w.Kdr.ToString("F2")</td>
+            <td style="text-align:right">@(w.Accuracy.ToString("F1"))%</td>
+            <td style="text-align:right">@w.DamagePerHit.ToString("F1")</td>
+            <td style="text-align:right">@w.ShotsPerKill.ToString("F1")</td>
+          </tr>
+          wsRank++;
+        }
+      </tbody>
+    </table>
+    <br />
+  }
+
+  @* ── Weapon Targets (StatsMe2) ── *@
+  @if (Model.WeaponTargets.Any())
+  {
+    <h2>Weapon Targets *</h2>
+    <table class="data-table">
+      <thead>
+        <tr class="data-table-head">
+          <th>Rank</th>
+          <th><a href="@(WtSortUrl("weapon"))">Weapon@(WtMark("weapon"))</a></th>
+          <th style="text-align:right"><a href="@(WtSortUrl("hits"))">Hits@(WtMark("hits"))</a></th>
+          <th style="text-align:right"><a href="@(WtSortUrl("head"))">Head@(WtMark("head"))</a></th>
+          <th style="text-align:right"><a href="@(WtSortUrl("chest"))">Chest@(WtMark("chest"))</a></th>
+          <th style="text-align:right"><a href="@(WtSortUrl("stomach"))">Stomach@(WtMark("stomach"))</a></th>
+          <th style="text-align:right"><a href="@(WtSortUrl("leftarm"))">Left Arm@(WtMark("leftarm"))</a></th>
+          <th style="text-align:right"><a href="@(WtSortUrl("rightarm"))">Right Arm@(WtMark("rightarm"))</a></th>
+          <th style="text-align:right"><a href="@(WtSortUrl("leftleg"))">Left Leg@(WtMark("leftleg"))</a></th>
+          <th style="text-align:right"><a href="@(WtSortUrl("rightleg"))">Right Leg@(WtMark("rightleg"))</a></th>
+          <th style="text-align:right"><a href="@(WtSortUrl("left"))">Left %@(WtMark("left"))</a></th>
+          <th style="text-align:right"><a href="@(WtSortUrl("middle"))">Middle %@(WtMark("middle"))</a></th>
+          <th style="text-align:right"><a href="@(WtSortUrl("right"))">Right %@(WtMark("right"))</a></th>
+        </tr>
+      </thead>
+      <tbody>
+        @{int wtRank = 1; bool wtBg = false;}
+        @foreach (var w in Model.WeaponTargets)
+        {
+          string wtRow = wtBg ? "bg2" : "bg1"; wtBg = !wtBg;
+          string wtImg = $"{imgRoot}/games/{Model.Player.Game}/weapons/{w.WeaponCode.ToLower()}.gif";
+          <tr class="@wtRow">
+            <td class="rank-col">@(wtRank).</td>
+            <td style="text-align:center">
+              @if (w.WeaponId.HasValue)
+              {
+                <a asp-controller="Weapons" asp-action="Detail" asp-route-id="@w.WeaponId">
+                  <img src="@wtImg" width="90" height="17" alt="@w.WeaponName" title="@w.WeaponName" />
+                </a>
+              }
+              else
+              {
+                <img src="@wtImg" width="90" height="17" alt="@w.WeaponName" title="@w.WeaponName" />
+              }
+            </td>
+            <td style="text-align:right">@w.Hits.ToString("N0")</td>
+            <td style="text-align:right">@w.Head.ToString("N0")</td>
+            <td style="text-align:right">@w.Chest.ToString("N0")</td>
+            <td style="text-align:right">@w.Stomach.ToString("N0")</td>
+            <td style="text-align:right">@w.LeftArm.ToString("N0")</td>
+            <td style="text-align:right">@w.RightArm.ToString("N0")</td>
+            <td style="text-align:right">@w.LeftLeg.ToString("N0")</td>
+            <td style="text-align:right">@w.RightLeg.ToString("N0")</td>
+            <td style="text-align:right">@(w.LeftPct.ToString("F1"))%</td>
+            <td style="text-align:right">@(w.MiddlePct.ToString("F1"))%</td>
+            <td style="text-align:right">@(w.RightPct.ToString("F1"))%</td>
+          </tr>
+          wtRank++;
+        }
+      </tbody>
+    </table>
+    <br />
+  }
+
+  @if (!Model.WeaponStats.Any() && !Model.WeaponStatsme.Any() && !Model.WeaponTargets.Any())
+  {
+    <p>No weapon data available.</p>
+  }
+</div>
+
+<div id="tab-maps" class="tab-panel" style="display:none;">
+@{
+    string MpSortUrl(string field)
+    {
+        bool nextDesc = Model.MapSortBy == field ? !Model.MapDesc : true;
+        return Url.Action("Profile", new { id = Model.Player.PlayerId,
+            mpSort = field, mpDesc = nextDesc,
+            spSort = Model.ServerSortBy, spDesc = Model.ServerDesc,
+            wuSort = Model.WeaponUsageSortBy,   wuDesc = Model.WeaponUsageDesc,
+            wsSort = Model.WeaponStatsmeSortBy, wsDesc = Model.WeaponStatsmeDesc,
+            wtSort = Model.WeaponTargetSortBy,  wtDesc = Model.WeaponTargetDesc })! + "#tab-maps";
+    }
+    string MpMark(string field) => Model.MapSortBy == field ? (Model.MapDesc ? " ▼" : " ▲") : "";
+
+    string SpSortUrl(string field)
+    {
+        bool nextDesc = Model.ServerSortBy == field ? !Model.ServerDesc : true;
+        return Url.Action("Profile", new { id = Model.Player.PlayerId,
+            mpSort = Model.MapSortBy, mpDesc = Model.MapDesc,
+            spSort = field, spDesc = nextDesc,
+            wuSort = Model.WeaponUsageSortBy,   wuDesc = Model.WeaponUsageDesc,
+            wsSort = Model.WeaponStatsmeSortBy, wsDesc = Model.WeaponStatsmeDesc,
+            wtSort = Model.WeaponTargetSortBy,  wtDesc = Model.WeaponTargetDesc })! + "#tab-maps";
+    }
+    string SpMark(string field) => Model.ServerSortBy == field ? (Model.ServerDesc ? " ▼" : " ▲") : "";
+}
+
+  @* ── Map Performance ── *@
+  @if (Model.MapPerformance.Any())
+  {
+    long mpRealKills  = Model.RealStats.RealKills  > 0 ? Model.RealStats.RealKills  : 1;
+    long mpRealDeaths = Model.RealStats.RealDeaths > 0 ? Model.RealStats.RealDeaths : 1;
+    long mpRealHS     = Model.RealStats.RealHeadshots > 0 ? Model.RealStats.RealHeadshots : 1;
+    <h2>Map Performance *</h2>
+    <table class="data-table">
+      <thead>
+        <tr class="data-table-head">
+          <th>Rank</th>
+          <th><a href="@(MpSortUrl("map"))">Map@(MpMark("map"))</a></th>
+          <th style="text-align:right"><a href="@(MpSortUrl("kills"))">Kills@(MpMark("kills"))</a></th>
+          <th style="text-align:right"><a href="@(MpSortUrl("kpercent"))">%@(MpMark("kpercent"))</a></th>
+          <th><a href="@(MpSortUrl("kpercent"))">Ratio@(MpMark("kpercent"))</a></th>
+          <th style="text-align:right"><a href="@(MpSortUrl("deaths"))">Deaths@(MpMark("deaths"))</a></th>
+          <th style="text-align:right"><a href="@(MpSortUrl("dpercent"))">%@(MpMark("dpercent"))</a></th>
+          <th><a href="@(MpSortUrl("dpercent"))">Ratio@(MpMark("dpercent"))</a></th>
+          <th style="text-align:right"><a href="@(MpSortUrl("kpd"))">K:D@(MpMark("kpd"))</a></th>
+          <th style="text-align:right"><a href="@(MpSortUrl("headshots"))">Headshots@(MpMark("headshots"))</a></th>
+          <th style="text-align:right"><a href="@(MpSortUrl("hpercent"))">%@(MpMark("hpercent"))</a></th>
+          <th><a href="@(MpSortUrl("hpercent"))">Ratio@(MpMark("hpercent"))</a></th>
+          <th style="text-align:right"><a href="@(MpSortUrl("hpk"))">HS:K@(MpMark("hpk"))</a></th>
+        </tr>
+      </thead>
+      <tbody>
+        @{int mpRank = 1; bool mpBg = false;}
+        @foreach (var m in Model.MapPerformance)
+        {
+          string mpRow = mpBg ? "bg2" : "bg1"; mpBg = !mpBg;
+          double mpKpct = Math.Round((double)m.Kills  / mpRealKills  * 100, 2);
+          double mpDpct = Math.Round((double)m.Deaths / mpRealDeaths * 100, 2);
+          double mpHpct = Math.Round((double)m.Headshots / mpRealHS  * 100, 2);
+          double mpKpd  = m.Deaths == 0 ? m.Kills : Math.Round((double)m.Kills / m.Deaths, 2);
+          double mpHpk  = m.Kills  == 0 ? 0       : Math.Round((double)m.Headshots / m.Kills, 2);
+          <tr class="@mpRow">
+            <td class="rank-col">@(mpRank).</td>
+            <td><a asp-controller="Maps" asp-action="Detail" asp-route-name="@m.Map">@m.Map</a></td>
+            <td style="text-align:right">@m.Kills.ToString("N0")</td>
+            <td style="text-align:right">@(mpKpct.ToString("F2"))%</td>
+            <td><activity-meter value="@mpKpct" /></td>
+            <td style="text-align:right">@m.Deaths.ToString("N0")</td>
+            <td style="text-align:right">@(mpDpct.ToString("F2"))%</td>
+            <td><activity-meter value="@mpDpct" /></td>
+            <td style="text-align:right">@mpKpd.ToString("F2")</td>
+            <td style="text-align:right">@m.Headshots.ToString("N0")</td>
+            <td style="text-align:right">@(mpHpct.ToString("F2"))%</td>
+            <td><activity-meter value="@mpHpct" /></td>
+            <td style="text-align:right">@(m.Kills == 0 ? "-" : mpHpk.ToString("F2"))</td>
+          </tr>
+          mpRank++;
+        }
+      </tbody>
+    </table>
+    <br />
+  }
+
+  @* ── Server Activity ── *@
+  @if (Model.ServerPerformance.Any())
+  {
+    long spRealKills = Model.RealStats.RealKills      > 0 ? Model.RealStats.RealKills      : 1;
+    long spRealHS    = Model.RealStats.RealHeadshots  > 0 ? Model.RealStats.RealHeadshots  : 1;
+    <h2>Server Activity *</h2>
+    <table class="data-table">
+      <thead>
+        <tr class="data-table-head">
+          <th>Rank</th>
+          <th><a href="@(SpSortUrl("server"))">Server@(SpMark("server"))</a></th>
+          <th style="text-align:right"><a href="@(SpSortUrl("kills"))">Kills@(SpMark("kills"))</a></th>
+          <th style="text-align:right"><a href="@(SpSortUrl("kpercent"))">%@(SpMark("kpercent"))</a></th>
+          <th><a href="@(SpSortUrl("kpercent"))">Ratio@(SpMark("kpercent"))</a></th>
+          <th style="text-align:right"><a href="@(SpSortUrl("deaths"))">Deaths@(SpMark("deaths"))</a></th>
+          <th style="text-align:right"><a href="@(SpSortUrl("kpd"))">K:D@(SpMark("kpd"))</a></th>
+          <th style="text-align:right"><a href="@(SpSortUrl("headshots"))">Headshots@(SpMark("headshots"))</a></th>
+          <th><a href="@(SpSortUrl("hpercent"))">Ratio@(SpMark("hpercent"))</a></th>
+          <th style="text-align:right"><a href="@(SpSortUrl("hpercent"))">%@(SpMark("hpercent"))</a></th>
+          <th style="text-align:right"><a href="@(SpSortUrl("hpk"))">HS:K@(SpMark("hpk"))</a></th>
+        </tr>
+      </thead>
+      <tbody>
+        @{int spRank = 1; bool spBg = false;}
+        @foreach (var s in Model.ServerPerformance)
+        {
+          string spRow = spBg ? "bg2" : "bg1"; spBg = !spBg;
+          double spKpct = Math.Round((double)s.Kills     / spRealKills * 100, 2);
+          double spHpct = Math.Round((double)s.Headshots / spRealHS    * 100, 2);
+          double spKpd  = s.Deaths == 0 ? s.Kills : Math.Round((double)s.Kills / s.Deaths, 2);
+          double spHpk  = s.Kills  == 0 ? 0       : Math.Round((double)s.Headshots / s.Kills, 2);
+          <tr class="@spRow">
+            <td class="rank-col">@(spRank).</td>
+            <td>@s.ServerName</td>
+            <td style="text-align:right">@s.Kills.ToString("N0")</td>
+            <td style="text-align:right">@(spKpct.ToString("F2"))%</td>
+            <td><activity-meter value="@spKpct" /></td>
+            <td style="text-align:right">@s.Deaths.ToString("N0")</td>
+            <td style="text-align:right">@spKpd.ToString("F2")</td>
+            <td style="text-align:right">@s.Headshots.ToString("N0")</td>
+            <td><activity-meter value="@spHpct" /></td>
+            <td style="text-align:right">@(spHpct.ToString("F2"))%</td>
+            <td style="text-align:right">@(s.Kills == 0 ? "-" : spHpk.ToString("F2"))</td>
+          </tr>
+          spRank++;
+        }
+      </tbody>
+    </table>
+    <br />
+  }
+
+  @if (!Model.MapPerformance.Any() && !Model.ServerPerformance.Any())
+  {
+    <p>No map or server data available.</p>
+  }
+</div>
+
+<div id="tab-kills" class="tab-panel" style="display:none;">
+@{
+    string KsSortUrl(string field)
+    {
+        bool nextDesc = Model.KillStatsSortBy == field ? !Model.KillStatsDesc : true;
+        return Url.Action("Profile", new { id = Model.Player.PlayerId,
+            ksSort = field, ksDesc = nextDesc, ksLimit = Model.KillLimit, ksPage = 1,
+            mpSort = Model.MapSortBy,           mpDesc = Model.MapDesc,
+            spSort = Model.ServerSortBy,        spDesc = Model.ServerDesc,
+            wuSort = Model.WeaponUsageSortBy,   wuDesc = Model.WeaponUsageDesc,
+            wsSort = Model.WeaponStatsmeSortBy, wsDesc = Model.WeaponStatsmeDesc,
+            wtSort = Model.WeaponTargetSortBy,  wtDesc = Model.WeaponTargetDesc })! + "#tab-kills";
+    }
+    string KsLimitUrl(int limit) => Url.Action("Profile", new { id = Model.Player.PlayerId,
+        ksSort = Model.KillStatsSortBy, ksDesc = Model.KillStatsDesc, ksLimit = limit, ksPage = 1,
+        mpSort = Model.MapSortBy,           mpDesc = Model.MapDesc,
+        spSort = Model.ServerSortBy,        spDesc = Model.ServerDesc,
+        wuSort = Model.WeaponUsageSortBy,   wuDesc = Model.WeaponUsageDesc,
+        wsSort = Model.WeaponStatsmeSortBy, wsDesc = Model.WeaponStatsmeDesc,
+        wtSort = Model.WeaponTargetSortBy,  wtDesc = Model.WeaponTargetDesc })! + "#tab-kills";
+    string KsPageUrl(int page) => Url.Action("Profile", new { id = Model.Player.PlayerId,
+        ksSort = Model.KillStatsSortBy, ksDesc = Model.KillStatsDesc, ksLimit = Model.KillLimit, ksPage = page,
+        mpSort = Model.MapSortBy,           mpDesc = Model.MapDesc,
+        spSort = Model.ServerSortBy,        spDesc = Model.ServerDesc,
+        wuSort = Model.WeaponUsageSortBy,   wuDesc = Model.WeaponUsageDesc,
+        wsSort = Model.WeaponStatsmeSortBy, wsDesc = Model.WeaponStatsmeDesc,
+        wtSort = Model.WeaponTargetSortBy,  wtDesc = Model.WeaponTargetDesc })! + "#tab-kills";
+    string KsMark(string field) => Model.KillStatsSortBy == field ? (Model.KillStatsDesc ? " ▼" : " ▲") : "";
+}
+  <h2>Player Kill Statistics *</h2>
+  @if (Model.KillStats.TotalCount == 0)
+  {
+    <p>No kill stat data available.</p>
+  }
+  else
+  {
+    long ksRealKills  = Model.RealStats.RealKills  > 0 ? Model.RealStats.RealKills  : 1;
+    long ksRealDeaths = Model.RealStats.RealDeaths > 0 ? Model.RealStats.RealDeaths : 1;
+    long ksRealHS     = Model.KillStatsRealHS > 0 ? Model.KillStatsRealHS : 1;
+    <table class="data-table">
+      <thead>
+        <tr class="data-table-head">
+          <th>Rank</th>
+          <th><a href="@(KsSortUrl("name"))">Victim@(KsMark("name"))</a></th>
+          <th style="text-align:right"><a href="@(KsSortUrl("kills"))">Kills@(KsMark("kills"))</a></th>
+          <th style="text-align:right"><a href="@(KsSortUrl("kpercent"))">%@(KsMark("kpercent"))</a></th>
+          <th><a href="@(KsSortUrl("kpercent"))">Ratio@(KsMark("kpercent"))</a></th>
+          <th style="text-align:right"><a href="@(KsSortUrl("deaths"))">Deaths@(KsMark("deaths"))</a></th>
+          <th style="text-align:right"><a href="@(KsSortUrl("dpercent"))">%@(KsMark("dpercent"))</a></th>
+          <th><a href="@(KsSortUrl("dpercent"))">Ratio@(KsMark("dpercent"))</a></th>
+          <th style="text-align:right"><a href="@(KsSortUrl("kpd"))">K:D@(KsMark("kpd"))</a></th>
+          <th style="text-align:right"><a href="@(KsSortUrl("headshots"))">Headshots@(KsMark("headshots"))</a></th>
+          <th style="text-align:right"><a href="@(KsSortUrl("hpercent"))">%@(KsMark("hpercent"))</a></th>
+          <th><a href="@(KsSortUrl("hpercent"))">Ratio@(KsMark("hpercent"))</a></th>
+          <th style="text-align:right"><a href="@(KsSortUrl("hpk"))">HS:K@(KsMark("hpk"))</a></th>
+        </tr>
+      </thead>
+      <tbody>
+        @{int ksRank = (Model.KillStats.Page - 1) * Model.KillStats.PageSize + 1; bool ksBg = false;}
+        @foreach (var k in Model.KillStats.Items)
+        {
+          string ksRow = ksBg ? "bg2" : "bg1"; ksBg = !ksBg;
+          double ksKpct = Math.Round((double)k.Kills     / ksRealKills  * 100, 2);
+          double ksDpct = Math.Round((double)k.Deaths    / ksRealDeaths * 100, 2);
+          double ksHpct = Math.Round((double)k.Headshots / ksRealHS     * 100, 2);
+          double ksKpd  = k.Deaths == 0 ? k.Kills : Math.Round((double)k.Kills / k.Deaths, 2);
+          double ksHpk  = k.Kills  == 0 ? 0       : Math.Round((double)k.Headshots / k.Kills, 2);
+          <tr class="@ksRow">
+            <td class="rank-col">@(ksRank).</td>
+            <td>
+              @if (!string.IsNullOrEmpty(k.VictimFlag))
+              {
+                <img src="@(Url.Content("~/hlstatsimg/flags/") + k.VictimFlag.ToLower() + ".gif")" alt="@k.VictimFlag" title="@k.VictimFlag" style="vertical-align:middle;" />
+              }
+              @if (k.VictimIsBot && Model.HideBotPlayers)
+              {
+                @k.VictimName
+              }
+              else
+              {
+                <a asp-action="Profile" asp-route-id="@k.VictimId">@k.VictimName</a>
+              }
+            </td>
+            <td style="text-align:right">@k.Kills.ToString("N0")</td>
+            <td style="text-align:right">@(ksKpct.ToString("F2"))%</td>
+            <td><activity-meter value="@ksKpct" /></td>
+            <td style="text-align:right">@k.Deaths.ToString("N0")</td>
+            <td style="text-align:right">@(ksDpct.ToString("F2"))%</td>
+            <td><activity-meter value="@ksDpct" /></td>
+            <td style="text-align:right">@ksKpd.ToString("F2")</td>
+            <td style="text-align:right">@k.Headshots.ToString("N0")</td>
+            <td style="text-align:right">@(ksHpct.ToString("F2"))%</td>
+            <td><activity-meter value="@ksHpct" /></td>
+            <td style="text-align:right">@(k.Kills == 0 ? "-" : ksHpk.ToString("F2"))</td>
+          </tr>
+          ksRank++;
+        }
+      </tbody>
+    </table>
+    <partial name="_Pagination" model="@PaginationModel.From(Model.KillStats, p => KsPageUrl(p))" />
+    <br />
+    <div class="subblock">
+      <strong>&bull;</strong> Show only victims this person has killed
+      <select onchange="window.location=this.options[this.selectedIndex].value">
+        @for (int j = 0; j <= 15; j++)
+        {
+          string ksOptUrl = KsLimitUrl(j);
+          bool ksOptSel = Model.KillLimit == j;
+          if (ksOptSel)
+          {
+            <option value="@ksOptUrl" selected="selected">@j</option>
+          }
+          else
+          {
+            <option value="@ksOptUrl">@j</option>
+          }
+        }
+      </select>
+      or more times
+    </div>
+    <br />
+  }
+</div>
+
+<div style="clear:both;padding-top:12px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;">
+  <div>Items marked &ldquo;*&rdquo; above are generated from the last @Model.DeleteDays days.</div>
+  <div>Go to: <a asp-controller="Players" asp-action="Index" asp-route-game="@Model.Player.Game">Player Rankings</a></div>
+</div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script>
+document.querySelectorAll('.tab-link').forEach(function(link) {
+    link.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.querySelectorAll('.tab-link').forEach(function(l) { l.classList.remove('active'); });
+        document.querySelectorAll('.tab-panel').forEach(function(p) { p.style.display = 'none'; });
+        this.classList.add('active');
+        document.querySelector(this.getAttribute('href')).style.display = 'block';
+    });
+});
+
+@if (Model.TrendData.Count >= 2)
+{
+    var labels   = Model.TrendData.Select(t => t.EventTime.ToString("MMM-d")).ToArray();
+    var skills   = Model.TrendData.Select(t => (double)t.Skill / 1000.0).ToArray();
+    var sessions = Model.TrendData.Select(t => (double)t.SkillChange).ToArray();
+
+    <text>
+(function() {
+    var ctx = document.getElementById('trendChart');
+    if (!ctx) return;
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(labels)),
+            datasets: [
+                {
+                    label: 'Skill',
+                    data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(skills)),
+                    borderColor: 'rgb(255, 255, 0)',
+                    backgroundColor: 'rgba(255, 255, 0, 0.1)',
+                    tension: 0.4,
+                    yAxisID: 'ySkill'
+                },
+                {
+                    label: 'Session',
+                    data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(sessions)),
+                    borderColor: 'rgb(255, 80, 80)',
+                    backgroundColor: 'rgba(255, 80, 80, 0.1)',
+                    tension: 0.4,
+                    yAxisID: 'ySession'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#ddd', usePointStyle: true, pointStyle: 'line' } } },
+            scales: {
+                ySkill: {
+                    type: 'linear', position: 'right',
+                    ticks: { color: '#ddd', callback: function(v) { return v + 'K'; } },
+                    grid: { color: '#444' },
+                    title: { display: true, text: 'Skill', color: '#ddd' }
+                },
+                ySession: {
+                    type: 'linear', position: 'left',
+                    ticks: { color: '#ddd' },
+                    grid: { color: '#333' },
+                    title: { display: true, text: 'Session', color: '#ddd' }
+                },
+                x: {
+                    ticks: { color: '#ddd', autoSkip: true, maxTicksLimit: 8, maxRotation: 45, minRotation: 0 },
+                    grid: { color: '#333' },
+                    title: { display: true, text: 'Date', color: '#ddd' }
+                }
+            }
+        }
+    });
+})();
+    </text>
+}
+
+// Forum signature text switcher
+var sigImgUrl  = '@sigAbsUrl';
+var profileUrl = '@profileAbsUrl';
+function setSigText(mode) {
+    var ta = document.getElementById('siglink');
+    if (!ta) return;
+    if (mode === 0) { ta.value = sigImgUrl; }
+    else if (mode === 1) { ta.value = '[url=' + profileUrl + '][img]' + sigImgUrl + '[/img][/url]'; }
+    else if (mode === 2) { ta.value = '[url="' + profileUrl + '"][img]' + sigImgUrl + '[/img][/url]'; }
+    ta.select();
+}
+</script>
+}

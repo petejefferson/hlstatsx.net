@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Cache-Control" content="no-cache" />
+    <title>HLStatsX</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        body { margin: 0; padding: 0; }
+        #ig-header { display: flex; align-items: center; justify-content: space-between; padding: 2px 8px; background: var(--nav-bg, #161C28); height: 36px; }
+        #ig-header strong { color: #fff; font-size: 13px; }
+        #ig-header a.ig-back { color: #9ab; font-size: 11px; text-decoration: none; }
+        #ig-header a.ig-back:hover { color: #cdf; }
+        #ig-content { padding: 4px; }
+    </style>
+</head>
+<body>
+<div id="ig-header">
+    <strong>HLStatsX</strong>
+    <a class="ig-back" href="javascript:history.back()">« Go Back</a>
+</div>
+<div id="ig-content">
+    @RenderBody()
+</div>
+</body>
+</html>

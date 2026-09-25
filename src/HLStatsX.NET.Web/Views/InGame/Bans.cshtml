@@ -1,0 +1,64 @@
+@model InGameBansViewModel
+@using HLStatsX.NET.Web.Models.ViewModels
+@{
+    Layout = "~/Views/Shared/_InGameLayout.cshtml";
+    ViewData["Title"] = "Banned Players";
+
+    string SortUrl(string field)
+    {
+        bool nd = Model.SortBy == field ? !Model.Desc : true;
+        return Url.Action("Bans", "InGame", new { game = Model.Game, sortBy = field, desc = nd, page = 1 })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Desc ? " ▼" : " ▲") : "";
+
+    var flagBase = Url.Content("~/hlstatsimg/flags");
+    string FlagImg(string? flag) =>
+        $"<img src=\"{flagBase}/{(string.IsNullOrEmpty(flag) ? "0" : flag.ToLowerInvariant())}.gif\" alt=\"\" />";
+
+    int startRank = (Model.Bans.Page - 1) * Model.Bans.PageSize + 1;
+}
+
+<table class="data-table">
+    <tr class="data-table-head">
+        <td style="text-align:right;">Rank</td>
+        <td><a href="@SortUrl("name")">Player@(Mark("name"))</a></td>
+        <td style="text-align:right;"><a href="@SortUrl("last_event")">Ban Date@(Mark("last_event"))</a></td>
+        <td style="text-align:right;"><a href="@SortUrl("skill")">Points@(Mark("skill"))</a></td>
+        <td style="text-align:right;"><a href="@SortUrl("kills")">Kills@(Mark("kills"))</a></td>
+        <td style="text-align:right;"><a href="@SortUrl("deaths")">Deaths@(Mark("deaths"))</a></td>
+        <td style="text-align:right;"><a href="@SortUrl("headshots")">HS@(Mark("headshots"))</a></td>
+        <td style="text-align:right;">HS:K</td>
+        <td style="text-align:right;">KPD</td>
+    </tr>
+    @{ int rowNum = startRank; }
+    @foreach (var b in Model.Bans.Items)
+    {
+        <tr class="@(rowNum % 2 == 1 ? "bg1" : "bg2")">
+            <td style="text-align:right;">@rowNum</td>
+            <td>@Html.Raw(FlagImg(b.Flag)) <a href="@Url.Action("PlayerStats", "InGame", new { game = Model.Game, player = b.PlayerId })">@b.PlayerName</a></td>
+            <td style="text-align:right;">@b.BanDate.ToString("yyyy.MM.dd HH:mm:ss")</td>
+            <td style="text-align:right;">@b.Skill.ToString("N0")</td>
+            <td style="text-align:right;">@b.Kills.ToString("N0")</td>
+            <td style="text-align:right;">@b.Deaths.ToString("N0")</td>
+            <td style="text-align:right;">@b.Headshots.ToString("N0")</td>
+            <td style="text-align:right;">@(b.HsK.HasValue ? b.HsK.Value.ToString("F2") : "-")</td>
+            <td style="text-align:right;">@b.Kpd.ToString("F2")</td>
+        </tr>
+        rowNum++;
+    }
+</table>
+
+@if (Model.Bans.TotalPages > 1)
+{
+    <div style="padding:4px;">
+        @if (Model.Bans.HasPreviousPage)
+        {
+            <a href="@Url.Action("Bans", "InGame", new { game = Model.Game, sortBy = Model.SortBy, desc = Model.Desc, page = Model.Bans.Page - 1 })">« Prev</a>
+        }
+        &nbsp;Page @Model.Bans.Page of @Model.Bans.TotalPages&nbsp;
+        @if (Model.Bans.HasNextPage)
+        {
+            <a href="@Url.Action("Bans", "InGame", new { game = Model.Game, sortBy = Model.SortBy, desc = Model.Desc, page = Model.Bans.Page + 1 })">Next »</a>
+        }
+    </div>
+}

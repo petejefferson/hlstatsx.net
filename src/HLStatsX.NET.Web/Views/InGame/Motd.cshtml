@@ -1,0 +1,101 @@
+@model InGameMotdViewModel
+@using HLStatsX.NET.Web.Models.ViewModels
+@{
+    Layout = "~/Views/Shared/_InGameLayout.cshtml";
+    ViewData["Title"] = "MOTD";
+
+    var flagBase = Url.Content("~/hlstatsimg/flags");
+    string FlagImg(string? flag) =>
+        $"<img src=\"{flagBase}/{(string.IsNullOrEmpty(flag) ? "0" : flag.ToLowerInvariant())}.gif\" alt=\"\" />";
+
+    string FormatDuration(int seconds)
+    {
+        var d = seconds / 86400; var h = (seconds % 86400) / 3600; var m = (seconds % 3600) / 60;
+        if (d > 0) return $"{d}d {h:D2}h {m:D2}m";
+        if (h > 0) return $"{h}h {m:D2}m";
+        return $"{m}m";
+    }
+
+    string FormatElapsed(int unixStart)
+    {
+        var e = Math.Max(0, (int)(DateTimeOffset.UtcNow.ToUnixTimeSeconds() - unixStart));
+        return $"{e / 3600:D2}:{(e % 3600) / 60:D2}:{e % 60:D2}";
+    }
+}
+
+@if (Model.TopPlayers.Any())
+{
+    <table class="data-table">
+        <tr class="data-table-head">
+            <td>Rank</td>
+            <td>Player</td>
+            <td style="text-align:right;">Points</td>
+            <td>Activity</td>
+            <td style="text-align:right;">Time</td>
+            <td style="text-align:right;">K:D</td>
+        </tr>
+        @{ int i = 1; }
+        @foreach (var p in Model.TopPlayers)
+        {
+            <tr class="@(i % 2 == 1 ? "bg1" : "bg2")">
+                <td style="text-align:right;">@i</td>
+                <td>@Html.Raw(FlagImg(p.Flag)) <a href="@Url.Action("PlayerStats", "InGame", new { game = Model.Game, player = p.PlayerId })">@p.LastName</a></td>
+                <td style="text-align:right;">@p.Skill.ToString("N0")</td>
+                <td><meter min="0" max="100" low="25" high="50" optimum="75" value="@p.ActivityScore"></meter></td>
+                <td style="text-align:right;">@FormatDuration(p.ConnectionTime)</td>
+                <td style="text-align:right;">@p.KillDeathRatio.ToString("F2")</td>
+            </tr>
+            i++;
+        }
+    </table>
+}
+
+@if (Model.TopClans.Any())
+{
+    <table class="data-table">
+        <tr class="data-table-head">
+            <td>Rank</td>
+            <td>Clan</td>
+            <td style="text-align:center;">Tag</td>
+            <td style="text-align:right;">Avg. Points</td>
+            <td style="text-align:right;">Members</td>
+        </tr>
+        @{ int j = 1; }
+        @foreach (var c in Model.TopClans)
+        {
+            <tr class="@(j % 2 == 1 ? "bg1" : "bg2")">
+                <td style="text-align:right;">@j</td>
+                <td><a href="@Url.Action("ClanInfo", "InGame", new { game = Model.Game, clan = c.ClanId })">@c.Name</a></td>
+                <td style="text-align:center;">@c.Tag</td>
+                <td style="text-align:right;">@c.AvgSkill.ToString("N0")</td>
+                <td style="text-align:right;">@c.MemberCount</td>
+            </tr>
+            j++;
+        }
+    </table>
+}
+
+@if (Model.Servers.Any())
+{
+    <table class="data-table">
+        <tr class="data-table-head">
+            <td style="width:40%;">Participating Servers</td>
+            <td style="width:22%;">Address</td>
+            <td style="width:12%;text-align:center;">Map</td>
+            <td style="width:12%;text-align:center;">Played</td>
+            <td style="width:14%;text-align:center;">Players</td>
+        </tr>
+        @{ int k = 1; }
+        @foreach (var s in Model.Servers)
+        {
+            <tr class="@(k % 2 == 1 ? "bg1" : "bg2")">
+                <td><strong>@s.Name</strong></td>
+                <td>@s.DisplayAddress</td>
+                <td style="text-align:center;">@s.ActMap</td>
+                <td style="text-align:center;">@FormatElapsed(s.MapStarted)</td>
+                <td style="text-align:center;">@s.ActPlayers/@s.MaxPlayers</td>
+            </tr>
+            k++;
+        }
+    </table>
+}

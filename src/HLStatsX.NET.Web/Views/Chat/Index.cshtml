@@ -1,0 +1,106 @@
+@model ChatLogViewModel
+@using HLStatsX.NET.Core.Models
+@{
+    ViewData["Title"] = "Server Chat Log";
+
+    string SortUrl(string field)
+    {
+        bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
+        return Url.Action("Index", new { game = Model.Game, serverId = Model.ServerId, filter = Model.Filter, sortBy = field, desc = nextDesc, page = 1 })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
+
+    string PageUrl(int p) => Url.Action("Index", new { game = Model.Game, serverId = Model.ServerId, filter = Model.Filter, sortBy = Model.SortBy, desc = Model.Descending, page = p })!;
+
+    string MessagePrefix(int mode) => mode switch { 2 => "(Team) ", 3 => "(Squad) ", _ => "" };
+}
+
+@{
+    string serverLabel = Model.ServerId.HasValue
+        ? Model.Servers.FirstOrDefault(s => s.ServerId == Model.ServerId.Value)?.Name ?? ""
+        : "All Servers";
+}
+<h1>Server Chat Log &mdash; @Model.Game (@serverLabel)</h1>
+
+@* ── Server selector + text filter ──────────────────────────────────────── *@
+<div class="subblock" style="margin-bottom:1rem;">
+    <form method="get" asp-action="Index">
+        <input type="hidden" name="game" value="@Model.Game" />
+        <input type="hidden" name="sortBy" value="@Model.SortBy" />
+        <input type="hidden" name="desc" value="@Model.Descending.ToString().ToLowerInvariant()" />
+        <input type="hidden" name="page" value="1" />
+        <strong>&bull;</strong> Show chat from
+        <select name="serverId" class="form-text">
+            <option value="">All Servers</option>
+            @foreach (var s in Model.Servers)
+            {
+                <option value="@s.ServerId" selected="@(Model.ServerId == s.ServerId ? "selected" : null)">@s.Name</option>
+            }
+        </select>
+        &nbsp;Filter: <input type="text" name="filter" value="@Model.Filter" size="20" maxlength="128" class="form-text" />
+        <input type="submit" value="View" class="btn-small" />
+    </form>
+</div>
+
+@if (!Model.Chat.Items.Any())
+{
+    <p>No chat messages found.</p>
+}
+else
+{
+    <table class="data-table">
+        <thead>
+            <tr class="data-table-head">
+                <td style="text-align:right;">Rank</td>
+                <td><a href="@(SortUrl("date"))">Date@(Mark("date"))</a></td>
+                <td><a href="@(SortUrl("player"))">Player@(Mark("player"))</a></td>
+                <td>Message</td>
+                @if (Model.ServerId == null)
+                {
+                    <td class="ls-responsive-hide"><a href="@(SortUrl("server"))">Server@(Mark("server"))</a></td>
+                }
+                <td class="ls-responsive-hide"><a href="@(SortUrl("map"))">Map@(Mark("map"))</a></td>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int rowNum = (Model.Chat.Page - 1) * Model.Chat.PageSize + 1;
+                bool alt = false;
+            }
+            @foreach (var row in Model.Chat.Items)
+            {
+                string rowClass = (alt = !alt) ? "bg1" : "bg2";
+                string? flagFile = string.IsNullOrEmpty(row.Player?.Flag) ? null : row.Player.Flag.ToLowerInvariant();
+                <tr>
+                    <td class="@rowClass" style="text-align:right;">@rowNum</td>
+                    <td class="@rowClass">@row.EventTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                    <td class="@rowClass">
+                        @if (!string.IsNullOrEmpty(flagFile))
+                        {
+                            <img src="@(Url.Content("~/hlstatsimg/flags/") + flagFile + ".gif")" alt="@row.Player!.Flag" title="@row.Player!.Flag" />
+                        }
+                        @if (row.Player != null)
+                        {
+                            <a asp-controller="Players" asp-action="Profile" asp-route-id="@row.PlayerId">@row.Player.LastName</a>
+                        }
+                    </td>
+                    <td class="@rowClass">
+                        @if (row.MessageMode != 0)
+                        {
+                            <em>@MessagePrefix(row.MessageMode)</em>
+                        }
+                        @row.Message
+                    </td>
+                    @if (Model.ServerId == null)
+                    {
+                        <td class="@rowClass ls-responsive-hide">@(row.Server?.Name ?? "—")</td>
+                    }
+                    <td class="@rowClass ls-responsive-hide">@row.Map</td>
+                </tr>
+                rowNum++;
+            }
+        </tbody>
+    </table>
+
+    <partial name="_Pagination" model="@PaginationModel.From(Model.Chat, PageUrl)" />
+}

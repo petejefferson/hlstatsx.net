@@ -1,0 +1,111 @@
+@model AdminDashboardViewModel
+@using HLStatsX.NET.Web.Models.ViewModels
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "_AdminLayout";
+}
+
+<h1>Dashboard</h1>
+
+<div class="dashboard-cards">
+    <div class="stat-card"><h3>Players</h3><div class="value">@Model.TotalPlayers.ToString("N0")</div></div>
+    <div class="stat-card"><h3>Clans</h3><div class="value">@Model.TotalClans.ToString("N0")</div></div>
+    <div class="stat-card"><h3>Active Servers</h3><div class="value">@Model.ActiveServers</div></div>
+    <div class="stat-card"><h3>Total Servers</h3><div class="value">@Model.Servers.Count</div></div>
+    <div class="stat-card"><h3>Games</h3><div class="value">@Model.Games.Count(g => !g.IsHidden)</div></div>
+</div>
+
+<div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
+
+    <div style="flex:1;min-width:280px">
+
+        <h2 style="font-size:14px;margin:0 0 8px;color:#333">General Settings</h2>
+        <div class="section-cards" style="margin-bottom:16px">
+            <div class="section-card">
+                <a asp-action="Options">HLStatsX.NET Settings</a>
+                <a asp-action="Users">Admin Users</a>
+                <a asp-action="Games">Games</a>
+                <a asp-action="HostGroups">Host Groups</a>
+                <a asp-action="ClanTags">Clan Tag Patterns</a>
+                <a asp-action="VoiceCommServers">VoiceComm Servers</a>
+            </div>
+        </div>
+
+        <h2 style="font-size:14px;margin:0 0 8px;color:#333">Game Settings</h2>
+        <div class="section-cards" style="margin-bottom:16px">
+            @foreach (var g in Model.Games.Where(g => !g.IsHidden).OrderBy(g => g.Name))
+            {
+                <div class="section-card">
+                    <h4>@g.Name <span style="color:#999;font-size:11px;font-weight:normal">(@g.Code)</span></h4>
+                    <a href="@Url.Action("Servers", "Admin", new { game = g.Code })">Servers</a>
+                    <a href="@Url.Action("Actions", "Admin", new { game = g.Code })">Actions</a>
+                    <a href="@Url.Action("Teams", "Admin", new { game = g.Code })">Teams</a>
+                    <a href="@Url.Action("AdminRoles", "Admin", new { game = g.Code })">Roles</a>
+                    <a href="@Url.Action("AdminWeapons", "Admin", new { game = g.Code })">Weapons</a>
+                    <a href="@Url.Action("AdminRanks", "Admin", new { game = g.Code })">Ranks</a>
+                    <a href="@Url.Action("AdminRibbons", "Admin", new { game = g.Code })">Ribbons</a>
+                    <a href="@Url.Action("Awards", "Admin", new { type = "W", game = g.Code })">Weapon Awards</a>
+                    <a href="@Url.Action("Awards", "Admin", new { type = "O", game = g.Code })">Player Action Awards</a>
+                    <a href="@Url.Action("Awards", "Admin", new { type = "P", game = g.Code })">PlyrPlyr Awards</a>
+                    <a href="@Url.Action("Awards", "Admin", new { type = "V", game = g.Code })">Victim Awards</a>
+                </div>
+            }
+            @if (!Model.Games.Any(g => !g.IsHidden))
+            {
+                <p style="color:#999;font-size:12px">No games configured.</p>
+            }
+        </div>
+
+    </div>
+
+    <div style="flex:1;min-width:280px">
+
+        <h2 style="font-size:14px;margin:0 0 8px;color:#333">Tools</h2>
+        <ul style="list-style:none;margin:0;padding:0">
+            @{
+                var tools = new[]
+                {
+                    (Url.Action("DaemonControl", "Admin")!,   "Daemon Control",             "Reload configuration or shut down your HLStatsX daemon."),
+                    (Url.Action("EditDetails",   "Admin")!,   "Edit Player or Clan",        "Edit a player or clan's profile information."),
+                    (Url.Action("AdminEvents",   "Admin")!,   "Admin Event History",        "View history of logged RCON commands and admin messages."),
+                    (Url.Action("IpStats",       "Admin")!,   "Host Statistics",            "See which ISPs your players are connecting from."),
+                    (Url.Action("Optimize",      "Admin")!,   "Optimize Database",          "Run OPTIMIZE TABLE and ANALYZE TABLE on all HLStatsX tables. Recommended monthly."),
+                    (Url.Action("Reset",         "Admin")!,   "Full or Partial Reset",      "Reset chosen statistics globally or for a selected game."),
+                    (Url.Action("Cleanup",       "Admin")!,   "Clean Up Statistics",        "Delete all inactive players and clans with fewer kills than a threshold."),
+                    (Url.Action("CopySettings",  "Admin")!,   "Duplicate Game Settings",    "Copy a whole game settings tree (actions, teams, weapons, ranks, ribbons, awards) to another game."),
+                    (Url.Action("ResetCollations","Admin")!,  "Reset DB Collations",        "Convert all tables and columns to utf8mb4_unicode_ci — useful after upgrading from another HLstats(X)-based system."),
+                };
+            }
+            @foreach (var (url, name, desc) in tools)
+            {
+                <li style="margin-bottom:12px">
+                    <a href="@url" style="font-weight:bold;color:#0f3460;font-size:13px">@name</a><br />
+                    <span style="color:#666;font-size:12px">@desc</span>
+                </li>
+            }
+        </ul>
+
+    </div>
+
+</div>
+
+<h2 style="font-size:14px;margin:20px 0 8px;color:#333">Servers</h2>
+<table class="admin-table">
+    <thead>
+        <tr><th>Name</th><th>Address</th><th>Game</th><th>Status</th><th>Players</th><th>Map</th></tr>
+    </thead>
+    <tbody>
+    @foreach (var s in Model.Servers.OrderBy(s => s.Game).ThenBy(s => s.Name))
+    {
+        <tr>
+            <td><a href="@Url.Action("EditServer", "Admin", new { id = s.ServerId })" style="color:#0f3460">@s.Name</a></td>
+            <td style="font-size:11px">@s.Address:@s.Port</td>
+            <td>@s.Game</td>
+            <td>@(s.IsActive ? "Active" : "Inactive")</td>
+            <td>@s.ActPlayers</td>
+            <td style="font-size:11px">@s.ActMap</td>
+        </tr>
+    }
+    @if (!Model.Servers.Any()) { <tr><td colspan="6">No servers configured.</td></tr> }
+    </tbody>
+</table>

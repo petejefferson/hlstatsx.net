@@ -1,0 +1,13 @@
+@model HLStatsX.NET.Web.Models.ViewModels.ErrorViewModel
+@{
+    ViewData["Title"] = "Error";
+}
+
+<h1>Something went wrong</h1>
+
+<p>An unexpected error occurred. Please try again, or return to the <a asp-controller="Home" asp-action="Index">home page</a>.</p>
+
+@if (!string.IsNullOrEmpty(Model?.RequestId))
+{
+    <p class="muted" style="margin-top:1rem; font-size:0.82rem;">Request ID: <code>@Model.RequestId</code></p>
+}

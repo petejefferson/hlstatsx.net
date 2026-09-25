@@ -1,0 +1,103 @@
+@model BanListViewModel
+@using HLStatsX.NET.Core.Models
+@{
+    ViewData["Title"] = "Cheaters & Banned Players";
+
+    string SortUrl(string field)
+    {
+        bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
+        return Url.Action("Bans", new { game = Model.Game, sortBy = field, desc = nextDesc, minKills = Model.MinKills, page = 1 })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
+
+    string PageUrl(int p) => Url.Action("Bans", new { game = Model.Game, sortBy = Model.SortBy, desc = Model.Descending, minKills = Model.MinKills, page = p })!;
+}
+
+<h1>Cheaters &amp; Banned Players &mdash; @Model.Game</h1>
+
+@* ── Find-a-player search form ───────────────────────────────────────────── *@
+<div class="subblock" style="margin-bottom:1rem;">
+    <form method="get" asp-controller="Search" asp-action="Index">
+        <input type="hidden" name="game" value="@Model.Game" />
+        <input type="hidden" name="st" value="player" />
+        <strong>&bull;</strong> Find a player:
+        <input type="text" name="q" size="20" maxlength="64" class="form-text" />
+        <input type="submit" value="Search" class="btn-small" />
+    </form>
+</div>
+
+@if (!Model.Players.Items.Any())
+{
+    <p>No banned players.</p>
+}
+else
+{
+    <table class="data-table">
+        <thead>
+            <tr class="data-table-head">
+                <td style="text-align:right;">Rank</td>
+                <td><a href="@(SortUrl("player"))">Player@(Mark("player"))</a></td>
+                <td style="text-align:right;"><a href="@(SortUrl("ban_date"))">Ban Date@(Mark("ban_date"))</a></td>
+                <td style="text-align:right;"><a href="@(SortUrl("skill"))">Points@(Mark("skill"))</a></td>
+                <td class="ls-responsive-hide">Activity</td>
+                <td style="text-align:right;"><a href="@(SortUrl("kills"))">Kills@(Mark("kills"))</a></td>
+                <td style="text-align:right;"><a href="@(SortUrl("deaths"))">Deaths@(Mark("deaths"))</a></td>
+                <td class="ls-responsive-hide" style="text-align:right;"><a href="@(SortUrl("headshots"))">Headshots@(Mark("headshots"))</a></td>
+                <td class="ls-responsive-hide" style="text-align:right;"><a href="@(SortUrl("kpd"))">K:D@(Mark("kpd"))</a></td>
+                <td class="ls-responsive-hide" style="text-align:right;"><a href="@(SortUrl("hsk"))">HS:K@(Mark("hsk"))</a></td>
+                <td class="ls-responsive-hide" style="text-align:right;"><a href="@(SortUrl("accuracy"))">Accuracy@(Mark("accuracy"))</a></td>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int rowNum = (Model.Players.Page - 1) * Model.Players.PageSize + 1;
+                bool alt = false;
+            }
+            @foreach (var row in Model.Players.Items)
+            {
+                string rowClass = (alt = !alt) ? "bg1" : "bg2";
+                string? flagFile = string.IsNullOrEmpty(row.Flag) ? null : row.Flag.ToLowerInvariant();
+                <tr>
+                    <td class="@rowClass" style="text-align:right;">@rowNum</td>
+                    <td class="@rowClass">
+                        @if (!string.IsNullOrEmpty(flagFile))
+                        {
+                            <img src="@(Url.Content("~/hlstatsimg/flags/") + flagFile + ".gif")" alt="@row.Flag" title="@row.Flag" />
+                        }
+                        <a asp-action="Profile" asp-route-id="@row.PlayerId">@row.PlayerName</a>
+                    </td>
+                    <td class="@rowClass" style="text-align:right;">@row.BanDate.ToString("yyyy.MM.dd HH:mm:ss")</td>
+                    <td class="@rowClass" style="text-align:right;">@row.Skill.ToString("N0")</td>
+                    <td class="@rowClass ls-responsive-hide">
+                        <meter min="0" max="100" low="25" high="50" optimum="75" value="@row.ActivityScore"></meter>
+                    </td>
+                    <td class="@rowClass" style="text-align:right;">@row.Kills.ToString("N0")</td>
+                    <td class="@rowClass" style="text-align:right;">@row.Deaths.ToString("N0")</td>
+                    <td class="@rowClass ls-responsive-hide" style="text-align:right;">@row.Headshots.ToString("N0")</td>
+                    <td class="@rowClass ls-responsive-hide" style="text-align:right;">@row.Kpd.ToString("F2")</td>
+                    <td class="@rowClass ls-responsive-hide" style="text-align:right;">
+                        @(row.HsK.HasValue ? row.HsK.Value.ToString("F2") : "—")
+                    </td>
+                    <td class="@rowClass ls-responsive-hide" style="text-align:right;">@row.Accuracy.ToString("F0")%</td>
+                </tr>
+                rowNum++;
+            }
+        </tbody>
+    </table>
+
+    <partial name="_Pagination" model="@PaginationModel.From(Model.Players, PageUrl)" />
+}
+
+@* ── minKills filter form ────────────────────────────────────────────────── *@
+<div class="subblock" style="margin-top:1rem;">
+    <form method="get" asp-action="Bans">
+        <input type="hidden" name="game" value="@Model.Game" />
+        <input type="hidden" name="sortBy" value="@Model.SortBy" />
+        <input type="hidden" name="desc" value="@Model.Descending.ToString().ToLowerInvariant()" />
+        <input type="hidden" name="page" value="1" />
+        <strong>&bull;</strong> Show only players with
+        <input type="text" name="minKills" size="4" maxlength="6" value="@Model.MinKills" class="form-text" />
+        or more kills from a total <strong>@Model.Players.TotalCount.ToString("N0")</strong> banned players
+        <input type="submit" value="Apply" class="btn-small" />
+    </form>
+</div>

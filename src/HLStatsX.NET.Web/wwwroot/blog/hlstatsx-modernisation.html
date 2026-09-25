@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HLStatsX, Rebuilt for the Modern Web</title>
+    <link rel="stylesheet" href="hlstatsx-modernisation.css" />
+    <style>
+        :root {
+            --hero-start: #163247;
+            --hero-end: #336699;
+            --card-shadow: 0 18px 45px rgba(10, 28, 40, 0.18);
+            --soft-border: rgba(153, 170, 170, 0.45);
+        }
+
+        body {
+            background:
+                radial-gradient(circle at top right, rgba(171, 204, 214, 0.55), transparent 25%),
+                linear-gradient(180deg, #eef5f7 0%, #d4d0c8 100%);
+            line-height: 1.6;
+        }
+
+        .page-wrap {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 32px 16px 48px;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, var(--hero-start), var(--hero-end));
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            inset: auto -80px -80px auto;
+            width: 220px;
+            height: 220px;
+            background: radial-gradient(circle, rgba(255,255,255,0.25), transparent 70%);
+            border-radius: 50%;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            font-size: 0.78rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.16);
+            margin-bottom: 14px;
+        }
+
+        .hero h1 {
+            color: #fff;
+            font-size: 2.6rem;
+            line-height: 1.15;
+            margin-bottom: 12px;
+        }
+
+        .hero p {
+            font-size: 1.05rem;
+            max-width: 760px;
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        .hero-badges {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .hero-badge {
+            background: rgba(255,255,255,0.14);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-size: 0.82rem;
+            font-weight: bold;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid var(--soft-border);
+            border-radius: 18px;
+            box-shadow: 0 10px 28px rgba(36, 55, 67, 0.08);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .card h2 {
+            margin-top: 0;
+            margin-bottom: 12px;
+        }
+
+        .lede {
+            font-size: 0.95rem;
+            color: #3e5663;
+            margin-bottom: 16px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .feature-pill {
+            border: 1px solid var(--soft-border);
+            border-radius: 14px;
+            padding: 14px;
+            background: linear-gradient(180deg, #ffffff 0%, #f6fbfc 100%);
+        }
+
+        .feature-pill strong {
+            display: block;
+            color: var(--highlight);
+            margin-bottom: 4px;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 0.9rem;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            border: 1px solid var(--border);
+            padding: 10px 12px;
+            vertical-align: top;
+        }
+
+        .comparison-table th {
+            background: var(--accent);
+            text-align: left;
+        }
+
+        .comparison-table td:first-child {
+            font-weight: bold;
+            width: 22%;
+            background: #f6fbfc;
+        }
+
+        .status-list,
+        .focus-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            gap: 12px;
+        }
+
+        .status-item,
+        .focus-item {
+            border: 1px solid var(--soft-border);
+            border-radius: 14px;
+            padding: 14px;
+            background: #fff;
+        }
+
+        .focus-item strong,
+        .status-item strong {
+            color: var(--highlight);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .mini-kicker {
+            font-size: 0.78rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 8px;
+        }
+
+        .progress-columns {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .progress-panel {
+            border-radius: 14px;
+            padding: 16px;
+            border: 1px solid var(--soft-border);
+        }
+
+        .progress-panel h3 {
+            margin-top: 0;
+            color: var(--highlight);
+        }
+
+        .progress-panel ul {
+            margin: 10px 0 0 18px;
+        }
+
+        .done { background: #f0fbf4; }
+        .partial { background: #fff9ed; }
+        .todo { background: #f8f8fb; }
+
+        .quote-box {
+            background: linear-gradient(135deg, rgba(171, 204, 214, 0.22), rgba(255, 255, 255, 0.95));
+            border-left: 5px solid var(--highlight);
+            border-radius: 16px;
+            padding: 20px;
+            font-size: 1rem;
+            color: #274554;
+        }
+
+        .cta {
+            background: linear-gradient(135deg, #fefefe, #edf7fa);
+            text-align: center;
+        }
+
+        .cta p {
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        .footer-note {
+            text-align: center;
+            color: #3c5562;
+            font-size: 0.85rem;
+            margin-top: 8px;
+        }
+
+        @media (max-width: 900px) {
+            .content-grid,
+            .progress-columns,
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero {
+                padding: 28px 22px;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrap">
+        <section class="hero">
+            <div class="eyebrow">🚀 Modernisation Update</div>
+            <h1>HLStatsX, Rebuilt: leaving legacy PHP and Perl behind for modern .NET</h1>
+            <p>
+                The original HLStatsX stack served the community for years, but both the PHP site and the Perl backend now feel every bit like legacy systems: ageing, unloved, and effectively unmaintained. <strong>HLStatsX.NET</strong> is the answer — a modern C# rewrite focused on performance, security, maintainability, and privacy without losing the soul of the platform, with the backend daemon already partially ported as part of that journey.
+            </p>
+            <div class="hero-badges">
+                <span class="hero-badge">⚡ Performance-first</span>
+                <span class="hero-badge">🛡️ Security-aware</span>
+                <span class="hero-badge">🔧 Maintainable architecture</span>
+                <span class="hero-badge">🔒 Privacy-minded</span>
+            </div>
+        </section>
+
+        <article class="card">
+            <div class="mini-kicker">Legacy vs rewrite</div>
+            <h2>How HLStatsX.NET compares to the old PHP and Perl stack</h2>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Area</th>
+                        <th>Legacy PHP + Perl stack</th>
+                        <th>HLStatsX.NET rewrite</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Architecture</td>
+                        <td>Split across older PHP and Perl components, with increasing complexity and growing difficulty evolving safely.</td>
+                        <td>Layered C# solution with clearer boundaries across Core, Infrastructure, and Web, plus a backend daemon that has already been partially ported.</td>
+                    </tr>
+                    <tr>
+                        <td>Database support</td>
+                        <td>Traditionally tied to legacy assumptions and a narrower operational model.</td>
+                        <td>New database work is being aimed at <strong>MySQL</strong>, <strong>PostgreSQL</strong>, and <strong>SQL Server</strong> support for more flexible hosting and modernisation paths. 🗄️</td>
+                    </tr>
+                    <tr>
+                        <td>Performance</td>
+                        <td>Functional, but built around older patterns and legacy processing paths with less predictable optimisation options.</td>
+                        <td>Async-first services and repositories, modern runtime performance, and a cleaner basis for profiling and tuning. ⚡</td>
+                    </tr>
+                    <tr>
+                        <td>Security</td>
+                        <td>Legacy surface area, ageing dependencies, and older backend scripts that increase operational risk over time.</td>
+                        <td>Modern ASP.NET Core defaults, stronger dependency management, and a better foundation for secure development. 🛡️</td>
+                    </tr>
+                    <tr>
+                        <td>Maintainability</td>
+                        <td>Every change becomes harder as multiple legacy codepaths drift further from active maintenance.</td>
+                        <td>Typed models, dependency injection, testability, and safer future refactoring. 🔧</td>
+                    </tr>
+                    <tr>
+                        <td>Privacy</td>
+                        <td>Older codebases rarely make privacy considerations easy to evolve or audit.</td>
+                        <td>Modern configuration and data handling practices make privacy improvements much more realistic. 🔒</td>
+                    </tr>
+                    <tr>
+                        <td>Momentum</td>
+                        <td>Historically important, but effectively stuck in time.</td>
+                        <td>Actively moving forward, feature-by-feature, with room for polish and expansion. 🚀</td>
+                    </tr>
+                </tbody>
+            </table>
+        </article>
+
+        <article class="card">
+            <div class="mini-kicker">Rewrite status</div>
+            <h2>What has already been rewritten in C#</h2>
+            <p class="lede">
+                This is not a vaporware reboot. The current web project already delivers a large slice of the original user experience, and the separate backend ingest effort in the C# source tree shows the Perl daemon rewrite is already happening in real code too.
+            </p>
+
+            <div class="progress-columns">
+                <section class="progress-panel done">
+                    <h3>✅ Front-end implemented</h3>
+                    <ul>
+                        <li>Home dashboard with livestats, activity chart, and daily awards</li>
+                        <li>Player rankings</li>
+                        <li>Player profile pages</li>
+                        <li>Player skill history</li>
+                        <li>Forum signature image generation</li>
+                        <li>Banned players</li>
+                        <li>Clan rankings</li>
+                        <li>Weapon rankings</li>
+                        <li>Map rankings</li>
+                        <li>Server list and detail</li>
+                        <li>Country leaderboard and country profile</li>
+                        <li>Ranks, ribbons, and ribbon detail</li>
+                        <li>Search</li>
+                    </ul>
+                </section>
+                <section class="progress-panel partial">
+                    <h3>🧩 Front-end partial</h3>
+                    <ul>
+                        <li>Clan profile</li>
+                        <li>Awards</li>
+                        <li>Admin features</li>
+                        <li>Weapon and map detail pages are present but still stub-level</li>
+                        <li>Admin users and authentication are in place, but broader tooling remains thin</li>
+                    </ul>
+                </section>
+                <section class="progress-panel todo">
+                    <h3>⚙️ Backend C# effort already visible</h3>
+                    <ul>
+                        <li>Dedicated <strong>HlstatsX.Ingest</strong> daemon project</li>
+                        <li>Bounded-channel ingest pipeline with parser registry and event worker</li>
+                        <li>UDP ingest plus file ingest and replay tooling</li>
+                        <li><strong>33</strong> parser classes, including <strong>18</strong> DoD:S-specific parsers</li>
+                        <li><strong>39</strong> handlers and <strong>19</strong> backend services already present</li>
+                        <li>Skill calculator, awards calculation, player/clan caches, GeoIP, RCON, and timeout services</li>
+                        <li>Batch database writes and operational background monitoring</li>
+                    </ul>
+                </section>
+            </div>
+        </article>
+
+        <article class="card">
+            <div class="mini-kicker">What still needs to land</div>
+            <h2>The remaining gap is clear and actionable</h2>
+            <p class="lede">
+                The rewrite already covers the high-visibility leaderboard and profile experiences, but the roadmap is still honest about the work left to do.
+            </p>
+            <div class="progress-columns">
+                <section class="progress-panel todo">
+                    <h3>⏳ Still to come</h3>
+                    <ul>
+                        <li>Weapon detail</li>
+                        <li>Map detail</li>
+                        <li>Actions and events</li>
+                        <li>Roles</li>
+                        <li>Chat history</li>
+                        <li>Live stats</li>
+                        <li>Games list and detail</li>
+                        <li>Country stats</li>
+                        <li>Player sessions</li>
+                        <li>Remaining admin workflows</li>
+                    </ul>
+                </section>
+                <section class="progress-panel partial">
+                    <h3>📈 Current parity snapshot</h3>
+                    <ul>
+                        <li>Public stats pages: <strong>~55%</strong> complete</li>
+                        <li>Admin panel: <strong>~15%</strong> complete</li>
+                        <li>Overall weighted parity: <strong>~45%</strong></li>
+                        <li>Strongest areas today: player-facing leaderboards, profiles, and dashboard views</li>
+                    </ul>
+                </section>
+                <section class="progress-panel done">
+                    <h3>🎯 Highest-impact next steps</h3>
+                    <ul>
+                        <li>Multi-game selector</li>
+                        <li>Clan profile tabs</li>
+                        <li>Weapon and map detail pages</li>
+                        <li>Actions, roles, and chat</li>
+                    </ul>
+                </section>
+            </div>
+        </article>
+
+        <div class="content-grid">
+            <main>
+                <article class="card">
+                    <div class="mini-kicker">Why this rewrite matters</div>
+                    <h2>The PHP frontend and Perl backend proved the idea. The C# rewrite will secure the future.</h2>
+                    <p class="lede">
+                        HLStatsX has always been more than a stats page. It is part scoreboard, part social layer, part historical archive for Half-Life server communities. But the legacy PHP website and Perl backend come from another era. They are harder to evolve, harder to secure, and harder to trust for long-term growth. When a codebase stops being actively loved, even simple improvements become expensive and risky.
+                    </p>
+                    <p>
+                        That is why this project is not just a port. It is a deliberate rebuild on modern .NET, with a cleaner architecture and a sharper engineering focus. The aim is to retire both the ageing PHP presentation layer and the legacy Perl processing path, then replace them with a unified platform that is faster, safer, and easier to extend. Importantly, this is already underway: the backend daemon has been partially ported to C#, proving the modernisation effort reaches beyond the web UI. 🙂
+                    </p>
+
+                    <div class="feature-grid">
+                        <div class="feature-pill">
+                            <strong>⚙️ Modern stack</strong>
+                            ASP.NET Core on .NET 10, with C# and a layered architecture designed for long-term development across both web and backend responsibilities.
+                        </div>
+                        <div class="feature-pill">
+                            <strong>🗄️ Flexible database future</strong>
+                            The new data layer is being shaped to support <strong>MySQL</strong>, <strong>PostgreSQL</strong>, and <strong>SQL Server</strong>, reducing lock-in and broadening deployment options.
+                        </div>
+                        <div class="feature-pill">
+                            <strong>🧠 Clear separation of concerns</strong>
+                            Core, Infrastructure, and Web are cleanly separated, making refactoring and testing far safer.
+                        </div>
+                        <div class="feature-pill">
+                            <strong>❤️ Work in progress with momentum</strong>
+                            This is already useful today, and the path forward is stronger than the legacy branch ever was, with the backend daemon partially ported to C# already.
+                        </div>
+                        <div class="feature-pill">
+                            <strong>📊 Feature parity in motion</strong>
+                            The current front-end effort is already substantial: public stats pages are roughly 55% complete, with overall weighted parity around 45% and many of the most important read-only pages already live.
+                        </div>
+                    </div>
+                </article>
+
+            </main>
+
+            <aside>
+                <section class="card">
+                    <div class="mini-kicker">At a glance</div>
+                    <ul class="status-list">
+                        <li class="status-item">
+                            <strong>🏚️ Legacy problem</strong>
+                            The original PHP site and Perl backend are valuable historically, but old, unloved, and increasingly difficult to maintain safely.
+                        </li>
+                        <li class="status-item">
+                            <strong>💡 Rewrite answer</strong>
+                            HLStatsX.NET replaces legacy implementation debt with a modern C# and ASP.NET Core foundation, with the backend modernisation story included.
+                        </li>
+                        <li class="status-item">
+                            <strong>📈 Current state</strong>
+                            Major user-facing pages already exist in the current web project, and a separate C# ingest daemon effort already includes parsers, handlers, replay tooling, and event-processing infrastructure.
+                        </li>
+                        <li class="status-item">
+                            <strong>🌍 Long-term promise</strong>
+                            Better performance, better security, better maintainability, broader database choice, and a more privacy-conscious platform for the community.
+                        </li>
+                    </ul>
+                </section>
+
+                <section class="card">
+                    <div class="mini-kicker">Pull quote</div>
+                    <div class="quote-box">
+                        “The old PHP site and Perl backend carried HLStatsX for years. This rewrite is about carrying it forward — with modern engineering, faster delivery, and a codebase that can be loved again.”
+                    </div>
+                </section>
+            </aside>
+        </div>
+
+        <article class="card">
+            <div class="mini-kicker">Engineering priorities</div>
+            <h2>Performance, security, maintainability, and privacy are not buzzwords here</h2>
+            <ul class="focus-list">
+                <li class="focus-item">
+                    <strong>⚡ Performance</strong>
+                    Modern .NET gives the rewrite a stronger execution model, while async data access, cleaner query paths, bounded-channel ingest, and batched event processing create far better conditions for real optimisation work.
+                </li>
+                <li class="focus-item">
+                    <strong>🛡️ Security</strong>
+                    Rebuilding on ASP.NET Core means modern framework support, clearer dependency management, and a platform that can keep pace with security expectations instead of trailing behind them.
+                </li>
+                <li class="focus-item">
+                    <strong>🔧 Maintainability</strong>
+                    Strong typing, testability, dependency injection, and separation between layers make this codebase one that can replace scattered PHP and Perl logic with something that can be extended confidently rather than feared.
+                </li>
+                <li class="focus-item">
+                    <strong>🗄️ Database portability</strong>
+                    The new platform is being built with support for <strong>MySQL</strong>, <strong>PostgreSQL</strong>, and <strong>SQL Server</strong> in mind, giving operators more freedom in how they host, scale, and integrate HLStatsX.NET.
+                </li>
+                <li class="focus-item">
+                    <strong>🔒 Privacy</strong>
+                    A stats platform handles player activity and server data. The rewrite provides a cleaner foundation for privacy-aware features, clearer configuration, and better operational discipline.
+                </li>
+            </ul>
+        </article>
+
+        <article class="card cta">
+            <h2>Great things will follow</h2>
+            <p>
+                HLStatsX.NET is still a work in progress, and that is exactly what makes it exciting. The foundation is already modern. The direction is already clear. The feature set is already growing. This rewrite is not about nostalgia — it is about ensuring HLStatsX has a future worth building on, from the website right through to the backend processing stack. 😎
+            </p>
+        </article>
+
+        <p class="footer-note">Built for the future of HLStatsX • Modern .NET • C# rewrite of the legacy PHP and Perl stack • Work in progress, with momentum ✨</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,39 @@
+@model IReadOnlyList<HLStatsX.NET.Core.Entities.VoiceCommServer>
+@{ ViewData["Title"] = "VoiceComm Servers"; Layout = "_AdminLayout"; }
+<h1>VoiceComm Servers</h1>
+<p><a asp-action="CreateVoiceCommServer" class="btn btn-primary">Add VoiceComm Server</a></p>
+<p style="color:#666;font-size:12px;">TeamSpeak and Ventrilo servers displayed on the game dashboard.</p>
+<table class="admin-table">
+    <thead>
+        <tr>
+            <th>Type</th>
+            <th>Name</th>
+            <th>Address</th>
+            <th>UDP Port</th>
+            <th>Query/Connect Port</th>
+            <th>Notes</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var s in Model)
+    {
+        <tr>
+            <td>@s.TypeName</td>
+            <td>@s.Name</td>
+            <td>@s.Addr</td>
+            <td>@(s.IsTeamspeak ? s.UdpPort.ToString() : "—")</td>
+            <td>@s.QueryPort</td>
+            <td>@s.Description</td>
+            <td>
+                <a href="@Url.Action("EditVoiceCommServer", "Admin", new { id = s.ServerId })" class="btn btn-secondary btn-sm">Edit</a>
+                <form action="@Url.Action("DeleteVoiceCommServer", "Admin", new { id = s.ServerId })" method="post" style="display:inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this VoiceComm server?')">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+    @if (!Model.Any()) { <tr><td colspan="7">No VoiceComm servers configured.</td></tr> }
+    </tbody>
+</table>

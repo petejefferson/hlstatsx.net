@@ -1,0 +1,13 @@
+@{
+    ViewData["Title"] = "DB Optimize";
+    Layout = "_AdminLayout";
+}
+
+<h1>Database Optimize</h1>
+<p>Runs <code>OPTIMIZE TABLE</code> and <code>ANALYZE TABLE</code> on all HLStatsX tables. This can take a few minutes on large databases.</p>
+
+<form asp-action="OptimizePost" method="post">
+    @Html.AntiForgeryToken()
+    <button type="submit" class="btn btn-primary"
+            onclick="return confirm('Run OPTIMIZE and ANALYZE on all tables?')">Run Optimize</button>
+</form>

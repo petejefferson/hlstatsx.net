@@ -1,0 +1,80 @@
+@model PlayerChatViewModel
+@using HLStatsX.NET.Core.Models
+@{
+    ViewData["Title"] = Model.PlayerName + " — Chat History";
+
+    string SortUrl(string field)
+    {
+        bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
+        return Url.Action("PlayerHistory", new { id = Model.PlayerId, filter = Model.Filter, sortBy = field, desc = nextDesc, page = 1 })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
+
+    string PageUrl(int p) => Url.Action("PlayerHistory", new { id = Model.PlayerId, filter = Model.Filter, sortBy = Model.SortBy, desc = Model.Descending, page = p })!;
+
+    string MessagePrefix(int mode) => mode switch { 2 => "(Team) ", 3 => "(Squad) ", _ => "" };
+}
+
+<h1>@Model.PlayerName &mdash; Chat History (Last @Model.DeleteDays Days)</h1>
+
+@* ── Text filter ──────────────────────────────────────────────────────────── *@
+<div class="subblock" style="margin-bottom:1rem;">
+    <form method="get" asp-action="PlayerHistory">
+        <input type="hidden" name="id" value="@Model.PlayerId" />
+        <input type="hidden" name="sortBy" value="@Model.SortBy" />
+        <input type="hidden" name="desc" value="@Model.Descending.ToString().ToLowerInvariant()" />
+        <input type="hidden" name="page" value="1" />
+        <strong>&bull;</strong> Filter: <input type="text" name="filter" value="@Model.Filter" size="20" maxlength="128" class="form-text" />
+        <input type="submit" value="View" class="btn-small" />
+    </form>
+</div>
+
+@if (!Model.Chat.Items.Any())
+{
+    <p>No chat history found.</p>
+}
+else
+{
+    <table class="data-table">
+        <thead>
+            <tr class="data-table-head">
+                <td style="text-align:right;">Rank</td>
+                <td><a href="@(SortUrl("date"))">Date@(Mark("date"))</a></td>
+                <td>Message</td>
+                <td><a href="@(SortUrl("server"))">Server@(Mark("server"))</a></td>
+                <td><a href="@(SortUrl("map"))">Map@(Mark("map"))</a></td>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int rowNum = (Model.Chat.Page - 1) * Model.Chat.PageSize + 1;
+                bool alt = false;
+            }
+            @foreach (var row in Model.Chat.Items)
+            {
+                string rowClass = (alt = !alt) ? "bg1" : "bg2";
+                <tr>
+                    <td class="@rowClass" style="text-align:right;">@rowNum</td>
+                    <td class="@rowClass" style="white-space:nowrap;">@row.EventTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                    <td class="@rowClass">
+                        @if (row.MessageMode != 0)
+                        {
+                            <em>@MessagePrefix(row.MessageMode)</em>
+                        }
+                        @row.Message
+                    </td>
+                    <td class="@rowClass">@(row.Server?.Name ?? "—")</td>
+                    <td class="@rowClass">@row.Map</td>
+                </tr>
+                rowNum++;
+            }
+        </tbody>
+    </table>
+
+    <partial name="_Pagination" model="@PaginationModel.From(Model.Chat, PageUrl)" />
+}
+
+<div class="subblock" style="margin-top:1rem;">
+    <strong>&bull;</strong>
+    <a asp-controller="Players" asp-action="Profile" asp-route-id="@Model.PlayerId">Back to @Model.PlayerName's Profile</a>
+</div>

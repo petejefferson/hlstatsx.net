@@ -1,0 +1,344 @@
+@using HLStatsX.NET.Core.Entities
+@model HLStatsX.NET.Web.Models.ViewModels.HelpViewModel
+@{
+    ViewData["Title"] = "Help";
+    var actionsByGame = Model.Actions.GroupBy(a => a.Game).OrderBy(g => g.Key).ToList();
+    var weaponsByGame = Model.Weapons.GroupBy(w => w.Game).OrderBy(g => g.Key).ToList();
+}
+
+@section Styles {
+<style>
+    .help-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 1.25rem;
+    }
+    .help-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        background: var(--highlight);
+        color: #fff;
+        border-radius: 50%;
+        font-size: 0.72rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+    .help-section-title {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        margin-bottom: 0.9rem;
+    }
+    .help-section-title h2 { margin: 0; }
+    .help-toc-link {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.55rem 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--surface-alt);
+        color: var(--text);
+        text-decoration: none;
+        font-size: 0.82rem;
+        font-weight: 500;
+        transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    .help-toc-link:hover { background: var(--surface-hover); border-color: var(--highlight); color: var(--highlight); text-decoration: none; }
+    .help-callout {
+        background: var(--surface-alt);
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--highlight);
+        border-radius: var(--radius-sm);
+        padding: 0.65rem 0.9rem;
+        font-size: 0.83rem;
+        color: var(--muted);
+        margin-top: 0.9rem;
+    }
+    code {
+        background: var(--surface-alt);
+        border: 1px solid var(--border);
+        border-radius: 3px;
+        padding: 0.1em 0.35em;
+        font-family: 'JetBrains Mono', 'Fira Code', monospace;
+        font-size: 0.85em;
+        color: var(--highlight);
+    }
+    .help-formula {
+        background: var(--surface-alt);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 0.65rem 0.9rem;
+        font-family: 'JetBrains Mono', 'Fira Code', monospace;
+        font-size: 0.8rem;
+        line-height: 1.5;
+    }
+    .help-formula-label {
+        font-family: inherit;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--muted);
+        margin-bottom: 0.3rem;
+    }
+    .help-body p { margin-bottom: 0.65rem; }
+    .help-body p:last-child { margin-bottom: 0; }
+    .help-body ul { margin: 0.4rem 0 0.65rem 1.4rem; }
+    .help-body li { margin-bottom: 0.2rem; }
+    .help-game-group { margin-top: 1.25rem; }
+    .help-game-label {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        margin-bottom: 0.5rem;
+    }
+    .help-game-label img { width: 18px; height: 18px; object-fit: contain; }
+</style>
+}
+
+<h1>Help</h1>
+
+<div class="help-card">
+    <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:0.75rem;">Contents</div>
+    <nav style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:0.5rem;">
+        <a href="#tracking" class="help-toc-link"><span class="help-badge">1</span>How are players tracked?</a>
+        <a href="#points"   class="help-toc-link"><span class="help-badge">2</span>Points rating &amp; weapon modifiers</a>
+        <a href="#profile"  class="help-toc-link"><span class="help-badge">3</span>Setting your name, e-mail &amp; homepage</a>
+        <a href="#optout"   class="help-toc-link"><span class="help-badge">4</span>How to opt out of rankings</a>
+    </nav>
+</div>
+
+<div class="help-card" id="tracking">
+    <div class="help-section-title">
+        <span class="help-badge">1</span>
+        <h2>How are players tracked? Or, why is my name listed more than once?</h2>
+    </div>
+    <div class="help-body">
+        @if (Model.Mode == "NameTrack")
+        {
+            <p>Players are tracked by <strong>nickname</strong>. All statistics for any player using a particular name will be grouped under that name. It is not possible for a name to be listed more than once for each game.</p>
+        }
+        else if (Model.Mode == "LAN")
+        {
+            <p>Players are tracked by <strong>IP Address</strong>. IP addresses are specific to a computer on a network.</p>
+            <p>A player may have more than one name. On the Player Rankings pages, players are shown with the most recent name they used. Click a player's name to view all aliases they have used under the <strong>Aliases</strong> section of their profile.</p>
+            <p>Your name may be listed more than once if someone with a different IP Address uses the same name. Use the <a asp-controller="Search" asp-action="Index">Search</a> page to find players by name or IP Address.</p>
+        }
+        else
+        {
+            <p>Players are tracked by <strong>Unique ID</strong> — the last two sections of your Steam ID (<code>X:XXXX</code>).</p>
+            <p>A player may have more than one name. On the Player Rankings pages, players are shown with the most recent name they used in the game. Click a player's name to view all aliases they have used under the <strong>Aliases</strong> section of their profile.</p>
+            <p>Your name may be listed more than once if someone with a different Unique ID uses the same name. Use the <a asp-controller="Search" asp-action="Index">Search</a> page to find players by name or Unique ID.</p>
+        }
+    </div>
+</div>
+
+<div class="help-card" id="points">
+    <div class="help-section-title">
+        <span class="help-badge">2</span>
+        <h2>How is the "points" rating calculated?</h2>
+    </div>
+    <div class="help-body">
+        <p>A new player starts with <strong>1000 points</strong>. Every kill earns or costs points based on:</p>
+        <ul>
+            <li>The victim's current points rating</li>
+            <li>The weapon used</li>
+        </ul>
+        <p>Killing someone ranked higher earns more points. Using a more challenging weapon (such as a knife) earns more points than a rifle.</p>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin:0.9rem 0;">
+            <div class="help-formula">
+                <div class="help-formula-label">Killer gains</div>
+                Killer Points + (Victim Points / Killer Points) &times; Weapon Modifier &times; 5
+            </div>
+            <div class="help-formula">
+                <div class="help-formula-label">Victim loses</div>
+                Victim Points &minus; (Victim Points / Killer Points) &times; Weapon Modifier &times; 5
+            </div>
+        </div>
+
+        @if (Model.Actions.Any())
+        {
+            <p>Some games award additional points for in-game objectives. The following actions are tracked:</p>
+            <div id="actions-tabs">
+                <div class="profile-tabs">
+                    @{ int tabIdx = 0; }
+                    @foreach (var group in actionsByGame)
+                    {
+                        var activeClass = tabIdx++ == 0 ? " active" : "";
+                        <a href="#" class="tab-link@(activeClass)"
+                           data-target="actions-panel-@group.Key"
+                           style="display:flex;align-items:center;gap:0.4rem;">
+                            <img src="@(Url.Content("~/hlstatsimg/games/") + group.Key + "/game.png")" alt="@group.Key"
+                                 style="width:16px;height:16px;object-fit:contain;"
+                                 onerror="this.style.visibility='hidden'" />
+                            @group.Key
+                        </a>
+                    }
+                </div>
+                @{ int panelIdx = 0; }
+                @foreach (var group in actionsByGame)
+                {
+                    var activeClass = panelIdx++ == 0 ? " active" : "";
+                    <div class="tab-panel@(activeClass)" id="actions-panel-@group.Key">
+                        <table class="data-table" style="margin-bottom:0.25rem;">
+                            <thead>
+                                <tr class="data-table-head">
+                                    <td>Action</td>
+                                    <td style="text-align:center;">Player</td>
+                                    <td style="text-align:center;">Pl–Pl</td>
+                                    <td style="text-align:center;">Team</td>
+                                    <td style="text-align:center;">World</td>
+                                    <td>Description</td>
+                                    <td style="text-align:right;">Player Reward</td>
+                                    <td style="text-align:right;">Team Reward</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{ int rowNum = 0; }
+                                @foreach (var action in group)
+                                {
+                                    var css = ++rowNum % 2 == 1 ? "bg1" : "bg2";
+                                    <tr class="@css">
+                                        <td><code>@action.Code</code></td>
+                                        <td style="text-align:center;">@(action.ForPlayerActions ? "Yes" : "—")</td>
+                                        <td style="text-align:center;">@(action.ForPlayerPlayerActions ? "Yes" : "—")</td>
+                                        <td style="text-align:center;">@(action.ForTeamActions ? "Yes" : "—")</td>
+                                        <td style="text-align:center;">@(action.ForWorldActions ? "Yes" : "—")</td>
+                                        <td>@action.Description</td>
+                                        <td style="text-align:right;">@action.RewardPlayer</td>
+                                        <td style="text-align:right;">@action.RewardTeam</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+            <div class="help-callout">The player who triggers an action may receive both the player reward and the team reward.</div>
+        }
+
+        <hr style="border:none;border-top:1px solid var(--border);margin:1.25rem 0;" />
+
+        <h3 id="weapons" style="margin:0 0 0.5rem;">Weapon point modifiers</h3>
+        <p>Weapon modifiers determine how many points change hands per kill. Higher modifiers mean more points at stake. Modifiers generally range from <strong>0.00</strong> to <strong>2.00</strong>.</p>
+        <div id="weapons-tabs">
+            <div class="profile-tabs">
+                @{ int wTabIdx = 0; }
+                @foreach (var group in weaponsByGame)
+                {
+                    var activeClass = wTabIdx++ == 0 ? " active" : "";
+                    <a href="#" class="tab-link@(activeClass)"
+                       data-target="weapons-panel-@group.Key"
+                       style="display:flex;align-items:center;gap:0.4rem;">
+                        <img src="@(Url.Content("~/hlstatsimg/games/") + group.Key + "/game.png")" alt="@group.Key"
+                             style="width:16px;height:16px;object-fit:contain;"
+                             onerror="this.style.visibility='hidden'" />
+                        @group.Key
+                    </a>
+                }
+            </div>
+            @{ int wPanelIdx = 0; }
+            @foreach (var group in weaponsByGame)
+            {
+                var activeClass = wPanelIdx++ == 0 ? " active" : "";
+                <div class="tab-panel@(activeClass)" id="weapons-panel-@group.Key">
+                    <table class="data-table" style="margin-bottom:0.25rem;">
+                        <thead>
+                            <tr class="data-table-head">
+                                <td style="text-align:right;">Rank</td>
+                                <td>Code</td>
+                                <td>Name</td>
+                                <td style="text-align:right;">Modifier</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{ int wNum = 0; }
+                            @foreach (var w in group.OrderByDescending(x => x.Modifier))
+                            {
+                                var css = ++wNum % 2 == 1 ? "bg1" : "bg2";
+                                <tr class="@css">
+                                    <td style="text-align:right;">@wNum</td>
+                                    <td><code>@w.Code</code></td>
+                                    <td>@w.Name</td>
+                                    <td style="text-align:right;">@w.Modifier.ToString("F2")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="help-card" id="profile">
+    <div class="help-section-title">
+        <span class="help-badge">3</span>
+        <h2>How can I set my real name, e-mail address and homepage?</h2>
+    </div>
+    <div class="help-body">
+        <p>Player profile options are set via the <strong>HLX_SET</strong> chat command while playing on a participating server.</p>
+        <p><strong>Syntax:</strong> <code>say /hlx_set option value</code></p>
+        <table class="data-table" style="margin-top:0.75rem;">
+            <thead>
+                <tr class="data-table-head">
+                    <td>Option</td>
+                    <td>Effect</td>
+                    <td>Example</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="bg1"><td><code>realname</code></td><td>Sets your Real Name</td><td><code>/hlx_set realname Joe Bloggs</code></td></tr>
+                <tr class="bg2"><td><code>email</code></td><td>Sets your E-mail Address</td><td><code>/hlx_set email joe@example.com</code></td></tr>
+                <tr class="bg1"><td><code>homepage</code></td><td>Sets your Home Page</td><td><code>/hlx_set homepage http://www.example.com/</code></td></tr>
+            </tbody>
+        </table>
+        <div class="help-callout">These are in-game chat commands, not console commands. For a full list of supported commands, type <code>help</code> in in-game chat.</div>
+    </div>
+</div>
+
+<div class="help-card" id="optout">
+    <div class="help-section-title">
+        <span class="help-badge">4</span>
+        <h2>My rank is embarrassing. How can I opt out?</h2>
+    </div>
+    <div class="help-body">
+        <p>Say <code>/hlx_hideranking</code> while playing on a participating server. This toggles your visibility on the Player Rankings.</p>
+        <p>You will still be tracked and can still view your Player Details page. Use the <a asp-controller="Search" asp-action="Index">Search</a> page to find yourself by name or Steam ID.</p>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(function () {
+    function initTabs(containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.querySelectorAll('.tab-link').forEach(btn => {
+            btn.addEventListener('click', e => {
+                e.preventDefault();
+                container.querySelectorAll('.tab-link').forEach(b => b.classList.remove('active'));
+                container.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.target).classList.add('active');
+            });
+        });
+    }
+    initTabs('actions-tabs');
+    initTabs('weapons-tabs');
+})();
+</script>
+}

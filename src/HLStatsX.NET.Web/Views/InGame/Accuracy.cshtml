@@ -1,0 +1,47 @@
+@model InGameAccuracyViewModel
+@using HLStatsX.NET.Web.Models.ViewModels
+@{
+    Layout = "~/Views/Shared/_InGameLayout.cshtml";
+    ViewData["Title"] = Model.Player.LastName + " — Accuracy";
+}
+
+<p style="padding:2px;"><strong>@Model.Player.LastName</strong> — Weapon Accuracy (StatsMe data)</p>
+
+@if (Model.Weapons.Any())
+{
+    <table class="data-table">
+        <tr class="data-table-head">
+            <td style="text-align:right;">Rank</td>
+            <td>Weapon</td>
+            <td style="text-align:right;">Shots</td>
+            <td style="text-align:right;">Hits</td>
+            <td style="text-align:right;">Damage</td>
+            <td style="text-align:right;">Headshots</td>
+            <td style="text-align:right;">Kills</td>
+            <td style="text-align:right;">Accuracy%</td>
+            <td style="text-align:right;">Dmg/Hit</td>
+            <td style="text-align:right;">Shots/Kill</td>
+        </tr>
+        @{ int rowNum = 1; }
+        @foreach (var w in Model.Weapons)
+        {
+            <tr class="@(rowNum % 2 == 1 ? "bg1" : "bg2")">
+                <td style="text-align:right;">@rowNum</td>
+                <td><a href="@Url.Action("WeaponInfo", "InGame", new { game = Model.Game, weapon = w.WeaponCode })">@(string.IsNullOrEmpty(w.WeaponName) ? w.WeaponCode : w.WeaponName)</a></td>
+                <td style="text-align:right;">@w.Shots.ToString("N0")</td>
+                <td style="text-align:right;">@w.Hits.ToString("N0")</td>
+                <td style="text-align:right;">@w.Damage.ToString("N0")</td>
+                <td style="text-align:right;">@w.Headshots.ToString("N0")</td>
+                <td style="text-align:right;">@w.Kills.ToString("N0")</td>
+                <td style="text-align:right;">@w.Accuracy.ToString("F1")%</td>
+                <td style="text-align:right;">@w.DamagePerHit.ToString("F1")</td>
+                <td style="text-align:right;">@w.ShotsPerKill.ToString("F1")</td>
+            </tr>
+            rowNum++;
+        }
+    </table>
+}
+else
+{
+    <p>No accuracy data available (requires StatsMe plugin).</p>
+}

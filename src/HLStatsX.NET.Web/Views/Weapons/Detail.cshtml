@@ -1,0 +1,65 @@
+@model WeaponDetailViewModel
+@using HLStatsX.NET.Web.Models.ViewModels
+@using HLStatsX.NET.Web.Models
+@{
+    ViewData["Title"] = Model.Weapon.Name + " Details";
+
+    string SortUrl(string field)
+    {
+        bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
+        return Url.Action("Detail", new { id = Model.Weapon.WeaponId, sortBy = field, desc = nextDesc, page = 1 })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
+
+    var imgRoot = Url.Content("~/hlstatsimg");
+    string imgSrc = $"{imgRoot}/games/{Model.Game}/weapons/{Model.Weapon.Code.ToLower()}.gif";
+}
+
+<div class="block">
+    <div class="subblock" style="overflow: hidden;">
+        <div style="float:left;">
+            <img src="@imgSrc" alt="@Model.Weapon.Name" onerror="this.style.display='none'" />
+            &nbsp;From a total of <strong>@Model.TotalKills.ToString("N0")</strong> kills with <strong>@Model.TotalHeadshots.ToString("N0")</strong> headshots (Last @Model.DeleteDays days)
+        </div>
+        <div style="float:right;">
+            Back to <a asp-action="Index" asp-route-game="@Model.Game">Weapon Statistics</a>
+        </div>
+    </div>
+
+    <br />
+
+    <table class="data-table">
+        <thead>
+            <tr class="data-table-head">
+                <td class="rank-col">Rank</td>
+                <td><a href="@(SortUrl("player"))">Player@(Mark("player"))</a></td>
+                <td style="text-align:right;"><a href="@(SortUrl("frags"))">@(Model.Weapon.Name) kills@(Mark("frags"))</a></td>
+                <td style="text-align:right;"><a href="@(SortUrl("headshots"))">Headshots@(Mark("headshots"))</a></td>
+                <td style="text-align:right;"><a href="@(SortUrl("hpk"))">Hpk@(Mark("hpk"))</a></td>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int rowNum = (Model.Killers.Page - 1) * Model.Killers.PageSize + 1;
+                bool alt = false;
+            }
+            @foreach (var row in Model.Killers.Items)
+            {
+                string rowClass = (alt = !alt) ? "bg1" : "bg2";
+                string flagFile = string.IsNullOrEmpty(row.Flag) ? "0" : row.Flag.ToLowerInvariant();
+                <tr>
+                    <td class="@rowClass rank-col">@(rowNum).</td>
+                    <td class="@rowClass">
+                        <img src="@(Url.Content("~/hlstatsimg/flags/") + flagFile + ".gif")" alt="@row.Flag" title="@row.Flag" />&nbsp;<a asp-controller="Players" asp-action="Profile" asp-route-id="@row.PlayerId">@row.PlayerName</a>
+                    </td>
+                    <td class="@rowClass" style="text-align:right;">@row.Frags.ToString("N0")</td>
+                    <td class="@rowClass" style="text-align:right;">@row.Headshots.ToString("N0")</td>
+                    <td class="@rowClass" style="text-align:right;">@row.Hpk.ToString("F2")</td>
+                </tr>
+                rowNum++;
+            }
+        </tbody>
+    </table>
+
+    <partial name="_Pagination" model="@PaginationModel.From(Model.Killers, p => Url.Action("Detail", new { id = Model.Weapon.WeaponId, sortBy = Model.SortBy, desc = Model.Descending, page = p })!)" />
+</div>

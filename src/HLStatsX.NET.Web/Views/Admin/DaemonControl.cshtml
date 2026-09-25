@@ -1,0 +1,76 @@
+@model HLStatsX.NET.Web.Models.ViewModels.DaemonControlViewModel
+@{ ViewData["Title"] = "Daemon Control"; Layout = "_AdminLayout"; }
+<h1>Daemon Control</h1>
+
+@if (Model.Executed)
+{
+    <div style="margin-left:20px;">
+        <ul>
+            <li>Sent <strong>@Model.BytesSent</strong> bytes — <strong>OK</strong></li>
+            @if (Model.PacketsReceived > 0)
+            {
+                <li>Received <strong>@Model.PacketsReceived</strong> packet(s) — backend answer: <strong>@Model.ResultMessage</strong></li>
+            }
+            else if (Model.ResultMessage != null && Model.ResultMessage.StartsWith("Error"))
+            {
+                <li><em>@Model.ResultMessage</em></li>
+            }
+            else
+            {
+                <li><em>No packets received — check if daemon is running and listening on @(Model.Host):@(Model.Port)</em></li>
+            }
+            <li>Connection closed — <strong>OK</strong></li>
+        </ul>
+    </div>
+    <p><a asp-action="DaemonControl" class="btn btn-secondary">Back</a></p>
+}
+else
+{
+    <p>After every configuration change made in the Administration Center, you should reload the daemon configuration. To do so, enter the hostname or IP address of your daemon and choose the reload option. You can also shut down your daemon from this panel. <strong>NOTE: The daemon cannot be restarted through the web interface!</strong></p>
+    <p>This works with both the original Perl daemon and the HLStatsX.NET daemon. Both listen for control packets on the same UDP port.</p>
+
+    <form asp-action="DaemonControl" method="post" style="max-width:600px">
+        @Html.AntiForgeryToken()
+        <table class="admin-table" style="margin-bottom:16px">
+            <tr>
+                <td style="width:40%">
+                    <label for="Host"><strong>Daemon IP or Hostname</strong></label>
+                    <p style="margin:4px 0 0;color:#666;font-size:11px;">
+                        Hostname or IP address of your daemon.<br />
+                        Normally the IP listed in the <code>logaddress_add</code> line on your game server.<br />
+                        Example: <em>daemon1.example.com</em> or <em>1.2.3.4</em>
+                    </p>
+                </td>
+                <td><input asp-for="Host" type="text" style="width:200px" /></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="Port"><strong>Daemon Port</strong></label>
+                    <p style="margin:4px 0 0;color:#666;font-size:11px;">
+                        Port the daemon is listening on. Normally the port listed in <code>logaddress_add</code>.<br />
+                        Example: <em>27500</em>
+                    </p>
+                </td>
+                <td><input asp-for="Port" type="number" min="1" max="65535" style="width:80px" /></td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="Command"><strong>Command</strong></label>
+                    <p style="margin:4px 0 0;color:#666;font-size:11px;">
+                        Select the operation to perform.<br />
+                        <strong>* Note: If you shut the daemon down through this page it cannot be restarted through this interface!</strong>
+                    </p>
+                </td>
+                <td>
+                    <select asp-for="Command">
+                        <option value="0">Reload Configuration</option>
+                        <option value="1">Shut Down the Daemon *</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+        <div style="text-align:center">
+            <button type="submit" class="btn btn-primary">Execute</button>
+        </div>
+    </form>
+}

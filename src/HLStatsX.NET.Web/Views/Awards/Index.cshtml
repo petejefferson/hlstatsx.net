@@ -1,0 +1,210 @@
+@model AwardsIndexViewModel
+@using HLStatsX.NET.Core.Models
+@{
+    ViewData["Title"] = "Awards";
+
+    string DailyImgUrl(string game, string awardType, string code) =>
+        Url.Content($"~/hlstatsimg/games/{game}/dawards/{awardType.ToLower()}_{code.ToLower()}.png");
+    string GlobalImgUrl(string game, string awardType, string code) =>
+        Url.Content($"~/hlstatsimg/games/{game}/gawards/{awardType.ToLower()}_{code.ToLower()}.png");
+    string RibbonImgUrl(string game, string? image) =>
+        string.IsNullOrEmpty(image)
+            ? Url.Content($"~/hlstatsimg/games/{game}/ribbons/noaward.png")
+            : Url.Content($"~/hlstatsimg/games/{game}/ribbons/{image}");
+    string RankImgUrl(string? image) =>
+        string.IsNullOrEmpty(image) ? string.Empty : Url.Content($"~/hlstatsimg/ranks/{image}_small.png");
+}
+
+<h1>Awards &mdash; @Model.Game</h1>
+
+<div class="profile-tabs" id="profileTabs">
+    <a href="#tab-daily"   class="tab-link active">Daily Awards</a>
+    <a href="#tab-global"  class="tab-link">Global Awards</a>
+    <a href="#tab-ranks"   class="tab-link">Ranks</a>
+    <a href="#tab-ribbons" class="tab-link">Ribbons</a>
+</div>
+
+@* ══════════════════════════════════════════════════════ DAILY AWARDS *@
+<div id="tab-daily" class="tab-panel active">
+    @{
+        string dailyTitle = Model.AwardsNumDays == 1 ? "Daily" : $"{Model.AwardsNumDays}Day";
+        string dailyDate  = Model.DailyAwardsDate.HasValue ? $" ({Model.DailyAwardsDate.Value:dddd d MMM})" : "";
+    }
+    <h2 style="font-size:1rem;margin:0.5rem 0 0.75rem;">@dailyTitle Awards@dailyDate</h2>
+    @if (!Model.DailyAwards.Any())
+    {
+        <p>No daily award data available.</p>
+    }
+    else
+    {
+        <div class="awards-grid">
+            @foreach (var a in Model.DailyAwards)
+            {
+                <div class="awards-grid-item">
+                    <div class="awards-grid-img">
+                        <img src="@DailyImgUrl(Model.Game, a.AwardType, a.Code)" alt="@a.Name"
+                             data-fallback="@Url.Content("~/hlstatsimg/award.png")"
+                             onerror="if(!this.dataset.fb){this.dataset.fb='1';this.src=this.dataset.fallback;}else{this.style.display='none';}" />
+                    </div>
+                    <div class="awards-grid-name"><a asp-controller="Awards" asp-action="DailyAwardDetail" asp-route-id="@a.AwardId" asp-route-game="@Model.Game">@a.Name</a></div>
+                    <div class="awards-grid-winner">
+                        @if (a.DailyWinner is not null)
+                        {
+                            @if (!string.IsNullOrEmpty(a.DailyWinner.Flag))
+                            {
+                                <img src="@(Url.Content("~/hlstatsimg/flags/") + a.DailyWinner.Flag.ToLowerInvariant() + ".gif")"
+                                     alt="@a.DailyWinner.Country" title="@a.DailyWinner.Country"
+                                     class="flag-icon" />
+                            }
+                            <a asp-controller="Players" asp-action="Profile"
+                               asp-route-id="@a.DailyWinner.PlayerId">@a.DailyWinner.LastName</a>
+                        }
+                        else
+                        {
+                            <span class="awards-no-winner">(Nobody)</span>
+                        }
+                    </div>
+                    @if (a.DailyWinnerCount.HasValue)
+                    {
+                        <div class="awards-grid-count">@a.DailyWinnerCount @a.Verb</div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@* ══════════════════════════════════════════════════════ GLOBAL AWARDS *@
+<div id="tab-global" class="tab-panel">
+    @if (!Model.GlobalAwards.Any())
+    {
+        <p>No global award data available.</p>
+    }
+    else
+    {
+        <div class="awards-grid">
+            @foreach (var a in Model.GlobalAwards)
+            {
+                <div class="awards-grid-item">
+                    <div class="awards-grid-img">
+                        <img src="@GlobalImgUrl(Model.Game, a.AwardType, a.Code)" alt="@a.Name"
+                             data-fallback="@Url.Content("~/hlstatsimg/award.png")"
+                             onerror="if(!this.dataset.fb){this.dataset.fb='1';this.src=this.dataset.fallback;}else{this.style.display='none';}" />
+                    </div>
+                    <div class="awards-grid-name"><a asp-controller="Awards" asp-action="DailyAwardDetail" asp-route-id="@a.AwardId" asp-route-game="@Model.Game">@a.Name</a></div>
+                    <div class="awards-grid-winner">
+                        @if (a.GlobalWinner is not null)
+                        {
+                            @if (!string.IsNullOrEmpty(a.GlobalWinner.Flag))
+                            {
+                                <img src="@(Url.Content("~/hlstatsimg/flags/") + a.GlobalWinner.Flag.ToLowerInvariant() + ".gif")"
+                                     alt="@a.GlobalWinner.Country" title="@a.GlobalWinner.Country"
+                                     class="flag-icon" />
+                            }
+                            <a asp-controller="Players" asp-action="Profile"
+                               asp-route-id="@a.GlobalWinner.PlayerId">@a.GlobalWinner.LastName</a>
+                        }
+                        else
+                        {
+                            <span class="awards-no-winner">(Nobody)</span>
+                        }
+                    </div>
+                    @if (a.GlobalWinnerCount.HasValue)
+                    {
+                        <div class="awards-grid-count">@a.GlobalWinnerCount @a.Verb</div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@* ══════════════════════════════════════════════════════ RANKS *@
+<div id="tab-ranks" class="tab-panel">
+    @if (!Model.Ranks.Any())
+    {
+        <p>No ranks configured.</p>
+    }
+    else
+    {
+        <div class="awards-grid">
+            @foreach (var row in Model.Ranks)
+            {
+                <div class="awards-grid-item">
+                    <div class="awards-grid-img">
+                        @{
+                            var rankImg = RankImgUrl(row.Rank.Image);
+                        }
+                        @if (!string.IsNullOrEmpty(rankImg))
+                        {
+                            @if (row.PlayerCount > 0)
+                            {
+                                <a asp-action="RankDetail" asp-route-rank="@row.Rank.RankId" asp-route-game="@Model.Game">
+                                    <img src="@rankImg" alt="@row.Rank.RankName" />
+                                </a>
+                            }
+                            else
+                            {
+                                <img src="@rankImg" alt="@row.Rank.RankName" />
+                            }
+                        }
+                    </div>
+                    <div class="awards-grid-name">
+                        @if (row.PlayerCount > 0)
+                        {
+                            <a asp-action="RankDetail" asp-route-rank="@row.Rank.RankId" asp-route-game="@Model.Game">@row.Rank.RankName</a>
+                        }
+                        else
+                        {
+                            @row.Rank.RankName
+                        }
+                    </div>
+                    <div class="awards-grid-count">
+                        @row.Rank.MinKills&ndash;@(row.Rank.MaxKills == 0 ? "&#8734;" : row.Rank.MaxKills.ToString()) kills
+                    </div>
+                    <div class="awards-grid-count">
+                        Achieved by @row.PlayerCount @(row.PlayerCount == 1 ? "player" : "players")
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@* ══════════════════════════════════════════════════════ RIBBONS *@
+<div id="tab-ribbons" class="tab-panel">
+    @if (!Model.Ribbons.Any())
+    {
+        <p>No ribbons configured.</p>
+    }
+    else
+    {
+        var ribbonGroups = Model.Ribbons.GroupBy(r => r.Ribbon.AwardCount).OrderBy(g => g.Key);
+        @foreach (var group in ribbonGroups)
+        {
+            <h3 class="awards-ribbon-class">Ribbon Class #@group.Key &mdash; requires @group.Key @(group.Key == 1 ? "award" : "awards")</h3>
+            <div class="awards-grid">
+                @foreach (var row in group)
+                {
+                    <div class="awards-grid-item">
+                        <div class="awards-grid-img">
+                            <a asp-controller="Awards" asp-action="RibbonDetail" asp-route-id="@row.Ribbon.RibbonId" asp-route-game="@Model.Game">
+                                <img src="@RibbonImgUrl(Model.Game, row.Ribbon.Image)"
+                                     alt="@row.Ribbon.RibbonName"
+                                     onerror="this.style.display='none'" />
+                            </a>
+                        </div>
+                        <div class="awards-grid-name"><a asp-controller="Awards" asp-action="RibbonDetail" asp-route-id="@row.Ribbon.RibbonId" asp-route-game="@Model.Game">@row.Ribbon.RibbonName</a></div>
+                        @if (!string.IsNullOrEmpty(row.AwardName))
+                        {
+                            <div class="awards-grid-meta">@row.AwardName</div>
+                        }
+                        <div class="awards-grid-count">
+                            @row.AchievedCount @(row.AchievedCount == 1 ? "player" : "players") achieved
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>

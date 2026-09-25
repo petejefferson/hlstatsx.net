@@ -1,0 +1,73 @@
+@model MapListViewModel
+@{
+    ViewData["Title"] = "Maps";
+
+    string SortUrl(string field)
+    {
+        bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
+        return Url.Action("Index", new { game = Model.Game, sortBy = field, desc = nextDesc })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
+
+    double safeKills = Model.TotalKills > 0 ? Model.TotalKills : 1;
+    double safeHeadshots = Model.TotalHeadshots > 0 ? Model.TotalHeadshots : 1;
+}
+
+<h1>Map Statistics &mdash; @Model.Game</h1>
+
+<p>From a total of <strong>@Model.TotalKills.ToString("N0")</strong> kills with <strong>@Model.TotalHeadshots.ToString("N0")</strong> headshots</p>
+
+<table class="data-table">
+    <thead>
+        <tr class="data-table-head">
+            <th>Rank</th>
+            <th><a href="@(SortUrl("map"))">Map@(Mark("map"))</a></th>
+            <th><a href="@(SortUrl("kills"))">Kills@(Mark("kills"))</a></th>
+            <th class="ls-responsive-hide">%</th>
+            <th class="ls-responsive-hide">Ratio</th>
+            <th class="ls-responsive-hide"><a href="@(SortUrl("headshots"))">Headshots@(Mark("headshots"))</a></th>
+            <th class="ls-responsive-hide">%</th>
+            <th class="ls-responsive-hide">Ratio</th>
+            <th><a href="@(SortUrl("hpk"))">HS:K@(Mark("hpk"))</a></th>
+            <th class="ls-responsive-hide">Heatmap</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            int rank = (Model.Maps.Page - 1) * Model.Maps.PageSize + 1;
+            bool bg = false;
+        }
+        @foreach (var m in Model.Maps.Items)
+        {
+            string rowClass = bg ? "bg2" : "bg1";
+            bg = !bg;
+            double kpct = Math.Round(m.Kills / safeKills * 100, 2);
+            double hpct = Math.Round(m.Headshots / safeHeadshots * 100, 2);
+            double hpk  = m.Kills > 0 ? Math.Round((double)m.Headshots / m.Kills, 2) : 0;
+            string mapDisplay = string.IsNullOrEmpty(m.Map) ? "(Unaccounted)" : m.Map;
+            <tr class="@rowClass">
+                <td class="rank-col">@(rank).</td>
+                <td>
+                    <a asp-controller="Maps" asp-action="Detail" asp-route-name="@m.Map">@mapDisplay</a>
+                </td>
+                <td style="text-align:right">@m.Kills.ToString("N0")</td>
+                <td class="ls-responsive-hide" style="text-align:right">@(kpct.ToString("F2"))%</td>
+                <td class="ls-responsive-hide"><activity-meter value="@kpct" /></td>
+                <td class="ls-responsive-hide" style="text-align:right">@m.Headshots.ToString("N0")</td>
+                <td class="ls-responsive-hide" style="text-align:right">@(hpct.ToString("F2"))%</td>
+                <td class="ls-responsive-hide"><activity-meter value="@hpct" /></td>
+                <td style="text-align:right">@hpk.ToString("F2")</td>
+                <td class="ls-responsive-hide" style="text-align:center">
+                    @if (!string.IsNullOrEmpty(m.Map))
+                    {
+                        <a asp-controller="Maps" asp-action="Detail" asp-route-name="@m.Map"
+                           asp-fragment="tab-heatmap" title="View heatmap">&#x1F525;</a>
+                    }
+                </td>
+            </tr>
+            rank++;
+        }
+    </tbody>
+</table>
+
+<partial name="_Pagination" model="@PaginationModel.From(Model.Maps, p => Url.Action("Index", new { game = Model.Game, sortBy = Model.SortBy, desc = Model.Descending, page = p })!)" />

@@ -1,0 +1,75 @@
+@model RankDetailViewModel
+@using HLStatsX.NET.Core.Models
+@{
+    ViewData["Title"] = $"Rank — {Model.Rank.RankName}";
+
+    string SortUrl(string field)
+    {
+        bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
+        return Url.Action("RankDetail", new { rank = Model.Rank.RankId, game = Model.Game, sortBy = field, desc = nextDesc, page = 1 })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
+
+    var imgRoot = Url.Content("~/hlstatsimg");
+    string? rankImg = string.IsNullOrEmpty(Model.Rank.Image) ? null : $"{imgRoot}/ranks/{Model.Rank.Image}";
+}
+
+<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.5rem;">
+    <h1>
+        @if (!string.IsNullOrEmpty(rankImg))
+        {
+            <img src="@rankImg" alt="@Model.Rank.RankName" onerror="this.style.display='none'" style="vertical-align:middle;" />
+        }
+        @Model.Rank.RankName
+    </h1>
+    <span><a asp-controller="Awards" asp-action="Index" asp-route-game="@Model.Game">← Back to Awards</a></span>
+</div>
+
+<p>
+    Kill range: <strong>@Model.Rank.MinKills&ndash;@(Model.Rank.MaxKills == 0 ? "∞" : Model.Rank.MaxKills.ToString())</strong>
+    &mdash; <strong>@Model.Players.TotalCount</strong> @(Model.Players.TotalCount == 1 ? "player" : "players")
+</p>
+
+@if (!Model.Players.Items.Any())
+{
+    <p>No players currently hold this rank.</p>
+}
+else
+{
+    <table class="data-table">
+        <thead>
+            <tr class="data-table-head">
+                <td>Rank</td>
+                <td><a href="@(SortUrl("player"))">Player@(Mark("player"))</a></td>
+                <td style="text-align:right;"><a href="@(SortUrl("kills"))">Kills@(Mark("kills"))</a></td>
+                <td style="text-align:right;"><a href="@(SortUrl("skill"))">Skill@(Mark("skill"))</a></td>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int rowNum = (Model.Players.Page - 1) * Model.Players.PageSize + 1;
+                bool alt = false;
+            }
+            @foreach (var row in Model.Players.Items)
+            {
+                string rowClass = (alt = !alt) ? "bg1" : "bg2";
+                string? flagFile = string.IsNullOrEmpty(row.Flag) ? null : row.Flag.ToLowerInvariant();
+                <tr>
+                    <td class="@rowClass">@(rowNum).</td>
+                    <td class="@rowClass">
+                        @if (!string.IsNullOrEmpty(flagFile))
+                        {
+                            <img src="@(Url.Content("~/hlstatsimg/flags/") + flagFile + ".gif")" alt="@row.Flag" title="@row.Flag" />
+                        }
+                        <a asp-controller="Players" asp-action="Profile" asp-route-id="@row.PlayerId">@row.PlayerName</a>
+                    </td>
+                    <td class="@rowClass" style="text-align:right;">@row.Kills.ToString("N0")</td>
+                    <td class="@rowClass" style="text-align:right;">@row.Skill.ToString("N0")</td>
+                </tr>
+                rowNum++;
+            }
+        </tbody>
+    </table>
+
+    <partial name="_Pagination" model="@PaginationModel.From(Model.Players, p => Url.Action("RankDetail", new { rank = Model.Rank.RankId, game = Model.Game, sortBy = Model.SortBy, desc = Model.Descending, page = p })!)" />
+}

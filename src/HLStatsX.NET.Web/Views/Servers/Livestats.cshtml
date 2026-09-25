@@ -1,0 +1,104 @@
+@model ServerLivestatsViewModel
+@{
+    Layout = "~/Views/Shared/_LivestatsLayout.cshtml";
+    ViewData["Title"] = Model.Server.Name + " — Live";
+}
+
+@if (Model.Livestats.Any())
+{
+    <table class="livestats-table">
+        <thead>
+            <tr class="livestats-head">
+                <th style="width:3%;">#</th>
+                <th style="width:30%;text-align:left;">Player</th>
+                <th colspan="3" style="width:8%;">Kills</th>
+                <th style="width:5%;">Hs</th>
+                <th style="width:7%;">HS:K</th>
+                <th style="width:6%;">Acc</th>
+                <th style="width:6%;">Ping</th>
+                <th style="width:9%;">Time</th>
+                <th style="width:6%;">+/-</th>
+                <th style="width:7%;">Skill</th>
+            </tr>
+        </thead>
+        <tbody>
+        @{ int teamIdx = 0; }
+        @foreach (var teamGroup in Model.PlayersByTeam)
+        {
+            var team = Model.GetTeam(teamGroup.Key);
+            bool isUnassigned = team is null;
+            var bgColor  = team?.PlayerlistBgcolor ?? "#D5D5D5";
+            var txtColor = team?.PlayerlistColor   ?? "#050505";
+            var teamName = team?.Name is { Length: > 0 } n ? n : teamGroup.Key;
+            var rowStyle  = $"background:{bgColor};color:{txtColor};";
+            var footStyle = $"background:{bgColor};color:{txtColor};border-top:1px {txtColor} solid;";
+            var teamWins  = teamIdx == 0 ? Model.Server.MapCtWins : Model.Server.MapTsWins;
+
+            int j = 1;
+            @foreach (var ls in teamGroup)
+            {
+                <tr style="@rowStyle">
+                    <td>@(isUnassigned ? "" : j.ToString())</td>
+                    <td style="text-align:left;">
+                        @if (!ls.IsSourceTV)
+                        {
+                            var flagFile = string.IsNullOrEmpty(ls.CliFlag) ? "0.gif" : ls.CliFlag.ToLowerInvariant() + ".gif";
+                            var flagAlt  = string.IsNullOrEmpty(ls.CliCountry) ? "" : ls.CliCountry;
+                            <img src="@(Url.Content("~/hlstatsimg/flags/") + flagFile)" alt="@flagAlt" title="@flagAlt" />@:
+                        }
+                        @{ var lsName = ls.IsBot ? ls.Name + " (BOT)" : ls.Name; }
+                        @if (ls.PlayerId > 0 && !ls.IsSourceTV)
+                        {
+                            <a style="color:@txtColor"
+                               asp-controller="Players" asp-action="Profile" asp-route-id="@ls.PlayerId">@lsName</a>
+                        }
+                        else { @lsName }
+                    </td>
+                    <td style="text-align:right;">@ls.Kills</td>
+                    <td>:</td>
+                    <td style="text-align:left;">@ls.Deaths</td>
+                    <td>@ls.Headshots</td>
+                    <td>@ls.HeadshotPercent.ToString("F2")</td>
+                    <td>@ls.Accuracy.ToString("F0")%</td>
+                    <td>@(ls.Ping / 2)</td>
+                    <td>@ls.ConnectedFormatted</td>
+                    <td>@ls.SkillChange</td>
+                    <td>@ls.Skill.ToString("N0")</td>
+                </tr>
+                j++;
+            }
+
+            @if (!isUnassigned)
+            {
+                var teamKills  = teamGroup.Sum(p => p.Kills);
+                var teamDeaths = teamGroup.Sum(p => p.Deaths);
+                var teamHs     = teamGroup.Sum(p => p.Headshots);
+                var teamShots  = teamGroup.Sum(p => p.Shots);
+                var teamHits   = teamGroup.Sum(p => p.Hits);
+                var teamHsk    = teamKills > 0 ? ((double)teamHs / teamKills).ToString("F2") : "0.00";
+                var teamAcc    = teamShots > 0 ? ((double)teamHits / teamShots * 100).ToString("F0") + "%" : "0%";
+                var teamSkill  = teamGroup.Any() ? ((int)teamGroup.Average(p => p.Skill)).ToString("N0") : "-";
+                teamIdx++;
+                <tr style="@footStyle">
+                    <td>&nbsp;</td>
+                    <td style="text-align:left;"><strong>@teamName</strong>@(teamWins > 0 ? $" ({teamWins} wins)" : "")</td>
+                    <td style="text-align:right;">@teamKills</td>
+                    <td>:</td>
+                    <td style="text-align:left;">@teamDeaths</td>
+                    <td>@teamHs</td>
+                    <td>@teamHsk</td>
+                    <td>@teamAcc</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>-</td>
+                    <td>@teamSkill</td>
+                </tr>
+            }
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p style="font-family:Arial,sans-serif;font-size:13px;">No players online right now.</p>
+}

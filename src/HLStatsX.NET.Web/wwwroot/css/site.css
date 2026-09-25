@@ -1,0 +1,755 @@
+/* ============================================================
+   THEME VARIABLES — edit these to change the site colours
+   ============================================================ */
+:root {
+    /* Page background (outer) */
+    --bg:            #D0D4DC;
+    /* Card / table surface */
+    --surface:       #EAECF0;
+    /* Alternate table row */
+    --surface-alt:   #E0E3E8;
+    /* Header / accent band (nav, table heads) */
+    --accent:        #D4D8E2;
+    /* Highlight colour (headings, active links, hover) */
+    --highlight:     #3A5570;
+    /* Body text */
+    --text:          #181C28;
+    /* Subdued text */
+    --muted:         #5C6678;
+    /* Border colour */
+    --border:        #AAAEBB;
+    /* Nav bar background */
+    --nav-bg:        #161C28;
+    /* Nav bar text */
+    --nav-text:      #8090A4;
+    /* Nav bar hover */
+    --nav-hover:     #1E2838;
+
+    /* Extras */
+    --surface-hover: #C8CED8;
+    --radius:        8px;
+    --radius-sm:     5px;
+    --shadow:        0 1px 3px rgba(15,23,42,0.08), 0 1px 2px rgba(15,23,42,0.04);
+    --shadow-md:     0 4px 6px rgba(15,23,42,0.07), 0 2px 4px rgba(15,23,42,0.05);
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* Prevent the page from scrolling horizontally on any viewport */
+html { overflow-x: hidden; }
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+a             { color: var(--highlight); text-decoration: none; }
+a:hover       { color: var(--highlight); text-decoration: underline; }
+a:visited     { color: var(--highlight); }
+
+img { vertical-align: middle; border: none; }
+
+h1 { font-size: 1.4rem; font-weight: 700; color: var(--text); margin-bottom: 0.75rem; letter-spacing: -0.02em; }
+h2 { font-size: 1.1rem; font-weight: 600; color: var(--text); margin: 1rem 0 0.5rem; }
+h3 { font-size: 0.95rem; font-weight: 600; margin: 0.75rem 0 0.25rem; }
+
+section { margin-bottom: 1.5rem; }
+
+/* ============================================================
+   NAVIGATION — top bar (always visible)
+   ============================================================ */
+.topbar {
+    background: var(--nav-bg);
+    padding: 0 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    height: 48px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.topbar-brand {
+    color: #FFFFFF;
+    font-size: 1.05rem;
+    font-weight: 700;
+    text-decoration: none;
+    letter-spacing: -0.01em;
+}
+.topbar-brand:hover { text-decoration: none; color: #FFFFFF; }
+
+.topbar-links {
+    display: flex;
+    list-style: none;
+    gap: 0.1rem;
+}
+.topbar-links a {
+    color: var(--nav-text);
+    text-decoration: none;
+    padding: 0.3rem 0.75rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.82rem;
+    font-weight: 500;
+    transition: background 0.15s, color 0.15s;
+}
+.topbar-links a:hover { background: var(--nav-hover); color: #FFFFFF; text-decoration: none; }
+
+.topbar-games {
+    display: flex;
+    align-items: center;
+    gap: 0.1rem;
+    flex: 1;
+}
+
+.game-tab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    padding: 0.25rem 0.4rem;
+    border-radius: var(--radius-sm);
+    opacity: 0.55;
+    transition: opacity 0.15s, background 0.15s;
+}
+.game-tab:hover { background: var(--nav-hover); opacity: 1; text-decoration: none; }
+.game-tab:visited { color: transparent; }
+.game-tab-active { background: var(--highlight); opacity: 1; }
+.game-tab-active:hover { background: var(--highlight); opacity: 1; }
+.game-tab img { width: 20px; height: 20px; object-fit: contain; display: block; }
+
+.topbar-right { margin-left: auto; }
+
+/* ============================================================
+   BREADCRUMB
+   ============================================================ */
+.breadcrumb-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0.3rem 0;
+}
+.breadcrumb-inner {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+    font-size: 0.78rem;
+    color: var(--muted);
+    padding-top: 0;
+    padding-bottom: 0;
+}
+.breadcrumb-inner a { color: var(--highlight); text-decoration: none; }
+.breadcrumb-inner a:hover { text-decoration: underline; }
+.breadcrumb-inner span { color: var(--text); font-weight: 500; }
+.breadcrumb-sep { color: var(--border); font-size: 0.9rem; }
+
+/* ============================================================
+   NAVIGATION — game section bar (visible when game selected)
+   ============================================================ */
+.gamenav {
+    background: #1E2838;
+    padding: 0 1.25rem;
+    border-bottom: 2px solid var(--highlight);
+}
+
+.gamenav-links {
+    display: flex;
+    list-style: none;
+    gap: 0;
+    flex-wrap: wrap;
+}
+.gamenav-links a {
+    display: block;
+    color: #A0B0C4;
+    text-decoration: none;
+    padding: 0.5rem 0.85rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: color 0.15s, border-color 0.15s;
+}
+.gamenav-links a:hover { color: #FFFFFF; border-bottom-color: var(--highlight); text-decoration: none; }
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.container {
+    flex: 1;
+    max-width: 1260px;
+    margin: 0 auto;
+    padding: 1.25rem 1.25rem;
+    width: 100%;
+}
+
+footer {
+    background: var(--nav-bg);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    text-align: center;
+    padding: 0.75rem;
+    color: var(--nav-text);
+    font-size: 0.78rem;
+}
+
+/* ============================================================
+   SUMMARY STATS BAR (homepage)
+   ============================================================ */
+.site-summary {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.7rem 1rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+}
+.tracking-line {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--muted);
+}
+
+/* ============================================================
+   CHART
+   ============================================================ */
+.chart-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+}
+.chart-map-label {
+    font-size: 0.8rem;
+    font-weight: normal;
+    color: var(--muted);
+    margin-left: 0.75rem;
+}
+.chart-hint {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-align: right;
+    margin: 0.25rem 0 0;
+}
+
+/* ============================================================
+   GENERIC DATA TABLE (player lists, awards, etc.)
+   ============================================================ */
+.data-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--surface);
+    font-size: 0.82rem;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+}
+.data-table th,
+.data-table td {
+    border-bottom: 1px solid var(--border);
+    border-right: none;
+    border-left: none;
+    border-top: none;
+    padding: 6px 10px;
+    text-align: left;
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table-head th,
+.data-table-head td {
+    background: var(--accent);
+    color: var(--text);
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--border);
+}
+.data-table-head a,
+.stats-table thead a {
+    color: inherit;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.bg1 { background: var(--surface); }
+.bg2 { background: var(--surface-alt); }
+.data-table tbody tr:hover { background: var(--surface-hover); }
+
+.rank-col { text-align: left; padding-left: 16px; }
+
+/* Alias for views that use .stats-table */
+.stats-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--surface);
+    font-size: 0.82rem;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+}
+.stats-table th, .stats-table td {
+    border-bottom: 1px solid var(--border);
+    border-right: none;
+    border-left: none;
+    border-top: none;
+    padding: 6px 10px;
+    text-align: left;
+}
+.stats-table tr:last-child td { border-bottom: none; }
+.stats-table thead th {
+    background: var(--accent);
+    color: var(--text);
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--border);
+}
+.stats-table tbody tr:nth-child(odd)  { background: var(--surface); }
+.stats-table tbody tr:nth-child(even) { background: var(--surface-alt); }
+.stats-table tbody tr:hover { background: var(--surface-hover); }
+
+/* ============================================================
+   LIVE STATS TABLE
+   ============================================================ */
+.livestats-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.82rem;
+    background: var(--surface);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+}
+.livestats-table th,
+.livestats-table td {
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    padding: 5px 8px;
+    text-align: center;
+}
+.livestats-table tr:last-child td { border-bottom: none; }
+.livestats-head th {
+    background: var(--accent);
+    color: var(--text);
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--border);
+}
+
+/* ============================================================
+   SORT / FILTER BARS
+   ============================================================ */
+.sort-bar { display: flex; gap: 0.35rem; align-items: center; margin: 0.5rem 0; flex-wrap: wrap; }
+.sort-bar a {
+    color: var(--muted);
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    text-decoration: none;
+    font-size: 0.78rem;
+    font-weight: 500;
+    background: var(--surface);
+    transition: all 0.15s;
+}
+.sort-bar a.active,
+.sort-bar a:hover { background: var(--highlight); color: #fff; border-color: var(--highlight); text-decoration: none; }
+
+/* ============================================================
+   PAGINATION
+   ============================================================ */
+.pagination { display: flex; gap: 0.25rem; align-items: center; margin: 0.75rem 0; flex-wrap: wrap; }
+.pagination a, .pagination .current-page {
+    padding: 0.25rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 0.78rem;
+    background: var(--surface);
+    font-weight: 500;
+}
+.pagination a { color: var(--highlight); text-decoration: none; transition: all 0.15s; }
+.pagination a:hover { background: var(--surface-hover); border-color: var(--highlight); }
+.pagination .current-page { background: var(--highlight); color: #fff; border-color: var(--highlight); }
+.page-info { color: var(--muted); font-size: 0.78rem; }
+
+/* ============================================================
+   PLAYER PROFILE TABS
+   ============================================================ */
+.profile-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 1.25rem;
+    padding: 0;
+}
+.profile-tabs .tab-link {
+    display: inline-block;
+    padding: 0.45rem 1rem;
+    background: transparent;
+    border: 1px solid transparent;
+    border-bottom: none;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    position: relative;
+    bottom: -2px;
+    transition: color 0.15s;
+}
+.profile-tabs .tab-link:hover { color: var(--text); text-decoration: none; }
+.profile-tabs .tab-link.active {
+    background: var(--surface);
+    color: var(--highlight);
+    border-color: var(--border);
+    border-bottom-color: var(--surface);
+    font-weight: 600;
+}
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ============================================================
+   PLAYER PROFILE LAYOUT
+   ============================================================ */
+.profile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-top: 0.75rem; }
+.profile-stats, .profile-aliases, .profile-ribbons, .profile-awards {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.75rem 1rem;
+    box-shadow: var(--shadow);
+}
+.profile-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.profile-section { margin-top: 1.5rem; }
+
+.ribbons-list { display: flex; flex-wrap: wrap; gap: 4px; padding: 0.5rem 0; }
+.ribbons-list li {
+    background: var(--surface-hover);
+    color: var(--highlight);
+    border: 1px solid #8A98AC;
+    border-radius: 99px;
+    padding: 0.15rem 0.6rem;
+    font-size: 0.72rem;
+    font-weight: 500;
+}
+
+/* ============================================================
+   AWARDS GRID
+   ============================================================ */
+.awards-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+}
+.awards-grid-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.75rem 0.5rem;
+    text-align: center;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.15s;
+}
+.awards-grid-item:hover { box-shadow: var(--shadow-md); }
+.awards-grid-img { min-height: 48px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.3rem; }
+.awards-grid-img img { max-width: 64px; max-height: 64px; }
+.awards-grid-name { font-weight: 600; font-size: 0.82rem; margin-bottom: 0.2rem; }
+.awards-grid-winner { font-size: 0.78rem; margin-bottom: 0.2rem; }
+.awards-grid-count { font-size: 0.72rem; color: var(--muted); }
+.awards-grid-meta { font-size: 0.72rem; color: var(--muted); font-style: italic; margin-bottom: 0.2rem; }
+.awards-no-winner { color: var(--muted); font-style: italic; }
+.awards-ribbon-class { margin: 1rem 0 0.4rem; font-size: 0.95rem; font-weight: 600; border-bottom: 1px solid var(--border); padding-bottom: 0.35rem; }
+
+/* ============================================================
+   ADMIN / FORMS
+   ============================================================ */
+.form-group { margin-bottom: 0.75rem; }
+.form-group label { display: block; margin-bottom: 0.25rem; color: var(--muted); font-size: 0.82rem; font-weight: 500; }
+.form-control {
+    width: 100%;
+    padding: 0.45rem 0.6rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: var(--radius-sm);
+    font-size: 0.88rem;
+    transition: border-color 0.15s;
+}
+.form-control:focus { outline: none; border-color: var(--highlight); box-shadow: 0 0 0 3px rgba(58,80,104,0.12); }
+
+.btn-primary {
+    background: var(--highlight);
+    color: #fff;
+    border: none;
+    padding: 0.45rem 1.1rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    transition: opacity 0.15s;
+}
+.btn-primary:hover { opacity: 0.88; text-decoration: none; color: #fff; }
+.btn-sm { font-size: 0.75rem; padding: 0.18rem 0.5rem; }
+
+.login-page { display: flex; flex-direction: row; justify-content: center; align-items: flex-start; min-height: 100vh; padding-top: 6rem; margin: 0; }
+.login-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+    width: 100%;
+    max-width: 380px;
+    margin-top: 3rem;
+    box-shadow: var(--shadow-md);
+}
+
+.error-list { color: #702828; margin-bottom: 0.75rem; font-size: 0.85rem; }
+
+/* ============================================================
+   HISTORY / SKILL CHANGE COLOURS
+   ============================================================ */
+.positive { color: #286448; font-weight: 600; }
+.negative { color: #702828; font-weight: 600; }
+.muted    { color: var(--muted); }
+
+/* ============================================================
+   SERVER / HISTORY MISC
+   ============================================================ */
+.server-address { color: var(--muted); font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.82rem; margin-bottom: 0.75rem; }
+.server-info    { max-width: 480px; margin-bottom: 1rem; }
+
+.history-filters { display: flex; gap: 0.35rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+.history-filters a {
+    color: var(--muted);
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    text-decoration: none;
+    font-size: 0.78rem;
+    font-weight: 500;
+    background: var(--surface);
+    transition: all 0.15s;
+}
+.history-filters a.active,
+.history-filters a:hover { background: var(--highlight); color: #fff; border-color: var(--highlight); }
+
+/* ============================================================
+   TOOLBAR FORM CONTROLS (search + ranking view)
+   ============================================================ */
+.form-text {
+    font-family: inherit;
+    font-size: 0.82rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    border-radius: var(--radius-sm);
+    transition: border-color 0.15s;
+}
+.form-text:focus { outline: none; border-color: var(--highlight); box-shadow: 0 0 0 3px rgba(58,80,104,0.12); }
+
+select.form-select,
+select[name="rankType"] {
+    font-family: inherit;
+    font-size: 0.82rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    border-radius: var(--radius-sm);
+}
+
+.btn-small {
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.22rem 0.65rem;
+    border: 1px solid var(--highlight);
+    background: var(--highlight);
+    color: #fff;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+.btn-small:hover { opacity: 0.85; }
+
+/* ============================================================
+   STATS OVERVIEW CARDS (admin dashboard)
+   ============================================================ */
+.stats-overview { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1rem; }
+.stats-overview .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    text-align: center;
+    box-shadow: var(--shadow);
+}
+.stats-overview .stat-card h3 { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.stats-overview .stat-card p  { font-size: 1.8rem; font-weight: 700; color: var(--highlight); letter-spacing: -0.03em; }
+
+/* ============================================================
+   PROFILE CARD (wraps profile table)
+   ============================================================ */
+.profile-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 1rem;
+}
+
+/* ============================================================
+   RESPONSIVE TABLE WRAPPER
+   ============================================================ */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    margin-bottom: 1rem;
+}
+/* Tables inside the wrapper: expand to natural width so the wrapper scrolls */
+.table-responsive > .data-table,
+.table-responsive > .stats-table,
+.table-responsive > .livestats-table {
+    width: max-content;
+    min-width: 100%;
+    border-radius: 0;
+    box-shadow: none;
+    border: none;
+    margin-bottom: 0;
+}
+/* Inside a profile-card the card itself is the visual container */
+.profile-card > .table-responsive {
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    margin-bottom: 0;
+}
+
+/* ============================================================
+   CHART CONTAINER — gives Chart.js a fixed-height reference
+   ============================================================ */
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: 240px;
+}
+
+/* ============================================================
+   METER (bar graph) — matches PHP hlstats.css exactly
+   ============================================================ */
+meter {
+    background: #E2E8F0;
+    box-shadow: none;
+    border-radius: 99px;
+    height: 8px;
+    vertical-align: middle;
+}
+meter::-webkit-meter-bar {
+    background: #E2E8F0;
+    box-shadow: none;
+    border-radius: 99px;
+}
+meter::-webkit-meter-optimum-value {
+    background: #2E6845;
+    border-radius: 99px;
+}
+meter::-webkit-meter-suboptimum-value {
+    background: #7A6018;
+    border-radius: 99px;
+}
+meter::-webkit-meter-even-less-good-value {
+    background: #7A2828;
+    border-radius: 99px;
+}
+meter::-moz-meter-bar {
+    border-radius: 99px;
+}
+meter:-moz-meter-optimum::-moz-meter-bar {
+    background: #2E6845;
+}
+meter:-moz-meter-sub-optimum::-moz-meter-bar {
+    background: #7A6018;
+}
+meter:-moz-meter-sub-sub-optimum::-moz-meter-bar {
+    background: #7A2828;
+}
+
+/* ============================================================
+   RESPONSIVE — mobile breakpoints
+   ============================================================ */
+@media (max-width: 768px) {
+    /* Topbar: wrap items so the Admin link doesn't fall off-screen */
+    .topbar {
+        flex-wrap: wrap;
+        height: auto;
+        padding: 0.5rem 1rem;
+        row-gap: 0.25rem;
+    }
+
+    /* Game icon tabs take too much horizontal space on mobile — hide them.
+       Players can still navigate games from the gamenav after selecting one. */
+    .topbar-games { display: none; }
+
+    /* Without the game tabs, there's no reason for auto margin — remove it
+       so the Admin link stays in the natural flow. */
+    .topbar-right { margin-left: 0; }
+
+    /* Game section nav: scroll horizontally rather than overflow the viewport */
+    .gamenav { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .gamenav-links { flex-wrap: nowrap; }
+
+    /* Taller touch targets for gamenav */
+    .gamenav-links a { padding-top: 0.65rem; padding-bottom: 0.65rem; }
+
+    .container { padding: 0.75rem; overflow-x: hidden; }
+
+    html, body { font-size: 12px; }
+
+    .stat-summary-extended { display: none; }
+    .ls-responsive-hide { display: none; }
+    .data-table, .stats-table { table-layout: fixed !important; width: 100% !important; }
+    .data-table th, .data-table td,
+    .stats-table th, .stats-table td { width: auto !important; overflow-wrap: break-word; word-break: break-word; white-space: normal; }
+    .data-table td *, .stats-table td * { white-space: normal; word-break: break-word; }
+
+    h1 { font-size: 1.2rem; }
+
+    /* Chart containers: enforce a minimum readable height */
+    .chart-container { height: 140px; }
+
+    /* Grids: collapse to fewer columns */
+    .awards-grid       { grid-template-columns: repeat(2, 1fr); }
+    .profile-two-col   { grid-template-columns: 1fr; }
+    .profile-grid      { grid-template-columns: 1fr; }
+    .stats-overview    { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+    .awards-grid    { grid-template-columns: 1fr; }
+    .stats-overview { grid-template-columns: 1fr; }
+}

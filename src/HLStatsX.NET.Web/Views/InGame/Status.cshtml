@@ -1,0 +1,78 @@
+@model InGameStatusViewModel
+@using HLStatsX.NET.Web.Models.ViewModels
+@{
+    Layout = "~/Views/Shared/_InGameLayout.cshtml";
+    ViewData["Title"] = Model.Server.Name + " — Status";
+
+    var s = Model.Server;
+    double hpk = s.Kills > 0 ? (double)s.Headshots / s.Kills : 0;
+
+    string FormatElapsed(int unixStart)
+    {
+        var e = Math.Max(0, (int)(DateTimeOffset.UtcNow.ToUnixTimeSeconds() - unixStart));
+        return $"{e / 3600:D2}:{(e % 3600) / 60:D2}:{e % 60:D2}";
+    }
+
+    var flagBase = Url.Content("~/hlstatsimg/flags");
+    string FlagImg(string? flag) =>
+        $"<img src=\"{flagBase}/{(string.IsNullOrEmpty(flag) ? "0" : flag.ToLowerInvariant())}.gif\" alt=\"\" />";
+}
+
+<table class="data-table">
+    <tr class="data-table-head">
+        <td style="width:37%;">Server</td>
+        <td style="width:22%;">Address</td>
+        <td style="width:10%;text-align:center;">Map</td>
+        <td style="width:10%;text-align:center;">Played</td>
+        <td style="width:10%;text-align:center;">Players</td>
+        <td style="width:5%;text-align:center;">Kills</td>
+        <td style="width:5%;text-align:center;">Headshots</td>
+        <td style="width:6%;text-align:center;">Hpk</td>
+    </tr>
+    <tr class="bg1">
+        <td><strong>@s.Name</strong></td>
+        <td>@s.DisplayAddress</td>
+        <td style="text-align:center;">@s.ActMap</td>
+        <td style="text-align:center;">@FormatElapsed(s.MapStarted)</td>
+        <td style="text-align:center;">@s.ActPlayers/@s.MaxPlayers</td>
+        <td style="text-align:center;">@s.Kills.ToString("N0")</td>
+        <td style="text-align:center;">@s.Headshots.ToString("N0")</td>
+        <td style="text-align:center;">@hpk.ToString("F4")</td>
+    </tr>
+</table>
+
+@if (Model.LivePlayers.Any())
+{
+    <table class="data-table">
+        <tr class="data-table-head">
+            <td style="text-align:right;">Rank</td>
+            <td>Player</td>
+            <td style="text-align:right;">Kills</td>
+            <td style="text-align:right;">Deaths</td>
+            <td style="text-align:right;">Skill</td>
+        </tr>
+        @{
+            int rowNum = 1;
+        }
+        @foreach (var ls in Model.LivePlayers.OrderByDescending(l => l.Skill))
+        {
+            <tr class="@(rowNum % 2 == 1 ? "bg1" : "bg2")">
+                <td style="text-align:right;">@rowNum</td>
+                <td>@Html.Raw(FlagImg(ls.CliFlag))
+                    @if (ls.PlayerId > 0)
+                    {
+                        <a href="@Url.Action("PlayerStats", "InGame", new { game = Model.Game, player = ls.PlayerId })">@ls.Name</a>
+                    }
+                    else
+                    {
+                        @ls.Name
+                    }
+                </td>
+                <td style="text-align:right;">@ls.Kills</td>
+                <td style="text-align:right;">@ls.Deaths</td>
+                <td style="text-align:right;">@ls.Skill.ToString("N0")</td>
+            </tr>
+            rowNum++;
+        }
+    </table>
+}

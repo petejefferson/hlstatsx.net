@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HLStatsX.NET — Future Work</title>
+  <link rel="stylesheet" href="site.css" />
+  <style>
+    body { line-height: 1.65; }
+
+    h2 { font-size: 17px; font-weight: 700; color: var(--text); margin: 2.5rem 0 1rem; padding-bottom: 0.4rem; border-bottom: 2px solid var(--border); }
+    h3 { font-size: 14px; font-weight: 600; color: var(--text); margin: 1.6rem 0 0.5rem; }
+
+    p { margin-bottom: 0.8rem; color: var(--text); }
+    p:last-child { margin-bottom: 0; }
+
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; }
+
+    .callout { border-radius: var(--radius-sm); padding: 0.75rem 1rem; margin: 1rem 0; font-size: 13px; }
+    .callout-info { background: var(--info-bg); border-left: 3px solid #3B82F6; color: var(--info); }
+    .callout-warning { background: var(--warning-bg); border-left: 3px solid #F59E0B; color: var(--warning); }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 1rem 0; }
+    th { background: var(--surface-alt); color: var(--muted); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
+    td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--accent); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--surface-hover); }
+
+    code { font-family: "Consolas", "Menlo", monospace; font-size: 12px; background: var(--accent); padding: 1px 5px; border-radius: 3px; color: #2D3748; }
+    pre { background: #1E2535; color: #CDD6F4; border-radius: var(--radius-sm); padding: 1rem 1.25rem; font-family: "Consolas", "Menlo", monospace; font-size: 12.5px; line-height: 1.6; overflow-x: auto; margin: 0.8rem 0; }
+    pre code { background: none; color: inherit; padding: 0; }
+
+    .effort-total { background: var(--nav-bg); color: #E8ECF4; border-radius: var(--radius); padding: 1rem 1.5rem; margin-top: 1.25rem; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+    .effort-total .label { color: var(--nav-text); }
+    .effort-total .value { font-size: 18px; font-weight: 700; color: #E8ECF4; }
+
+    .step-list { list-style: none; padding: 0; }
+    .step-list li { display: flex; gap: 0.75rem; padding: 0.6rem 0; border-bottom: 1px solid var(--accent); align-items: flex-start; }
+    .step-list li:last-child { border-bottom: none; }
+    .step-num { flex-shrink: 0; width: 22px; height: 22px; background: var(--highlight); color: #fff; border-radius: 50%; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+    .step-content strong { display: block; margin-bottom: 2px; }
+    .step-content span { color: var(--muted); font-size: 13px; }
+
+    .phase-tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; background: var(--accent); color: var(--muted); margin-left: 0.4rem; vertical-align: middle; }
+
+    hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+  </style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="container" style="display:flex;align-items:center;width:100%;">
+    <a class="hero-brand" href="welcome.html">🎮 HLStatsX.NET</a>
+    <nav class="hero-nav">
+      <a href="why-the-rewrite.html">Why the Rewrite</a>
+      <a href="feature-parity.html">Feature Parity</a>
+      <a href="future-work.html" class="active">Future Work</a>
+      <a href="https://github.com/petejefferson/hlstatsx.net" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════ PAGE HEADER -->
+<div class="page-header">
+  <div class="container">
+    <h1>Future Work</h1>
+    <p class="subtitle">Planned enhancements beyond the current PHP feature-parity goal — mobile responsiveness (in progress), multi-database support, and full localisation.</p>
+    <span class="prealpha-badge">🚧 PRE-ALPHA — Active Development</span>
+  </div>
+</div>
+
+<div class="container" style="padding-top:1.5rem; padding-bottom:2rem;">
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <h2>1 — Multi-Database Platform Support (MSSQL &amp; PostgreSQL)</h2>
+
+  <div class="card">
+    <h3>Current State</h3>
+    <p>All four projects (Web, Infrastructure, Daemon, Awards) are coupled to MySQL via <code>Pomelo.EntityFrameworkCore.MySql 9.0.0</code>. EF Core is pinned at 9.x because Pomelo has no 10.x release yet. All database-specific work lives in <code>HLStatsX.NET.Infrastructure</code>.</p>
+  </div>
+
+  <h3>MySQL-specific blockers</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Location</th>
+        <th>Issue</th>
+        <th>Affects</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>All <code>Program.cs</code> files</td>
+        <td><code>UseMySql(connStr, ServerVersion.AutoDetect(...))</code></td>
+        <td>Web, Daemon, Awards</td>
+      </tr>
+      <tr>
+        <td><code>AdminRepository.cs</code> — all raw SQL</td>
+        <td>Backtick identifier quoting <code>`tableName`</code></td>
+        <td>All raw SQL statements</td>
+      </tr>
+      <tr>
+        <td><code>AdminRepository.cs:722–723</code></td>
+        <td><code>OPTIMIZE TABLE</code> / <code>ANALYZE TABLE</code> — MySQL-only</td>
+        <td>No MSSQL equivalent; PostgreSQL uses <code>VACUUM ANALYZE</code></td>
+      </tr>
+      <tr>
+        <td><code>AdminRepository.cs:831–832</code></td>
+        <td><code>DELETE FROM `t` USING `t` INNER JOIN …</code> — MySQL multi-table delete</td>
+        <td>Needs rewriting as subquery / CTE for other providers</td>
+      </tr>
+      <tr>
+        <td><code>AdminRepository.cs:870–871</code></td>
+        <td><code>DELETE c FROM … LEFT JOIN …</code> — MySQL alias delete</td>
+        <td>MSSQL compatible; needs rewrite for PostgreSQL</td>
+      </tr>
+      <tr>
+        <td><code>AdminRepository.cs:963–1001</code></td>
+        <td><code>ALTER DATABASE … CHARACTER SET … COLLATE …</code></td>
+        <td>Entire <em>Reset DB Collations</em> feature is MySQL-only</td>
+      </tr>
+      <tr>
+        <td><code>appsettings.json</code> (all projects)</td>
+        <td><code>CharSet=utf8mb4</code> connection string parameter</td>
+        <td>MySQL-only parameter</td>
+      </tr>
+      <tr>
+        <td>All <code>.csproj</code> files</td>
+        <td><code>Pomelo.EntityFrameworkCore.MySql</code> package reference</td>
+        <td>All four projects</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Implementation steps</h3>
+
+  <ul class="step-list">
+    <li>
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Configuration abstraction <span class="phase-tag">~4 hrs</span></strong>
+        <span>Add a <code>DatabaseProvider</code> config key (<code>MySql</code> | <code>SqlServer</code> | <code>PostgreSql</code>). Read it in each <code>Program.cs</code> and conditionally call the correct <code>Use*</code> method. Document all three connection string formats.</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>NuGet packages <span class="phase-tag">~2 hrs</span></strong>
+        <span>Add <code>Microsoft.EntityFrameworkCore.SqlServer</code> and <code>Npgsql.EntityFrameworkCore.PostgreSQL</code> to all four projects. With Pomelo no longer the only provider, EF Core can be upgraded to 10.x for non-MySQL targets.</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>SQL dialect abstraction <span class="phase-tag">~8–12 hrs</span></strong>
+        <span>Introduce an <code>ISqlDialect</code> interface with <code>QuoteIdentifier</code>, <code>OptimizeTables</code>, and multi-table delete helpers. Provide MySQL, MSSQL, and PostgreSQL implementations. Register via DI based on the provider config. Update all <code>ExecuteSqlRawAsync</code> call sites in <code>AdminRepository</code>.</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <strong>Feature flags for MySQL-only tools <span class="phase-tag">~2 hrs</span></strong>
+        <span>Conditionally hide the <em>Reset DB Collations</em> admin menu item and page when not running MySQL. Show a provider notice if accessed directly on an unsupported provider.</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <strong>EF Core model configuration review <span class="phase-tag">~3 hrs</span></strong>
+        <span>Audit <code>HLStatsDbContext.OnModelCreating</code> for MySQL-specific API calls. Verify column type mappings (<code>tinyint</code>, <code>int unsigned</code>, <code>text</code>) translate correctly. Unsigned integers map to <code>long</code> in MSSQL/PostgreSQL — confirm no overflow risk.</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">6</div>
+      <div class="step-content">
+        <strong>Migrations <span class="phase-tag">~4–6 hrs</span></strong>
+        <span>No EF migrations exist today (schema maintained by the legacy PHP installer). If added, separate migration bundles are needed per provider. Consider a <code>--provider</code> CLI argument to select the migration project at generation time.</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">7</div>
+      <div class="step-content">
+        <strong>Integration testing <span class="phase-tag">~16–20 hrs</span></strong>
+        <span>Spin up MSSQL (<code>mcr.microsoft.com/mssql/server</code>) and PostgreSQL Docker containers. Run the full repository test suite against each provider. Verify admin bulk operations, reset stats, cleanup, and daemon event handling end-to-end.</span>
+      </div>
+    </li>
+  </ul>
+
+  <div class="effort-total">
+    <span class="label">Estimated total effort — Multi-database support</span>
+    <span class="value">41–51 hours</span>
+  </div>
+
+  <hr />
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <h2>2 — Localisation (French, Spanish, German, Russian)</h2>
+
+  <div class="card">
+    <h3>Current State</h3>
+    <p>No localisation infrastructure exists. All ~1,700 user-visible strings are hardcoded English across <strong>121 Razor view files</strong>, 4 layout files, and scattered controller <code>TempData</code>/<code>ViewData</code> calls. There are zero <code>.resx</code> files, no <code>IStringLocalizer</code> usage, and no culture middleware.</p>
+  </div>
+
+  <h3>String volume by area</h3>
+
+  <table>
+    <thead>
+      <tr><th>Area</th><th>Files</th><th>~Strings</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Admin panel</td><td>52 views</td><td>400–500</td></tr>
+      <tr><td>Public leaderboards &amp; profiles</td><td>69 views</td><td>750–900</td></tr>
+      <tr><td>Shared layouts &amp; partials</td><td>4 layouts + partials</td><td>100–120</td></tr>
+      <tr><td>Controller messages (TempData)</td><td>—</td><td>50–80</td></tr>
+      <tr><td><strong>Total</strong></td><td><strong>121 + layouts</strong></td><td><strong>~1,300–1,600</strong></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Implementation phases</h3>
+
+  <ul class="step-list">
+    <li>
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Infrastructure <span class="phase-tag">~20–25 hrs</span></strong>
+        <span>Register <code>AddLocalization</code>, <code>AddViewLocalization</code>, and <code>AddDataAnnotationsLocalization</code> in all <code>Program.cs</code> files. Configure <code>RequestLocalizationOptions</code> for <code>en</code>, <code>fr</code>, <code>es</code>, <code>de</code>, <code>ru</code>. Add <code>UseRequestLocalization</code> middleware. Implement cookie-based culture selection with <code>Accept-Language</code> header fallback. Add a language-switcher UI component to <code>_Layout.cshtml</code>. Create the <code>Resources/</code> folder structure with shared, per-view, and controller resource files.</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>View string extraction <span class="phase-tag">~80–100 hrs</span></strong>
+        <span>Replace all hardcoded strings in 121 <code>.cshtml</code> files with <code>@Localizer["key"]</code> calls. Inject <code>IViewLocalizer</code> at the top of each view. Use <code>IHtmlLocalizer&lt;SharedResources&gt;</code> for shared strings (Prev/Next, Save, Delete, Search, etc.). Update all 4 layout files. Approximate: 30–40 min per file.</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>Controller &amp; service strings <span class="phase-tag">~15–20 hrs</span></strong>
+        <span>Inject <code>IStringLocalizer&lt;T&gt;</code> into controllers. Migrate hardcoded <code>TempData</code> success/error messages and <code>ViewData["Title"]</code> page titles to localised keys. Create per-controller <code>.resx</code> files.</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <strong>Translation content — 4 languages <span class="phase-tag">~70–86 hrs</span></strong>
+        <span>Use Google Translate API or Azure Translator for an initial machine-translation pass (~$20–30 for all four languages), then professional or community review per language. <strong>Russian note:</strong> requires 3-form plural rules — use custom plural helpers for any count-bearing strings (e.g. "1 kill / 2 kills / 5 kills").</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <strong>Database-driven content <span class="phase-tag">~10–15 hrs</span></strong>
+        <span>Action names, weapon names, rank/ribbon descriptions, and award names are stored in the database and are not covered by <code>.resx</code> files. Recommended approach: introduce a generic <code>hlstats_Translations(entity_type, entity_id, language, text)</code> table with a translation admin UI. Scope as a separate sub-task.</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">6</div>
+      <div class="step-content">
+        <strong>Testing &amp; QA <span class="phase-tag">~15–20 hrs</span></strong>
+        <span>Test all views in each locale. Check for layout overflow — translated strings are often 20–40% longer than English. Verify number and date formatting respects locale. Confirm no RTL regressions (not required for these 4 languages but worth checking for future-proofing).</span>
+      </div>
+    </li>
+  </ul>
+
+  <h3>Translation effort by language</h3>
+
+  <table>
+    <thead>
+      <tr><th>Language</th><th>Machine pass</th><th>Review</th><th>Total</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>🇫🇷 French</td><td>~4 hrs</td><td>~12–16 hrs</td><td>~16–20 hrs</td></tr>
+      <tr><td>🇪🇸 Spanish</td><td>~4 hrs</td><td>~12–16 hrs</td><td>~16–20 hrs</td></tr>
+      <tr><td>🇩🇪 German</td><td>~4 hrs</td><td>~14–18 hrs</td><td>~18–22 hrs</td></tr>
+      <tr><td>🇷🇺 Russian</td><td>~4 hrs</td><td>~16–20 hrs</td><td>~20–24 hrs</td></tr>
+      <tr><td><strong>Total</strong></td><td><strong>~16 hrs</strong></td><td><strong>~54–70 hrs</strong></td><td><strong>~70–86 hrs</strong></td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-warning">
+    <strong>Russian pluralisation</strong> — Russian has three plural forms (1, 2–4, 5+). Any count-bearing string (kills, deaths, sessions, etc.) requires custom plural rule helpers rather than a simple <code>IStringLocalizer</code> key lookup.
+  </div>
+
+  <h3>Phase summary</h3>
+
+  <table>
+    <thead>
+      <tr><th>Phase</th><th>Hours</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1 — Infrastructure</td><td>20–25</td></tr>
+      <tr><td>2 — View string extraction</td><td>80–100</td></tr>
+      <tr><td>3 — Controller &amp; service strings</td><td>15–20</td></tr>
+      <tr><td>4 — Translations (4 languages)</td><td>70–86</td></tr>
+      <tr><td>5 — Database-driven content</td><td>10–15</td></tr>
+      <tr><td>6 — Testing &amp; QA</td><td>15–20</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-info">
+    <strong>Minimum viable path:</strong> Infrastructure + view extraction + one language ≈ 3–4 weeks.<br />
+    <strong>Full four-language release:</strong> all phases + QA ≈ 6–7 weeks.
+  </div>
+
+  <div class="effort-total">
+    <span class="label">Estimated total effort — Full localisation (4 languages)</span>
+    <span class="value">210–266 hours</span>
+  </div>
+
+  <hr />
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <h2>3 — Mobile-Responsive Site <span class="phase-tag">Work in Progress</span></h2>
+
+  <div class="card">
+    <h3>Current State</h3>
+    <p>Mobile responsiveness is actively in progress. The home page, server pages, and public leaderboard and list pages have been updated for small screens. Profile pages, the admin panel, and some detail views still use fixed-width layouts that require horizontal scrolling on mobile.</p>
+  </div>
+
+  <h3>Areas</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Area</th>
+        <th>Status</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Home / server pages</td><td>✅ Done</td><td>Responsive layout implemented</td></tr>
+      <tr><td>Public leaderboards &amp; lists</td><td>✅ Done</td><td>Responsive layout implemented</td></tr>
+      <tr><td>Maps — detail view</td><td>✅ Done</td><td>Thumbnail hidden on mobile</td></tr>
+      <tr><td>Player / clan profile pages</td><td>⚠️ Partial</td><td>Tab layout and stat tables need breakpoints</td></tr>
+      <tr><td>Admin panel</td><td>❌ Not started</td><td>Fixed-width forms; admin use on desktop assumed</td></tr>
+      <tr><td>In-game pages</td><td>❌ Not started</td><td>Low priority — typically displayed inside game overlays</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Implementation steps</h3>
+
+  <ul class="step-list">
+    <li>
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Profile pages <span class="phase-tag">~8–12 hrs</span></strong>
+        <span>Rework the tabbed layout (General, Weapons, Maps, Sessions, Awards) to stack on small screens. Make stat tables horizontally scrollable with <code>overflow-x: auto</code> wrappers. Ensure the trend chart and ribbon grid reflow correctly.</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>Remaining detail pages <span class="phase-tag">~4–6 hrs</span></strong>
+        <span>Apply responsive patterns to weapon detail, map detail, clan profile, action/role info, award detail, and rank/ribbon detail pages.</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>Admin panel <span class="phase-tag">~12–16 hrs</span></strong>
+        <span>Admin use on desktop is assumed, so this is lower priority. Minimum: ensure forms do not overflow the viewport. Full responsive rework is optional and can be deferred post-1.0.</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <strong>Cross-browser / device testing <span class="phase-tag">~4–6 hrs</span></strong>
+        <span>Test on iOS Safari and Android Chrome at 375px and 768px breakpoints. Verify nav, stat tables, progress bars, and charts render correctly.</span>
+      </div>
+    </li>
+  </ul>
+
+  <div class="effort-total">
+    <span class="label">Estimated total effort — Mobile responsiveness</span>
+    <span class="value">28–40 hours</span>
+  </div>
+
+</div>
+</body>
+</html>

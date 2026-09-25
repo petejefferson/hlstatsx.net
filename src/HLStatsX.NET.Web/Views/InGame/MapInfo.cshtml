@@ -1,0 +1,59 @@
+@model InGameMapInfoViewModel
+@using HLStatsX.NET.Web.Models.ViewModels
+@{
+    Layout = "~/Views/Shared/_InGameLayout.cshtml";
+    ViewData["Title"] = Model.MapName + " — Top Players";
+
+    string SortUrl(string field)
+    {
+        bool nd = Model.SortBy == field ? !Model.Desc : true;
+        return Url.Action("MapInfo", "InGame", new { game = Model.Game, map = Model.MapName, sortBy = field, desc = nd, page = 1 })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Desc ? " ▼" : " ▲") : "";
+
+    var flagBase = Url.Content("~/hlstatsimg/flags");
+    string FlagImg(string? flag) =>
+        $"<img src=\"{flagBase}/{(string.IsNullOrEmpty(flag) ? "0" : flag.ToLowerInvariant())}.gif\" alt=\"\" />";
+
+    int startRank = (Model.Players.Page - 1) * Model.Players.PageSize + 1;
+}
+
+<table class="data-table">
+    <tr class="data-table-head">
+        <td colspan="5">&nbsp;Top Players — @Model.MapName</td>
+    </tr>
+    <tr class="data-table-head">
+        <td style="text-align:right;">Rank</td>
+        <td><a href="@SortUrl("name")">Player@(Mark("name"))</a></td>
+        <td style="text-align:right;"><a href="@SortUrl("kills")">Kills@(Mark("kills"))</a></td>
+        <td style="text-align:right;"><a href="@SortUrl("headshots")">Headshots@(Mark("headshots"))</a></td>
+        <td style="text-align:right;">HS:K</td>
+    </tr>
+    @{ int rowNum = startRank; }
+    @foreach (var p in Model.Players.Items)
+    {
+        <tr class="@(rowNum % 2 == 1 ? "bg1" : "bg2")">
+            <td style="text-align:right;">@rowNum</td>
+            <td>@Html.Raw(FlagImg(p.Flag)) <a href="@Url.Action("PlayerStats", "InGame", new { game = Model.Game, player = p.PlayerId })">@p.PlayerName</a></td>
+            <td style="text-align:right;">@p.Kills.ToString("N0")</td>
+            <td style="text-align:right;">@p.Headshots.ToString("N0")</td>
+            <td style="text-align:right;">@p.HeadshotsPerKill.ToString("F2")</td>
+        </tr>
+        rowNum++;
+    }
+</table>
+
+@if (Model.Players.TotalPages > 1)
+{
+    <div style="padding:4px;">
+        @if (Model.Players.HasPreviousPage)
+        {
+            <a href="@Url.Action("MapInfo", "InGame", new { game = Model.Game, map = Model.MapName, sortBy = Model.SortBy, desc = Model.Desc, page = Model.Players.Page - 1 })">« Prev</a>
+        }
+        &nbsp;Page @Model.Players.Page of @Model.Players.TotalPages&nbsp;
+        @if (Model.Players.HasNextPage)
+        {
+            <a href="@Url.Action("MapInfo", "InGame", new { game = Model.Game, map = Model.MapName, sortBy = Model.SortBy, desc = Model.Desc, page = Model.Players.Page + 1 })">Next »</a>
+        }
+    </div>
+}

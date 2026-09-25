@@ -1,0 +1,142 @@
+@model MapDetailViewModel
+@{
+    ViewData["Title"] = $"Map Detail — {Model.MapName}";
+
+    string SortUrl(string field)
+    {
+        bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
+        return Url.Action("Detail", new { name = Model.MapName, game = Model.Game, sortBy = field, desc = nextDesc, page = 1 })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
+}
+
+<div class="block">
+    <div class="subblock" style="overflow:hidden;">
+        <div style="float:left;">
+            <strong>@Model.MapName</strong>: From a total of <strong>@Model.TotalKills.ToString("N0")</strong> kills (Last @Model.DeleteDays days)
+        </div>
+        <div style="float:right;">
+            <a asp-controller="Maps" asp-action="Index" asp-route-game="@Model.Game">Back to Map Statistics</a>
+        </div>
+    </div>
+</div>
+
+<div class="profile-tabs" id="profileTabs">
+    <a href="#tab-stats"   class="tab-link">Kills</a>
+    <a href="#tab-heatmap" class="tab-link">Heatmap</a>
+</div>
+
+@{
+    string mapThumbSrc = $"{Url.Content("~/hlstatsimg")}/games/{Model.Game}/maps/{Model.MapName}.jpg";
+}
+
+<div id="tab-stats" class="tab-panel">
+    <div style="display:flex;gap:1rem;align-items:flex-start;">
+    <div style="flex:1;min-width:0;">
+    <table class="data-table">
+        <thead>
+            <tr class="data-table-head">
+                <th class="rank-col">Rank</th>
+                <th><a href="@(SortUrl("name"))">Player@(Mark("name"))</a></th>
+                <th style="text-align:right;"><a href="@(SortUrl("kills"))">Kills on @Model.MapName@(Mark("kills"))</a></th>
+                <th style="text-align:right;"><a href="@(SortUrl("headshots"))">Headshots@(Mark("headshots"))</a></th>
+                <th style="text-align:right;"><a href="@(SortUrl("hpk"))">HpK@(Mark("hpk"))</a></th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int pageOffset = (Model.Players.Page - 1) * Model.Players.PageSize;
+                bool alt = false;
+            }
+            @foreach (var p in Model.Players.Items)
+            {
+                pageOffset++;
+                string rowClass = (alt = !alt) ? "bg1" : "bg2";
+                string? flagFile = string.IsNullOrEmpty(p.Flag) ? null : p.Flag.ToLowerInvariant();
+                <tr class="@rowClass">
+                    <td class="rank-col">@(pageOffset).</td>
+                    <td>
+                        @if (flagFile is not null)
+                        {
+                            <img src="@(Url.Content("~/hlstatsimg/flags/") + flagFile + ".gif")" alt="@p.Flag" title="@p.Flag"
+                                 style="vertical-align:middle;" onerror="this.style.display='none'" />
+                        }
+                        <a asp-controller="Players" asp-action="Profile" asp-route-id="@p.PlayerId">@p.PlayerName</a>
+                    </td>
+                    <td style="text-align:right;">@p.Kills.ToString("N0")</td>
+                    <td style="text-align:right;">@p.Headshots.ToString("N0")</td>
+                    <td style="text-align:right;">@p.HeadshotsPerKill.ToString("F2")</td>
+                </tr>
+            }
+            @if (!Model.Players.Items.Any())
+            {
+                <tr class="bg1"><td colspan="5" style="text-align:center;">No player data for this map.</td></tr>
+            }
+        </tbody>
+    </table>
+
+    <partial name="_Pagination" model="@PaginationModel.From(Model.Players, p => Url.Action("Detail", new { name = Model.MapName, game = Model.Game, sortBy = Model.SortBy, desc = Model.Descending, page = p })!)" />
+    </div>
+    <div class="ls-responsive-hide">
+        <img src="@mapThumbSrc" alt="@Model.MapName" style="max-width:220px;display:block;"
+             onerror="this.style.display='none'" />
+        @if (Model.DownloadUrl != null)
+        {
+            <p><a href="@Model.DownloadUrl">Download this map...</a></p>
+        }
+    </div>
+    </div>
+</div>
+
+<div id="tab-heatmap" class="tab-panel">
+    <div style="margin-bottom:0.4rem;display:flex;align-items:center;">
+        <div style="display:flex;gap:0.4rem;">
+            <button id="tab-kills"  class="btn-small heatmap-tab-active">Kills</button>
+            <button id="tab-deaths" class="btn-small heatmap-tab-inactive">Deaths</button>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:0.4rem;">
+            <button id="zoom-in"    class="btn-small">+</button>
+            <button id="zoom-out"   class="btn-small">−</button>
+            <button id="zoom-reset" class="btn-small">Reset</button>
+        </div>
+    </div>
+    <div id="heatmap-status" style="font-style:italic;font-size:0.85em;min-height:1.2em;margin-bottom:0.3rem;"></div>
+    <div id="heatmap-viewport" style="position:relative;overflow:hidden;width:100%;cursor:grab;">
+        <div id="heatmap-container" style="position:absolute;top:0;left:0;line-height:0;transform-origin:0 0;">
+            <img id="heatmap-mapimg"
+                 src="@(Url.Content("~/img/radar/jpg/") + Model.MapName + ".jpg")"
+                 alt="@Model.MapName"
+                 style="display:block;width:100%;"
+                 data-fallback="@Url.Content("~/hlstatsimg/nomap.png")"
+                 onerror="this.src=this.dataset.fallback;this.onerror=null;" />
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/heatmap.min.js"></script>
+    <script>
+        window.heatmapOptions = {
+            game: '@Html.Raw(Model.Game)',
+            map: '@Html.Raw(Model.MapName)',
+            apiUrl: '@Url.Action("Data", "Heatmap")',
+            deferInit: true
+        };
+
+        var heatmapStarted = false;
+        document.querySelector('a[href="#tab-heatmap"]').addEventListener('click', function () {
+            if (!heatmapStarted) {
+                heatmapStarted = true;
+                window.heatmapInit && window.heatmapInit();
+            }
+        });
+    </script>
+    <script src="~/js/mapHeatmap.js"></script>
+    <style>
+        .heatmap-tab-inactive {
+            background: var(--surface);
+            color: var(--muted);
+            border-color: var(--border);
+        }
+    </style>
+}

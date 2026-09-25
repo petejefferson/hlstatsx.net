@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HLStatsX.NET — Why the Rewrite?</title>
+  <link rel="stylesheet" href="site.css" />
+  <style>
+    .new-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+    .priority-item .num { width: 24px; }
+
+    /* ── PRE-ALPHA BANNER ── */
+    .status-banner {
+      background: #fffbeb;
+      border: 1px solid #fcd34d;
+      border-left: 4px solid #d97706;
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      box-shadow: var(--shadow);
+    }
+    .status-banner .sb-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 1px; }
+    .status-banner .sb-body { font-size: 0.85rem; line-height: 1.65; color: #78350f; }
+    .status-banner .sb-body strong { color: #451a03; }
+    .status-banner .sb-body a { color: #92400e; text-decoration: underline; }
+
+    /* ── QUICK LINKS GRID ── */
+    .link-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 10px;
+    }
+    .link-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.9rem 1.1rem;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text);
+      transition: background 0.15s;
+    }
+    .link-card:hover { background: var(--surface-hover); text-decoration: none; color: var(--text); }
+    .link-card .lc-icon { font-size: 1.3rem; flex-shrink: 0; }
+    .link-card .lc-label { font-weight: 600; font-size: 0.85rem; }
+    .link-card .lc-sub { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+    .link-card.lc-primary { border-left: 3px solid var(--highlight); }
+    .link-card.lc-demo    { border-left: 3px solid #16a34a; }
+    .link-card.lc-live    { border-left: 3px solid #d97706; }
+    .link-card.lc-contact { border-left: 3px solid var(--muted); }
+
+
+    /* ── TIMELINE ── */
+    .timeline {
+      position: relative;
+      padding-left: 2rem;
+      border-left: 2px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+    .timeline-item { position: relative; }
+    .timeline-dot {
+      position: absolute;
+      left: -2.45rem;
+      top: 4px;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      border: 2px solid var(--highlight);
+      background: var(--bg);
+    }
+    .timeline-dot.dead   { border-color: #b91c1c; }
+    .timeline-dot.active { border-color: #16a34a; background: #dcfce7; }
+    .timeline-year  { font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+                      letter-spacing: 0.06em; color: var(--muted); margin-bottom: 2px; }
+    .timeline-title { font-weight: 600; font-size: 0.88rem; color: var(--text); margin-bottom: 3px; }
+    .timeline-desc  { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+    .tag {
+      display: inline-block;
+      padding: 1px 7px;
+      border-radius: 100px;
+      font-size: 0.67rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-left: 5px;
+      vertical-align: middle;
+    }
+    .tag-dead   { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+    .tag-active { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+    .tag-fork   { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
+
+    /* ── CALLOUTS ── */
+    .callout {
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.85rem;
+      display: flex;
+      gap: 0.9rem;
+      align-items: flex-start;
+      box-shadow: var(--shadow);
+      font-size: 0.84rem;
+      line-height: 1.65;
+    }
+    .callout-warn { background: #fffbeb; border: 1px solid #fcd34d; border-left: 4px solid #d97706; }
+    .callout-info { background: #eff6ff; border: 1px solid #bfdbfe; border-left: 4px solid var(--highlight); }
+    .callout-good { background: #f0fdf4; border: 1px solid #86efac; border-left: 4px solid #16a34a; }
+    .callout .ci  { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+    .callout-warn p { color: #78350f; }
+    .callout-info p { color: #1e3a5f; }
+    .callout-good p { color: #14532d; }
+    .callout strong { color: var(--text); display: block; margin-bottom: 3px; }
+    .callout code { font-family: 'Consolas', monospace; font-size: 0.8em;
+                    background: rgba(0,0,0,0.06); border-radius: 3px; padding: 1px 4px; }
+
+    /* ── CODE COMPARISON ── */
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      align-items: start;
+    }
+    @media (max-width: 760px) { .compare-grid { grid-template-columns: 1fr; } }
+    .code-block { border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-md); }
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 12px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .code-header.bad  { background: #7f1d1d; color: #fca5a5; }
+    .code-header.good { background: #14532d; color: #86efac; }
+    .code-header .lang { font-weight: 400; opacity: 0.65; }
+    pre {
+      background: #0f172a;
+      color: #cbd5e1;
+      font-family: 'Consolas', 'SF Mono', monospace;
+      font-size: 0.76rem;
+      line-height: 1.6;
+      padding: 0.9rem 1rem;
+      overflow-x: auto;
+      margin: 0;
+    }
+    .hb { color: #f87171; font-weight: 600; }  /* highlight bad */
+    .hg { color: #4ade80; font-weight: 600; }  /* highlight good */
+    .hc { color: #64748b; font-style: italic; } /* comment */
+    .hk { color: #7dd3fc; }                     /* keyword */
+    .hs { color: #fbbf24; }                     /* string */
+
+
+    /* ── STAT BUBBLES ── */
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 10px;
+    }
+    .stat-bubble {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.9rem 1rem;
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+    .stat-bubble .sb-num {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--highlight);
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+    .stat-bubble .sb-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+
+    /* ── DB COMPAT CALLOUT ── */
+    .compat-banner {
+      background: #0f172a;
+      border: 1px solid #3A5570;
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      gap: 1.1rem;
+      align-items: flex-start;
+      box-shadow: 0 4px 12px rgba(15,23,42,0.25);
+    }
+    .compat-banner .cb-icon { font-size: 1.6rem; flex-shrink: 0; margin-top: 2px; }
+    .compat-banner .cb-body { color: #e2e8f0; line-height: 1.65; font-size: 0.86rem; }
+    .compat-banner .cb-body strong { color: #ffffff; font-size: 0.95rem; display: block; margin-bottom: 5px; }
+    .compat-banner .cb-body .cb-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .compat-banner .cb-body .cb-pill {
+      background: rgba(58,85,112,0.5); border: 1px solid #3A5570;
+      border-radius: 100px; padding: 2px 10px; font-size: 0.73rem;
+      color: #93c5fd; font-family: 'Consolas', monospace;
+    }
+    /* ── NET ADVANTAGES ── */
+    .net-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 10px;
+    }
+    .net-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--highlight);
+      border-radius: var(--radius);
+      padding: 1rem 1.1rem;
+      box-shadow: var(--shadow);
+    }
+    .net-card .nc-icon { font-size: 1.2rem; margin-bottom: 6px; }
+    .net-card .nc-title { font-weight: 700; font-size: 0.88rem; color: var(--text); margin-bottom: 5px; }
+    .net-card .nc-body { font-size: 0.79rem; color: var(--muted); line-height: 1.65; }
+    .net-card .nc-body code { font-family: 'Consolas', monospace; font-size: 0.85em;
+      background: var(--accent); border: 1px solid var(--border); border-radius: 3px; padding: 1px 4px; }
+    .net-card .nc-badge {
+      display: inline-block; margin-top: 7px;
+      background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8;
+      border-radius: 100px; padding: 2px 9px; font-size: 0.68rem; font-weight: 700;
+    }
+    /* ── MARKETING HERO STAT ── */
+    .hero-claim {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid #334155;
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      box-shadow: var(--shadow-md);
+      margin-bottom: 1rem;
+    }
+    .hero-claim .hc-num {
+      font-size: 3rem; font-weight: 900; color: #60a5fa; line-height: 1; flex-shrink: 0;
+    }
+    .hero-claim .hc-text { color: #e2e8f0; font-size: 0.88rem; line-height: 1.6; }
+    .hero-claim .hc-text strong { color: #fff; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════ TOPBAR -->
+<header class="hero">
+  <div class="container" style="display:flex;align-items:center;width:100%;">
+    <a class="hero-brand" href="welcome.html">🎮 HLStatsX.NET</a>
+    <nav class="hero-nav">
+      <a href="why-the-rewrite.html" class="active">Why the Rewrite</a>
+      <a href="feature-parity.html">Feature Parity</a>
+      <a href="future-work.html">Future Work</a>
+      <a href="https://github.com/petejefferson/hlstatsx.net" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════ PAGE HEADER -->
+<div class="page-header">
+  <div class="container">
+    <h1>Why the Rewrite?</h1>
+    <p class="subtitle">Carrying 20+ years of community work forward into modern times — with evidence from the code and git history</p>
+    <span class="date-badge">📅 2026-05-16</span>
+    <span class="prealpha-badge">🚧 PRE-ALPHA — Active Development</span>
+  </div>
+</div>
+
+<div class="container" style="padding-top:1.5rem; padding-bottom:2rem;">
+
+  <!-- ══════════════════════════════════ STATUS BANNER -->
+  <div class="status-banner" style="margin-bottom:1.5rem;">
+    <div class="sb-icon">🚧</div>
+    <div class="sb-body">
+      <strong>This project is in pre-alpha. It is not ready for production use.</strong>
+      The rewrite is feature-complete for most of the public stats pages (~97% overall parity) but is still under active development.
+      Expect rough edges, missing features, and breaking changes between releases.
+      If you want to follow progress, check the <a href="feature-parity.html">Feature Parity Report</a> — it's updated with every significant commit.
+      Questions or feedback? Email <a href="mailto:info@hlstatsx.net">info@hlstatsx.net</a>.
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ STANDING ON SHOULDERS -->
+  <div class="section">
+    <h2 class="section-title">🙏 Standing on the shoulders of giants</h2>
+
+    <div class="callout callout-good" style="margin-bottom:0;">
+      <span class="ci">❤️</span>
+      <div>
+        <strong>This project exists because of the people who built HLStatsX.</strong>
+        <p>
+          HLStatsX has been a labour of love for over 20 years. From its original authors to every contributor
+          who filed issues, submitted patches, and kept servers running — the whole community deserves full credit
+          for what it became. HLStatsX.NET carries that work forward: the same game tracking,
+          the same skill system, the same data model — modernised, not replaced.
+          <br><br>
+          The legacy codebase was used as the authoritative specification throughout, ensuring every feature,
+          edge case, and design decision carries forward faithfully.
+          HLStatsX.NET is a drop-in replacement for the original PHP site and Perl daemon —
+          the same database, the same game server log format, the same stat output.
+          No data migration. No reconfiguration. Just a modern foundation that can be maintained and extended going forward.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ QUICK LINKS -->
+  <div class="section">
+    <h2 class="section-title">🔗 Try it yourself</h2>
+    <div class="link-grid">
+      <a class="link-card lc-demo" href="https://hlstatsx.net/demo" target="_blank">
+        <span class="lc-icon">🎮</span>
+        <div>
+          <div class="lc-label">Demo</div>
+          <div class="lc-sub">hlstatsx.net/demo — seeded with sample data</div>
+        </div>
+      </a>
+      <a class="link-card lc-live" href="https://hlstatsx.net/live" target="_blank">
+        <span class="lc-icon">📡</span>
+        <div>
+          <div class="lc-label">Live Server</div>
+          <div class="lc-sub">hlstatsx.net/live — real game server stats</div>
+        </div>
+      </a>
+      <a class="link-card lc-primary" href="feature-parity.html">
+        <span class="lc-icon">📊</span>
+        <div>
+          <div class="lc-label">Feature Parity Report</div>
+          <div class="lc-sub">97% complete — updated each commit</div>
+        </div>
+      </a>
+      <a class="link-card lc-primary" href="https://github.com/petejefferson/hlstatsx.net" target="_blank">
+        <span class="lc-icon">⭐</span>
+        <div>
+          <div class="lc-label">GitHub Repository</div>
+          <div class="lc-sub">Star or fork the project</div>
+        </div>
+      </a>
+      <a class="link-card lc-contact" href="mailto:info@hlstatsx.net">
+        <span class="lc-icon">✉️</span>
+        <div>
+          <div class="lc-label">Get in Touch</div>
+          <div class="lc-sub">info@hlstatsx.net</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ HONEST TAKE -->
+  <div class="section">
+    <h2 class="section-title">🤔 Is a rewrite actually the right call?</h2>
+
+    <div class="callout callout-info">
+      <span class="ci">📋</span>
+      <div>
+        <strong>This is not about discarding the old work. It's about honouring it properly.</strong>
+        <p>The original team built something that ran reliably on thousands of servers for over two decades.
+        That is the definition of success. HLStatsX.NET starts from a position of deep respect for that achievement —
+        the goal is to take everything they figured out about stat tracking, skill ranking, and game event processing,
+        and give it a home where it can be properly maintained, extended, and secured going forward.</p>
+      </div>
+    </div>
+    <div class="callout callout-warn">
+      <span class="ci">⚠️</span>
+      <div>
+        <strong>The honest concern: rewrites are famously risky.</strong>
+        <p>Joel Spolsky's classic essay argues that the original code, however ugly, contains years of accumulated bug fixes and hard-won knowledge. Throwing it away risks rediscovering all those bugs from scratch. That concern is taken seriously here — the original PHP and Perl code is referred to in depth to ensure compatibility at every level.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ BY THE NUMBERS -->
+  <div class="section">
+    <h2 class="section-title">📊 By the numbers</h2>
+    <div class="stat-row">
+      <div class="stat-bubble">
+        <div class="sb-num">2001</div>
+        <div class="sb-label">Year the original HLstats was born</div>
+      </div>
+      <div class="stat-bubble">
+        <div class="sb-num">3,600+</div>
+        <div class="sb-label">Lines in hlstats.pl — 25 years of event-handling knowledge</div>
+      </div>
+      <div class="stat-bubble">
+        <div class="sb-num">27,000+</div>
+        <div class="sb-label">Lines of legacy PHP — the spec read before every feature</div>
+      </div>
+      <div class="stat-bubble">
+        <div class="sb-num">30,000+</div>
+        <div class="sb-label">Lines of .NET C#</div>
+      </div>
+      <div class="stat-bubble">
+        <div class="sb-num">228</div>
+        <div class="sb-label">Commits in the first 6 weeks</div>
+      </div>
+      <div class="stat-bubble">
+        <div class="sb-num">596+</div>
+        <div class="sb-label">Unit tests — vs zero in the original</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ REAL PROBLEMS (git evidence) -->
+  <div class="section">
+    <h2 class="section-title">🔬 Real problems, with evidence from the code</h2>
+    <p style="font-size:0.84rem;color:var(--muted);margin-bottom:1.1rem;line-height:1.7;">
+      These aren't theoretical concerns. Each one is grounded in specific code from the legacy source.
+    </p>
+
+    <ul class="priority-list">
+
+      <li class="priority-item p1">
+        <div class="num">☠️</div>
+        <div>
+          <div class="title">SQL injection — user input flowing straight into queries</div>
+          <div class="desc">
+            In the original PHP, user-controlled values are interpolated directly into SQL query strings.
+            Escaping is inconsistent and easy to miss. The .NET rewrite uses an ORM that generates
+            parameterised queries by design — it is not possible to accidentally concatenate user input
+            into a query. Safety is the default, not a discipline you have to remember.
+          </div>
+        </div>
+      </li>
+
+      <li class="priority-item p2">
+        <div class="num">⏳</div>
+        <div>
+          <div class="title">Every page load blocks waiting for Steam</div>
+          <div class="desc">
+            Loading a player profile in the original PHP triggers a synchronous call to the Steam API
+            mid-render. If Steam is slow, your page is slow. If Steam is down, your page hangs.
+            The .NET rewrite is fully asynchronous — Steam is contacted in the background, avatars are
+            cached, and the page renders immediately regardless of Steam's availability.
+          </div>
+        </div>
+      </li>
+
+      <li class="priority-item p2">
+        <div class="num">🐌</div>
+        <div>
+          <div class="title">Sequential database queries — one at a time, every time</div>
+          <div class="desc">
+            The PHP player profile runs its database queries one after another in a single blocking thread.
+            The .NET rewrite runs all independent queries in parallel — everything the page needs is
+            fetched concurrently, and the page assembles as results arrive. On busy servers with large
+            datasets, this is the difference between a fast page and a timeout.
+          </div>
+        </div>
+      </li>
+
+      <li class="priority-item p2">
+        <div class="num">🔓</div>
+        <div>
+          <div class="title">Database errors expose your server details to every visitor</div>
+          <div class="desc">
+            When the original PHP encounters a database error, it renders the server address, connecting
+            username, and the failed query directly in the browser. Any visitor who triggers an error
+            sees your infrastructure. The .NET rewrite shows a safe error page to users and routes
+            full exception detail to the application log only.
+          </div>
+        </div>
+      </li>
+
+      <li class="priority-item p3">
+        <div class="num">🌐</div>
+        <div>
+          <div class="title">Global shared state — untestable and unpredictable</div>
+          <div class="desc">
+            Every PHP page and function reaches into shared global variables for the database connection,
+            configuration, and game context. There is no isolation between requests and no way to test
+            anything in isolation. The .NET rewrite uses dependency injection throughout — every
+            dependency is explicit, swappable, and independently testable.
+          </div>
+        </div>
+      </li>
+
+      <li class="priority-item p3">
+        <div class="num">🪲</div>
+        <div>
+          <div class="title">The Perl daemon: 3,000+ lines, no tests, no strict types</div>
+          <div class="desc">
+            The original daemon is a single large Perl script with variable strictness disabled,
+            server state buried in nested data structures, and no unit tests whatsoever.
+            When something breaks, the only tool is adding print statements and reading the output.
+            The .NET daemon is a structured async worker service with typed event handlers,
+            clean separation of concerns, and a full unit test suite.
+          </div>
+        </div>
+      </li>
+
+      <li class="priority-item p3">
+        <div class="num">📦</div>
+        <div>
+          <div class="title">Deployment: hand-edit source files, install Perl, cross fingers</div>
+          <div class="desc">
+            Getting the original running requires Apache, PHP, Perl, several CPAN modules, and
+            credentials pasted directly into source files — which routinely end up committed to
+            version control. The .NET rewrite ships with Docker support and an environment-variable
+            configuration system. The full stack starts with a single command.
+            No Apache. No Perl. No editing source files to set a password.
+          </div>
+        </div>
+      </li>
+
+    </ul>
+  </div>
+
+  <!-- ══════════════════════════════════ FEATURES BEYOND PARITY -->
+  <div class="section">
+    <h2 class="section-title">✨ Beyond parity — features the original never had</h2>
+    <p style="font-size:0.84rem;color:var(--muted);margin-bottom:1.1rem;line-height:1.7;">
+      Rewriting from scratch isn't just about cleaning up old code — it's an opportunity to add things
+      that were never feasible in the original architecture. These are already shipped.
+    </p>
+    <div class="new-grid">
+      <div class="new-card card-green">
+        <span class="icon">🔥</span>
+        <div>
+          <div class="feature">Interactive kill and death heatmaps</div>
+          <div class="detail">Kill and death positions are plotted as an interactive overlay on every map page. Pan, zoom, and toggle between kills and deaths. The original collected the data but never visualised it.</div>
+        </div>
+      </div>
+      <div class="new-card card-green">
+        <span class="icon">🗺️</span>
+        <div>
+          <div class="feature">Clan member world map</div>
+          <div class="detail">Clan profile pages show an interactive map of where members are located around the world. Nothing like this exists in the original.</div>
+        </div>
+      </div>
+      <div class="new-card card-green">
+        <span class="icon">⚡</span>
+        <div>
+          <div class="feature">Pages load fast — even under load</div>
+          <div class="detail">All data for a page is fetched in parallel. The original fetches everything one query at a time. On busy servers with large datasets, this is the difference between a snappy page and a timeout.</div>
+        </div>
+      </div>
+      <div class="new-card card-green">
+        <span class="icon">📦</span>
+        <div>
+          <div class="feature">Simple, modern deployment</div>
+          <div class="detail">The full stack starts with a single command. No web server to configure, no scripting language to install, no source files to hand-edit with passwords.</div>
+        </div>
+      </div>
+      <div class="new-card card-green">
+        <span class="icon">🧪</span>
+        <div>
+          <div class="feature">Hundreds of automated tests</div>
+          <div class="detail">Every change is validated automatically. Regressions cannot silently ship. The original has no automated tests — bugs are discovered by players noticing wrong stats.</div>
+          <span class="commit">as of May 2026</span>
+        </div>
+      </div>
+      <div class="new-card card-green">
+        <span class="icon">📈</span>
+        <div>
+          <div class="feature">Modern, interactive charts</div>
+          <div class="detail">Charts are rendered in the browser — responsive, zoomable, and interactive. The original generates static images on the server, which breaks on many hosting setups.</div>
+        </div>
+      </div>
+      <div class="new-card card-green">
+        <span class="icon">🔑</span>
+        <div>
+          <div class="feature">Proper admin security</div>
+          <div class="detail">Admin authentication uses modern password hashing and cross-site request forgery protection. The original relies on plaintext passwords and basic session checks.</div>
+        </div>
+      </div>
+      <div class="new-card card-green">
+        <span class="icon">📡</span>
+        <div>
+          <div class="feature">RCON broadcasting — fully reimplemented</div>
+          <div class="detail">Real-time in-game feedback is implemented for both Source Engine (TCP RCON) and GoldSrc (UDP challenge-response). Kill messages, connect announcements, and rank-kick all work across both engine generations from a single, pooled connection manager.</div>
+          <span class="commit">shipped May 2026</span>
+        </div>
+      </div>
+      <div class="new-card card-green">
+        <span class="icon">🔍</span>
+        <div>
+          <div class="feature">Live server querying via A2S_INFO</div>
+          <div class="detail">The daemon queries game servers directly using the Valve A2S_INFO protocol. Map names are auto-corrected from live server responses — no manual map entry required. The original daemon relied entirely on log-line text for map state.</div>
+          <span class="commit">shipped May 2026</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ BROKEN IN PHP, FIXED IN .NET -->
+  <div class="section">
+    <h2 class="section-title">🔧 Broken in the original — working again</h2>
+    <p style="font-size:0.84rem;color:var(--muted);margin-bottom:1.1rem;line-height:1.7;">
+      Some features in the legacy installation are actively broken for many users today — not just outdated.
+      These are restored in HLStatsX.NET.
+    </p>
+    <div class="new-grid">
+
+      <div class="new-card card-amber">
+        <span class="icon">🗺️</span>
+        <div>
+          <div class="feature">Maps work without a paid API key</div>
+          <div class="detail">The original requires a paid Google Maps billing account. Without one, maps show blank tiles. HLStatsX.NET defaults to free, open mapping with no account or billing required.</div>
+        </div>
+      </div>
+
+      <div class="new-card card-amber">
+        <span class="icon">📊</span>
+        <div>
+          <div class="feature">Charts display correctly on all hosting setups</div>
+          <div class="detail">The original generates chart images on the server — a feature that silently fails on shared hosting without the right server extensions installed. Charts now render in the browser with no server-side requirements.</div>
+        </div>
+      </div>
+
+      <div class="new-card card-amber">
+        <span class="icon">🎭</span>
+        <div>
+          <div class="feature">Kill and death heatmaps are actually shown</div>
+          <div class="detail">The original records kill positions on every map but never displays them. That data is now visualised as a fully interactive heatmap overlay.</div>
+        </div>
+      </div>
+
+      <div class="new-card card-amber">
+        <span class="icon">👥</span>
+        <div>
+          <div class="feature">Clan member counts are correct</div>
+          <div class="detail">The clan leaderboard showed zero members for every clan. This is fixed — counts are now accurate and up to date.</div>
+        </div>
+      </div>
+
+      <div class="new-card card-amber">
+        <span class="icon">🏷️</span>
+        <div>
+          <div class="feature">Player roles display proper names</div>
+          <div class="detail">Role names were showing as internal codes rather than readable labels. Player profiles now display role names correctly.</div>
+        </div>
+      </div>
+
+      <div class="new-card card-amber">
+        <span class="icon">⚡</span>
+        <div>
+          <div class="feature">Activity indicators show meaningful colours</div>
+          <div class="detail">Activity bar indicators were rendering as a flat, uniform colour on all browsers. They now correctly show green, yellow, and red based on activity level.</div>
+        </div>
+      </div>
+
+      <div class="new-card card-amber">
+        <span class="icon">🤖</span>
+        <div>
+          <div class="feature">Bot players display cleanly</div>
+          <div class="detail">Bots appeared on leaderboards with broken flag images. They are now correctly identified and displayed without any broken imagery.</div>
+        </div>
+      </div>
+
+      <div class="new-card card-amber">
+        <span class="icon">🌐</span>
+        <div>
+          <div class="feature">No legacy JavaScript compatibility issues</div>
+          <div class="detail">The original bundles JavaScript libraries from 2006 that modern browsers have quietly broken. HLStatsX.NET uses no legacy framework dependencies.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ SECURITY & FUTURE PROOF -->
+  <div class="section">
+    <h2 class="section-title">🛡️ Security, integrity, and future-proof technology</h2>
+    <p style="font-size:0.84rem;color:var(--muted);margin-bottom:1.1rem;line-height:1.7;">
+      The original was built in a simpler time, before modern web security practices were established.
+      HLStatsX.NET treats security as a first-class concern, not an afterthought.
+    </p>
+    <ul class="priority-list">
+
+      <li class="priority-item p4">
+        <div class="num">🔐</div>
+        <div>
+          <div class="title">SQL injection is structurally prevented</div>
+          <div class="desc">
+            The original mixes user input into database queries and relies on every developer remembering to sanitise every value on every code path. HLStatsX.NET uses a modern ORM — safe queries are the only option, not a discipline that must be enforced manually.
+          </div>
+        </div>
+      </li>
+
+      <li class="priority-item p4">
+        <div class="num">🔑</div>
+        <div>
+          <div class="title">Secure admin authentication</div>
+          <div class="desc">
+            The original admin panel uses basic password checks with no brute-force protection and no defence against cross-site request forgery. HLStatsX.NET uses modern authentication with properly hashed passwords and request forgery protection built in by the framework.
+          </div>
+        </div>
+      </li>
+
+      <li class="priority-item p4">
+        <div class="num">🛡️</div>
+        <div>
+          <div class="title">Cross-site scripting protection by default</div>
+          <div class="desc">
+            In the original, displaying any variable as HTML requires developers to manually escape it every time. In HLStatsX.NET, all output is safely encoded by default — unescaped output requires an explicit opt-in.
+          </div>
+        </div>
+      </li>
+
+      <li class="priority-item p4">
+        <div class="num">🚫</div>
+        <div>
+          <div class="title">Credentials are never stored in source files</div>
+          <div class="desc">
+            The original stores database passwords directly in configuration source files that routinely get committed to version control. HLStatsX.NET keeps all secrets outside the source tree entirely.
+          </div>
+        </div>
+      </li>
+
+      <li class="priority-item p3">
+        <div class="num">📦</div>
+        <div>
+          <div class="title">Built on a modern, actively maintained platform</div>
+          <div class="desc">
+            Some installations of the original still run on PHP versions that reached end-of-life years ago. HLStatsX.NET targets .NET 10 — a long-term support release with guaranteed security updates and an active development roadmap.
+          </div>
+        </div>
+      </li>
+
+      <li class="priority-item p3">
+        <div class="num">🐳</div>
+        <div>
+          <div class="title">Isolated, reproducible deployment</div>
+          <div class="desc">
+            The original runs in a shared server environment where any misconfiguration on the host can affect the application. HLStatsX.NET runs in a container — isolated, immutable, and consistent across every environment it's deployed to.
+          </div>
+        </div>
+      </li>
+
+      <li class="priority-item p3">
+        <div class="num">📝</div>
+        <div>
+          <div class="title">Open source — same licence as the original</div>
+          <div class="desc">
+            HLStatsX.NET is GPL-2.0-or-later, honouring the licence of every project it builds on. The source is published openly on <a href="https://github.com/petejefferson/hlstatsx.net" target="_blank">GitHub</a> — fork it, extend it, and contribute back.
+          </div>
+        </div>
+      </li>
+
+      <li class="priority-item p3">
+        <div class="num">🧪</div>
+        <div>
+          <div class="title">Changes are verified automatically</div>
+          <div class="desc">
+            Every contribution runs against a full automated test suite. If a change breaks anything — a page, a calculation, a daemon parser — the build fails before it can ship. The original has no automated tests of any kind.
+          </div>
+        </div>
+      </li>
+
+    </ul>
+  </div>
+
+  <!-- ══════════════════════════════════ ROADMAP -->
+  <div class="section">
+    <h2 class="section-title">🚀 What's still to come</h2>
+
+    <div class="callout callout-warn" style="margin-bottom:1rem;">
+      <span class="ci">🚧</span>
+      <div>
+        <strong>Pre-alpha — there is still a lot of work to do.</strong>
+        <p>
+          Feature parity with the PHP frontend is at ~97%, the daemon covers the full event pipeline including
+          RCON broadcasting, and in-game pages are complete. A small number of admin tools remain. Below is an honest
+          picture of what hasn't been done yet — and what's planned beyond mere parity.
+        </p>
+      </div>
+    </div>
+
+    <p style="font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:0.6rem;">Completing parity with the original</p>
+    <div class="new-grid" style="margin-bottom:1.25rem;">
+      <div class="new-card card-amber">
+        <span class="icon">🗺️</span>
+        <div>
+          <div class="feature">Game dashboard — VoiceComm block</div>
+          <div class="detail">The game overview page is ~95% complete. The remaining gap is the VoiceComm
+          server block (TeamSpeak / Mumble server links), which requires a separate admin management page
+          that has not yet been ported.</div>
+          <span class="commit">partial</span>
+        </div>
+      </div>
+      <div class="new-card card-red">
+        <span class="icon">🔧</span>
+        <div>
+          <div class="feature">Admin utility tools</div>
+          <div class="detail">Three rarely-used admin tools are still outstanding: VoiceComm server management,
+          the daemon control panel (send RELOAD/KILL to the running daemon), and the database collation reset
+          utility.</div>
+          <span class="commit">not started</span>
+        </div>
+      </div>
+    </div>
+
+    <p style="font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:0.6rem;">Planned improvements beyond the original</p>
+    <div class="new-grid">
+      <div class="new-card">
+        <span class="icon">🎨</span>
+        <div>
+          <div class="feature">Refreshed UI and graphics</div>
+          <div class="detail">The current theme is a clean tech-modern redesign of the PHP site, but the
+          underlying graphic assets (flag images, weapon icons, rank badges, game icons) are still the
+          original 2001-era GIFs and PNGs. A full graphics refresh — vector icons, modern image formats,
+          responsive layout improvements — is on the roadmap.</div>
+          <span class="commit">planned</span>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">🌍</span>
+        <div>
+          <div class="feature">Localisation (i18n)</div>
+          <div class="detail">HLStatsX has always had a global audience — many server communities are
+          non-English-speaking. The PHP site has no i18n support whatsoever: every string is hardcoded
+          in English. HLStatsX.NET is architected for ASP.NET Core's built-in localisation middleware.
+          Adding a translation file for a new language will not require touching the application code.</div>
+          <span class="commit">planned</span>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">🗄️</span>
+        <div>
+          <div class="feature">Support for more databases</div>
+          <div class="detail">HLStatsX has always been tied to MySQL. The plan is to support PostgreSQL and SQL Server too — opening the door to cloud-managed databases without any code changes.</div>
+          <span class="commit">planned</span>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">📊</span>
+        <div>
+          <div class="feature">Richer analytics</div>
+          <div class="detail">Deeper player trends, weapon meta breakdowns over time, server health dashboards, and exportable reports.</div>
+          <span class="commit">planned</span>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">🔌</span>
+        <div>
+          <div class="feature">Public API</div>
+          <div class="detail">No public API exists in the original. A versioned REST API would enable Discord bots, server management panels, and third-party overlays without scraping HTML.</div>
+          <span class="commit">planned</span>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">🔔</span>
+        <div>
+          <div class="feature">Notifications and webhooks</div>
+          <div class="detail">Rank-ups, awards, and milestones are currently silent. Configurable notifications to Discord, Slack, or custom endpoints are on the roadmap.</div>
+          <span class="commit">planned</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ COMPARISON TABLE -->
+  <div class="section">
+    <h2 class="section-title">📋 Head to head</h2>
+    <div class="table-wrapper">
+      <table class="feature-table">
+        <thead>
+          <tr>
+            <th style="width:20%">Aspect</th>
+            <th style="width:40%">Legacy PHP + Perl</th>
+            <th style="width:40%">HLStatsX.NET</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-weight:600">Maintenance</td>
+            <td class="php-file" style="color:var(--yellow)">Lovingly built by a chain of contributors since 2001. No active maintainer today — kept alive by community dedication alone.</td>
+            <td class="php-file" style="color:var(--green)">Actively maintained. Issues tracked. Contributions welcome. A path forward exists.</td>
+          </tr>
+          <tr>
+            <td style="font-weight:600">SQL safety</td>
+            <td class="php-file" style="color:var(--red)">User input mixed into query strings. Relies on consistent sanitisation by every contributor on every code path.</td>
+            <td class="php-file" style="color:var(--green)">Safe queries are the only option — injection is structurally prevented by the framework.</td>
+          </tr>
+          <tr>
+            <td style="font-weight:600">Performance</td>
+            <td class="php-file" style="color:var(--red)">Blocking, sequential. Pages wait for every query and external call before rendering.</td>
+            <td class="php-file" style="color:var(--green)">Fully asynchronous. All independent work runs in parallel. Pages render as data arrives.</td>
+          </tr>
+          <tr>
+            <td style="font-weight:600">Architecture</td>
+            <td class="php-file" style="color:var(--red)">Database queries, business logic, and HTML mixed together. Global shared state throughout. Untestable by design.</td>
+            <td class="php-file" style="color:var(--green)">Clean layered architecture. Every component independently testable.</td>
+          </tr>
+          <tr>
+            <td style="font-weight:600">Error handling</td>
+            <td class="php-file" style="color:var(--red)">Database errors expose server details to every visitor in the browser.</td>
+            <td class="php-file" style="color:var(--green)">Safe error pages in production. Full details go to the application log only.</td>
+          </tr>
+          <tr>
+            <td style="font-weight:600">Log daemon</td>
+            <td class="php-file" style="color:var(--red)">A single large Perl script. No tests. No strict typing. Circa 2001.</td>
+            <td class="php-file" style="color:var(--green)">Structured async worker service. Typed event handlers. Full test coverage.</td>
+          </tr>
+          <tr>
+            <td style="font-weight:600">Deployment</td>
+            <td class="php-file" style="color:var(--red)">Multiple runtimes to install and configure. Credentials pasted into source files.</td>
+            <td class="php-file" style="color:var(--green)">Starts with a single command. Secrets kept outside the source tree.</td>
+          </tr>
+          <tr>
+            <td style="font-weight:600">Tests</td>
+            <td class="php-file" style="color:var(--red)">None. Bugs are found in production by players noticing wrong stats.</td>
+            <td class="php-file" style="color:var(--green)">Hundreds of automated tests. Regressions caught before they ship.</td>
+          </tr>
+          <tr>
+            <td style="font-weight:600">Open source</td>
+            <td class="php-file" style="color:var(--red)">GPL-2.0. No active contribution workflow or community review process.</td>
+            <td class="php-file" style="color:var(--green)">MIT licensed. Source publishing coming soon. Contributions welcome.</td>
+          </tr>
+          <tr>
+            <td style="font-weight:600">Charts</td>
+            <td class="php-file" style="color:var(--red)">Server-generated static images. Broken on many shared hosting setups.</td>
+            <td class="php-file" style="color:var(--green)">Client-side, interactive, and responsive. No server requirements.</td>
+          </tr>
+          <tr>
+            <td style="font-weight:600">JavaScript</td>
+            <td class="php-file" style="color:var(--red)">Legacy framework from 2006. Silently broken in modern browsers.</td>
+            <td class="php-file" style="color:var(--green)">No legacy framework dependencies.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ CONTRIBUTE -->
+  <div class="section">
+    <h2 class="section-title">🤝 Get involved</h2>
+    <div class="callout callout-good" style="margin-bottom:0.85rem;">
+      <span class="ci">💬</span>
+      <div>
+        <strong>This is a community project continuing a twenty-five year tradition. Contributions are genuinely welcome.</strong>
+        <p>
+          HLStatsX was built and sustained by a community that cared enough to keep it running.
+          HLStatsX.NET carries that spirit forward with proper tooling, reviewed contributions, and tracked issues.
+          The source will be published publicly once the project reaches a suitable milestone.
+          If you run a Half-Life server community and want a modern stats platform, this is being built for you.
+        </p>
+      </div>
+    </div>
+    <div class="new-grid">
+      <div class="new-card">
+        <span class="icon">🐛</span>
+        <div>
+          <div class="feature">Found a bug?</div>
+          <div class="detail">Email <a href="mailto:info@hlstatsx.net">info@hlstatsx.net</a> with what you expected, what you saw, and which game you're running. Issues will be trackable publicly once the repository is open.</div>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">🔧</span>
+        <div>
+          <div class="feature">Want to contribute?</div>
+          <div class="detail">The repository will be published publicly soon. Email <a href="mailto:info@hlstatsx.net">info@hlstatsx.net</a> to be notified when it opens.</div>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">🎮</span>
+        <div>
+          <div class="feature">Running a game server?</div>
+          <div class="detail">Compatible with CS, DoDS, TF2, and all Source engine titles. If your game isn't working correctly, get in touch — broad compatibility is a priority.</div>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">✉️</span>
+        <div>
+          <div class="feature">General questions</div>
+          <div class="detail">Email <a href="mailto:info@hlstatsx.net">info@hlstatsx.net</a> for anything else — partnership enquiries, hosting questions, or just to say hi.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════ FOOTER -->
+<div class="footer">
+  <div class="container">
+    HLStatsX.NET is a continuation of HLStatsX Community Edition — built on the foundation laid by the HLStatsX community since 2001.
+    GPL-2.0-or-later.
+    &nbsp;·&nbsp;
+    <a href="https://github.com/petejefferson/hlstatsx.net" target="_blank">GitHub Repository</a>
+    &nbsp;·&nbsp;
+    <a href="feature-parity.html">Feature Parity</a>
+    &nbsp;·&nbsp;
+    <a href="https://hlstatsx.net/demo" target="_blank">Demo</a>
+    &nbsp;·&nbsp;
+    <a href="https://hlstatsx.net/live" target="_blank">Live</a>
+    &nbsp;·&nbsp;
+    <a href="mailto:info@hlstatsx.net">info@hlstatsx.net</a>
+  </div>
+</div>
+
+</body>
+</html>

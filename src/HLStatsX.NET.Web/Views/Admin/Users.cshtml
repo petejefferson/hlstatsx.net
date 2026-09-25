@@ -1,0 +1,56 @@
+@model AdminUserListViewModel
+@{
+    ViewData["Title"] = "Admin Users";
+    Layout = "_AdminLayout";
+}
+
+<h1>Admin Users</h1>
+
+<p>
+    Usernames and passwords for access to the HLStatsX Admin area.
+    For most sites you will only need one admin user.
+</p>
+<p>
+    <strong>Access Levels</strong><br />
+    &bull; <em>Restricted</em> users can access Host Groups, Clan Tags, Weapons, Teams, Awards and Actions only.
+    They cannot change Options, add Games or Servers, manage Admin Users, or use the Tools.<br />
+    &bull; <em>Administrator</em> users have full, unrestricted access.
+</p>
+<p>
+    <strong>Note:</strong> Passwords are stored as MD5 hashes and cannot be viewed.
+    Enter a new value in the Password field to change a user's password.
+</p>
+
+<p><a asp-action="CreateUser" class="btn btn-primary">Add User</a></p>
+
+<table class="admin-table">
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Access Level</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var u in Model.Users)
+    {
+        string levelLabel = u.AccLevel >= 100 ? "Administrator" : u.AccLevel >= 80 ? "Restricted" : "No Access";
+        <tr>
+            <td>@u.Username</td>
+            <td>@levelLabel (@u.AccLevel)</td>
+            <td>
+                <a href="@Url.Action("EditUser", "Admin", new { username = u.Username })" class="btn btn-secondary btn-sm">Edit</a>
+                <form asp-action="DeleteUser" asp-route-username="@u.Username" method="post" style="display:inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger btn-sm"
+                            onclick="return confirm('Delete user @u.Username?')">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+    @if (!Model.Users.Any())
+    {
+        <tr><td colspan="3">No admin users configured.</td></tr>
+    }
+    </tbody>
+</table>

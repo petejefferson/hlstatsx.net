@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>HLStatsX.NET.Awards</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>HLStatsX.NET.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MaxMind.GeoIP2" Version="5.4.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.*" />
+    <!-- Pomelo 9.0.0 requires EF Core 9.x; keep both at 9.x until Pomelo 10 is released -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.*" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\HLStatsX.NET.Core\HLStatsX.NET.Core.csproj" />
+    <ProjectReference Include="..\HLStatsX.NET.Infrastructure\HLStatsX.NET.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - @(Configuration["HLStatsX:SiteName"] ?? "HLStatsX.NET")</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    @{
+        var _game = Context.Request.Query["game"].ToString();
+        if (string.IsNullOrEmpty(_game)) _game = ViewData["Game"]?.ToString() ?? "";
+        bool _hasGame = !string.IsNullOrEmpty(_game);
+        var _siteOpts = await AdminService.GetOptionsAsync();
+        bool _showChat = _siteOpts.TryGetValue("nav_globalchat", out var _chatOpt) && _chatOpt == "1";
+    }
+    <header>
+        <div class="topbar">
+            <a class="topbar-brand" asp-controller="Home" asp-action="Index">HLStatsX.NET</a>
+            <ul class="topbar-links">
+                <li><a asp-controller="Home" asp-action="Index">Contents</a></li>
+                <li><a asp-controller="Search" asp-action="Index" asp-route-game="@(_hasGame ? _game : null)">Search</a></li>
+                <li><a asp-controller="Help" asp-action="Index">Help</a></li>
+            </ul>
+            <div class="topbar-games">
+                @await Component.InvokeAsync("GameList", new { currentGame = _hasGame ? _game : null })
+            </div>
+            <ul class="topbar-links topbar-right">
+                <li><a href="@Url.Action("Dashboard", "Admin")">Admin</a></li>
+            </ul>
+        </div>
+        @if (_hasGame)
+        {
+            <nav class="gamenav">
+                <ul class="gamenav-links">
+                    <li><a asp-controller="Servers" asp-action="Index" asp-route-game="@_game">Servers</a></li>
+                    <li><a asp-controller="Players" asp-action="Index" asp-route-game="@_game">Players</a></li>
+                    <li><a asp-controller="Clans" asp-action="Index" asp-route-game="@_game">Clans</a></li>
+                    <li><a asp-controller="Countries" asp-action="Index" asp-route-game="@_game">Countries</a></li>
+                    <li><a asp-controller="Awards" asp-action="Index" asp-route-game="@_game">Awards</a></li>
+                    <li><a asp-controller="Actions" asp-action="Index" asp-route-game="@_game">Actions</a></li>
+                    <li><a asp-controller="Weapons" asp-action="Index" asp-route-game="@_game">Weapons</a></li>
+                    <li><a asp-controller="Maps" asp-action="Index" asp-route-game="@_game">Maps</a></li>
+                    <li><a asp-controller="Roles" asp-action="Index" asp-route-game="@_game">Roles</a></li>
+                    @if (_showChat)
+                    {
+                        <li><a asp-controller="Chat" asp-action="Index" asp-route-game="@_game">Chat</a></li>
+                    }
+                </ul>
+            </nav>
+        }
+    </header>
+    @{
+        var _breadcrumb = ViewData["Breadcrumb"] as HLStatsX.NET.Web.Models.BreadcrumbItem[];
+    }
+    @if (_breadcrumb != null && _breadcrumb.Length > 0)
+    {
+        <nav class="breadcrumb-bar">
+            <div class="container breadcrumb-inner">
+                <a asp-controller="Home" asp-action="Index">HLStatsX.NET</a>
+                @foreach (var crumb in _breadcrumb)
+                {
+                    <span class="breadcrumb-sep">&rsaquo;</span>
+                    @if (crumb.Url != null)
+                    {
+                        <a href="@crumb.Url">@crumb.Label</a>
+                    }
+                    else
+                    {
+                        <span>@crumb.Label</span>
+                    }
+                }
+            </div>
+        </nav>
+    }
+    <main class="container">
+        @RenderBody()
+    </main>
+    <footer>
+        <p>Generated in real-time by HLStatsX.NET. All images are copyright of their respective owners.</p>
+    </footer>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@inject HLStatsX.NET.Core.Interfaces.Services.IAdminService AdminService

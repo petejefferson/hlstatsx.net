@@ -1,0 +1,22 @@
+services:
+  web:
+    image: petejuk/hlstatsx-net:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8086:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
+      - ConnectionStrings__HLStats=${HLSTATSX_CONNECTION_STRING}
+      - HLStatsX__DefaultGame=${HLSTATSX_DEFAULT_GAME:-dods}
+      - HLStatsX__SiteName=${HLSTATSX_SITE_NAME:-HLStatsX.NET}
+      - PathBase=${HLSTATSX_PATH_BASE:-/stats}
+    env_file: .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s

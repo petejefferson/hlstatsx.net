@@ -1,0 +1,17 @@
+{
+  "profiles": {
+    "UDP (normal)": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    },
+    "Replay capture log": {
+      "commandName": "Project",
+      "commandLineArgs": "--Daemon:InputFile=\"C:/path/to/capture.log.arc\" --Daemon:StdinServerAddress=\"your-server-ip:27015\" --Daemon:UseTimestamp=true --Daemon:ImportEndTime=1779565182",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

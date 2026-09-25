@@ -1,0 +1,27 @@
+@model InGameLoadViewModel
+@using HLStatsX.NET.Web.Models.ViewModels
+@{
+    Layout = "~/Views/Shared/_InGameLayout.cshtml";
+    ViewData["Title"] = "Server Load";
+
+    double hpkPct = Model.TotalKills > 0 ? Math.Round((double)Model.TotalHeadshots / Model.TotalKills * 100, 2) : 0;
+}
+
+<table class="data-table">
+    <tr class="data-table-head">
+        <td>
+            Tracking <strong>@Model.TotalPlayers.ToString("N0")</strong> players with
+            <strong>@Model.TotalKills.ToString("N0")</strong> kills and
+            <strong>@Model.TotalHeadshots.ToString("N0")</strong> headshots
+            (<strong>@hpkPct.ToString("F2")%</strong>) on
+            <strong>@Model.TotalServers</strong> server@(Model.TotalServers != 1 ? "s" : "")
+        </td>
+    </tr>
+</table>
+
+@if (Model.ServerId > 0)
+{
+    <p style="padding:4px;font-size:11px;">
+        <a href="@Url.Action("Status", "InGame", new { game = Model.Game, server_id = Model.ServerId })">View server status »</a>
+    </p>
+}

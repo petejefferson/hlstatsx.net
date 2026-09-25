@@ -1,0 +1,72 @@
+@model RibbonDetailViewModel
+@using HLStatsX.NET.Core.Models
+@{
+    ViewData["Title"] = Model.Ribbon.RibbonName;
+
+    string SortUrl(string field)
+    {
+        bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
+        return Url.Action("RibbonDetail", new { id = Model.Ribbon.RibbonId, game = Model.Game, sortBy = field, desc = nextDesc, page = 1 })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
+}
+
+<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.5rem;">
+    <h1>
+        @if (!string.IsNullOrEmpty(Model.Ribbon.Image))
+        {
+            <img src="@(Url.Content("~/hlstatsimg/games/") + Model.Game + "/ribbons/" + Model.Ribbon.Image)"
+                 alt="@Model.Ribbon.RibbonName"
+                 onerror="this.style.display='none'"
+                 style="vertical-align:middle;" />
+        }
+        @Model.Ribbon.RibbonName
+    </h1>
+    <span><a href="@(Url.Action("Index", "Awards", new { game = Model.Game }) + "#tab-ribbons")">← Back to Ribbons</a></span>
+</div>
+
+<p><strong>@Model.Players.TotalCount</strong> @(Model.Players.TotalCount == 1 ? "player has" : "players have") earned this ribbon.</p>
+
+@if (!Model.Players.Items.Any())
+{
+    <p>No players have earned this ribbon yet.</p>
+}
+else
+{
+    <table class="data-table">
+        <thead>
+            <tr class="data-table-head">
+                <td style="text-align:right;">Rank</td>
+                <td><a href="@(SortUrl("player"))">Player@(Mark("player"))</a></td>
+                <td style="text-align:right;"><a href="@(SortUrl("numawards"))">Daily awards@(Mark("numawards"))</a></td>
+                <td>Award</td>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int rowNum = (Model.Players.Page - 1) * Model.Players.PageSize + 1;
+                bool alt = false;
+            }
+            @foreach (var row in Model.Players.Items)
+            {
+                string rowClass = (alt = !alt) ? "bg1" : "bg2";
+                string? flagFile = string.IsNullOrEmpty(row.Flag) ? null : row.Flag.ToLowerInvariant();
+                <tr>
+                    <td class="@rowClass" style="text-align:right;">@rowNum</td>
+                    <td class="@rowClass">
+                        @if (!string.IsNullOrEmpty(flagFile))
+                        {
+                            <img src="@(Url.Content("~/hlstatsimg/flags/") + flagFile + ".gif")" alt="@row.Flag" title="@row.Flag" />
+                        }
+                        <a asp-controller="Players" asp-action="Profile" asp-route-id="@row.PlayerId">@row.PlayerName</a>
+                    </td>
+                    <td class="@rowClass" style="text-align:right;">@row.NumAwards times</td>
+                    <td class="@rowClass">@row.AwardName</td>
+                </tr>
+                rowNum++;
+            }
+        </tbody>
+    </table>
+
+    <partial name="_Pagination" model="@PaginationModel.From(Model.Players, p => Url.Action("RibbonDetail", new { id = Model.Ribbon.RibbonId, game = Model.Game, sortBy = Model.SortBy, desc = Model.Descending, page = p })!)" />
+}

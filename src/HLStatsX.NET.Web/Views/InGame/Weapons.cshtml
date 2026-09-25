@@ -1,0 +1,54 @@
+@model InGameWeaponsViewModel
+@using HLStatsX.NET.Web.Models.ViewModels
+@{
+    Layout = "~/Views/Shared/_InGameLayout.cshtml";
+    ViewData["Title"] = Model.Player.LastName + " — Weapons";
+}
+
+<p style="padding:2px;"><strong>@Model.Player.LastName</strong> — Weapon Usage</p>
+
+@if (Model.Weapons.Any())
+{
+    <table class="data-table">
+        <tr class="data-table-head">
+            <td style="text-align:right;">Rank</td>
+            <td>Weapon</td>
+            <td style="text-align:right;">Modifier</td>
+            <td style="text-align:right;">Kills</td>
+            <td>% Kills</td>
+            <td style="text-align:right;">%</td>
+            <td style="text-align:right;">Headshots</td>
+            <td>% HS</td>
+            <td style="text-align:right;">%</td>
+            <td style="text-align:right;">Hpk</td>
+        </tr>
+        @{
+            int rowNum = 1;
+            long totalK = Model.TotalKills;
+            long totalHS = Model.TotalHeadshots;
+        }
+        @foreach (var w in Model.Weapons)
+        {
+            double kPct = totalK  > 0 ? Math.Round((double)w.Kills      / totalK  * 100, 2) : 0;
+            double hPct = totalHS > 0 ? Math.Round((double)w.Headshots  / totalHS * 100, 2) : 0;
+            double hpk  = w.Kills > 0 ? Math.Round((double)w.Headshots  / w.Kills, 2) : 0;
+            <tr class="@(rowNum % 2 == 1 ? "bg1" : "bg2")">
+                <td style="text-align:right;">@rowNum</td>
+                <td><a href="@Url.Action("WeaponInfo", "InGame", new { game = Model.Game, weapon = w.WeaponCode })">@(string.IsNullOrEmpty(w.WeaponName) ? w.WeaponCode : w.WeaponName)</a></td>
+                <td style="text-align:right;">@w.Modifier.ToString("F2")</td>
+                <td style="text-align:right;">@w.Kills</td>
+                <td><meter min="0" max="100" low="25" high="50" optimum="75" value="@kPct.ToString("F0")"></meter></td>
+                <td style="text-align:right;">@kPct.ToString("F2")%</td>
+                <td style="text-align:right;">@w.Headshots</td>
+                <td><meter min="0" max="100" low="25" high="50" optimum="75" value="@hPct.ToString("F0")"></meter></td>
+                <td style="text-align:right;">@hPct.ToString("F2")%</td>
+                <td style="text-align:right;">@hpk.ToString("F2")</td>
+            </tr>
+            rowNum++;
+        }
+    </table>
+}
+else
+{
+    <p>No weapon data available.</p>
+}

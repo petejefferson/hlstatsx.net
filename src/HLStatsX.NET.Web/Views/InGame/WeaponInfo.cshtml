@@ -1,0 +1,59 @@
+@model InGameWeaponInfoViewModel
+@using HLStatsX.NET.Web.Models.ViewModels
+@{
+    Layout = "~/Views/Shared/_InGameLayout.cshtml";
+    ViewData["Title"] = Model.WeaponName + " — Top Killers";
+
+    string SortUrl(string field)
+    {
+        bool nd = Model.SortBy == field ? !Model.Desc : true;
+        return Url.Action("WeaponInfo", "InGame", new { game = Model.Game, weapon = Model.WeaponCode, sortBy = field, desc = nd, page = 1 })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Desc ? " ▼" : " ▲") : "";
+
+    var flagBase = Url.Content("~/hlstatsimg/flags");
+    string FlagImg(string? flag) =>
+        $"<img src=\"{flagBase}/{(string.IsNullOrEmpty(flag) ? "0" : flag.ToLowerInvariant())}.gif\" alt=\"\" />";
+
+    int startRank = (Model.Killers.Page - 1) * Model.Killers.PageSize + 1;
+}
+
+<table class="data-table">
+    <tr class="data-table-head">
+        <td colspan="6">&nbsp;Top Killers — @Model.WeaponName</td>
+    </tr>
+    <tr class="data-table-head">
+        <td style="text-align:right;">Rank</td>
+        <td><a href="@SortUrl("name")">Player@(Mark("name"))</a></td>
+        <td style="text-align:right;"><a href="@SortUrl("frags")">Kills@(Mark("frags"))</a></td>
+        <td style="text-align:right;"><a href="@SortUrl("headshots")">Headshots@(Mark("headshots"))</a></td>
+        <td style="text-align:right;"><a href="@SortUrl("hpk")">HS:K@(Mark("hpk"))</a></td>
+    </tr>
+    @{ int rowNum = startRank; }
+    @foreach (var k in Model.Killers.Items)
+    {
+        <tr class="@(rowNum % 2 == 1 ? "bg1" : "bg2")">
+            <td style="text-align:right;">@rowNum</td>
+            <td>@Html.Raw(FlagImg(k.Flag)) <a href="@Url.Action("PlayerStats", "InGame", new { game = Model.Game, player = k.PlayerId })">@k.PlayerName</a></td>
+            <td style="text-align:right;">@k.Frags.ToString("N0")</td>
+            <td style="text-align:right;">@k.Headshots.ToString("N0")</td>
+            <td style="text-align:right;">@k.Hpk.ToString("F2")</td>
+        </tr>
+        rowNum++;
+    }
+</table>
+
+@if (Model.Killers.TotalPages > 1)
+{
+    <div style="padding:4px;">
+        @if (Model.Killers.HasPreviousPage)
+        {
+            <a href="@Url.Action("WeaponInfo", "InGame", new { game = Model.Game, weapon = Model.WeaponCode, sortBy = Model.SortBy, desc = Model.Desc, page = Model.Killers.Page - 1 })">« Prev</a>
+        }
+        &nbsp;Page @Model.Killers.Page of @Model.Killers.TotalPages&nbsp;
+        @if (Model.Killers.HasNextPage)
+        {
+            <a href="@Url.Action("WeaponInfo", "InGame", new { game = Model.Game, weapon = Model.WeaponCode, sortBy = Model.SortBy, desc = Model.Desc, page = Model.Killers.Page + 1 })">Next »</a>
+        }
+    </div>
+}

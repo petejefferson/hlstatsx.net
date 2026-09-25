@@ -1,0 +1,53 @@
+@model InGameTargetsViewModel
+@using HLStatsX.NET.Web.Models.ViewModels
+@{
+    Layout = "~/Views/Shared/_InGameLayout.cshtml";
+    ViewData["Title"] = Model.Player.LastName + " — Targets";
+}
+
+<p style="padding:2px;"><strong>@Model.Player.LastName</strong> — Hit Positions (StatsMe2 data)</p>
+
+@if (Model.Targets.Any())
+{
+    <table class="data-table">
+        <tr class="data-table-head">
+            <td style="text-align:right;">Rank</td>
+            <td>Weapon</td>
+            <td style="text-align:right;">Hits</td>
+            <td style="text-align:right;">Head</td>
+            <td style="text-align:right;">Chest</td>
+            <td style="text-align:right;">Stomach</td>
+            <td style="text-align:right;">L. Arm</td>
+            <td style="text-align:right;">R. Arm</td>
+            <td style="text-align:right;">L. Leg</td>
+            <td style="text-align:right;">R. Leg</td>
+            <td style="text-align:right;">Left%</td>
+            <td style="text-align:right;">Middle%</td>
+            <td style="text-align:right;">Right%</td>
+        </tr>
+        @{ int rowNum = 1; }
+        @foreach (var t in Model.Targets)
+        {
+            <tr class="@(rowNum % 2 == 1 ? "bg1" : "bg2")">
+                <td style="text-align:right;">@rowNum</td>
+                <td>@(string.IsNullOrEmpty(t.WeaponName) ? t.WeaponCode : t.WeaponName)</td>
+                <td style="text-align:right;">@t.Hits.ToString("N0")</td>
+                <td style="text-align:right;">@t.Head.ToString("N0")</td>
+                <td style="text-align:right;">@t.Chest.ToString("N0")</td>
+                <td style="text-align:right;">@t.Stomach.ToString("N0")</td>
+                <td style="text-align:right;">@t.LeftArm.ToString("N0")</td>
+                <td style="text-align:right;">@t.RightArm.ToString("N0")</td>
+                <td style="text-align:right;">@t.LeftLeg.ToString("N0")</td>
+                <td style="text-align:right;">@t.RightLeg.ToString("N0")</td>
+                <td style="text-align:right;">@t.LeftPct.ToString("F1")%</td>
+                <td style="text-align:right;">@t.MiddlePct.ToString("F1")%</td>
+                <td style="text-align:right;">@t.RightPct.ToString("F1")%</td>
+            </tr>
+            rowNum++;
+        }
+    </table>
+}
+else
+{
+    <p>No hit position data available (requires StatsMe2 plugin).</p>
+}

@@ -1,0 +1,165 @@
+using FluentAssertions;
+using HLStatsX.NET.Core.Entities;
+using HLStatsX.NET.Core.Interfaces.Repositories;
+using HLStatsX.NET.Core.Models;
+using HLStatsX.NET.Infrastructure.Services;
+using Moq;
+
+namespace HLStatsX.NET.Tests.Services;
+
+public class SearchServiceTests
+{
+    private readonly Mock<IPlayerRepository> _playerRepoMock;
+    private readonly Mock<IClanRepository> _clanRepoMock;
+    private readonly Mock<IGameRepository> _gameRepoMock;
+    private readonly SearchService _service;
+
+    public SearchServiceTests()
+    {
+        _playerRepoMock = new Mock<IPlayerRepository>();
+        _clanRepoMock = new Mock<IClanRepository>();
+        _gameRepoMock = new Mock<IGameRepository>();
+        _gameRepoMock.Setup(r => r.GetAllAsync(default)).ReturnsAsync([]);
+        _service = new SearchService(_playerRepoMock.Object, _clanRepoMock.Object, _gameRepoMock.Object);
+    }
+
+    [Fact]
+    public async Task SearchAsync_ReturnsCombinedResults()
+    {
+        var players = new List<PlayerSearchResult>
+        {
+            new(1, "FragMaster", null, null, "cstrike")
+        };
+        var clans = new List<Clan> { new() { ClanId = 1, Name = "FragClan" } };
+
+        _playerRepoMock
+            .Setup(r => r.SearchAsync("Frag", "cstrike", 1, 20, default))
+            .ReturnsAsync(PagedResult<PlayerSearchResult>.Create(players, 1, 1, 20));
+        _playerRepoMock
+            .Setup(r => r.SearchByUniqueIdAsync("Frag", "cstrike", 1, 20, default))
+            .ReturnsAsync(PagedResult<UniqueIdSearchResult>.Create([], 0, 1, 20));
+
+        _clanRepoMock
+            .Setup(r => r.SearchAsync("Frag", "cstrike", 1, 20, default))
+            .ReturnsAsync(PagedResult<Clan>.Create(clans, 1, 1, 20));
+
+        var result = await _service.SearchAsync("Frag", "cstrike", null, 1, 20);
+
+        result.Players.Should().HaveCount(1);
+        result.Clans.Should().HaveCount(1);
+        result.TotalPlayers.Should().Be(1);
+        result.TotalClans.Should().Be(1);
+        result.Query.Should().Be("Frag");
+    }
+
+    [Fact]
+    public async Task SearchAsync_ReturnsEmpty_WhenNoMatches()
+    {
+        _playerRepoMock
+            .Setup(r => r.SearchAsync("xyz", "cstrike", 1, 20, default))
+            .ReturnsAsync(PagedResult<PlayerSearchResult>.Create([], 0, 1, 20));
+        _playerRepoMock
+            .Setup(r => r.SearchByUniqueIdAsync("xyz", "cstrike", 1, 20, default))
+            .ReturnsAsync(PagedResult<UniqueIdSearchResult>.Create([], 0, 1, 20));
+
+        _clanRepoMock
+            .Setup(r => r.SearchAsync("xyz", "cstrike", 1, 20, default))
+            .ReturnsAsync(PagedResult<Clan>.Create([], 0, 1, 20));
+
+        var result = await _service.SearchAsync("xyz", "cstrike", null);
+
+        result.Players.Should().BeEmpty();
+        result.Clans.Should().BeEmpty();
+        result.TotalPlayers.Should().Be(0);
+        result.TotalClans.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task SearchAsync_WithStPlayer_SkipsClanRepository()
+    {
+        _playerRepoMock
+            .Setup(r => r.SearchAsync("ace", "cstrike", 1, 20, default))
+            .ReturnsAsync(PagedResult<PlayerSearchResult>.Create(
+                [new(1, "Ace", null, null, "cstrike")], 1, 1, 20));
+        _playerRepoMock
+            .Setup(r => r.SearchByUniqueIdAsync("ace", "cstrike", 1, 20, default))
+            .ReturnsAsync(PagedResult<UniqueIdSearchResult>.Create([], 0, 1, 20));
+
+        var result = await _service.SearchAsync("ace", "cstrike", "player", 1, 20);
+
+        result.Players.Should().HaveCount(1);
+        result.Clans.Should().BeEmpty();
+        _clanRepoMock.Verify(r => r.SearchAsync(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SearchAsync_WithStClan_SkipsPlayerRepository()
+    {
+        _clanRepoMock
+            .Setup(r => r.SearchAsync("frag", "cstrike", 1, 20, default))
+            .ReturnsAsync(PagedResult<Clan>.Create(
+                [new() { ClanId = 1, Name = "FragForce" }], 1, 1, 20));
+
+        var result = await _service.SearchAsync("frag", "cstrike", "clan", 1, 20);
+
+        result.Clans.Should().HaveCount(1);
+        result.Players.Should().BeEmpty();
+        _playerRepoMock.Verify(r => r.SearchAsync(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+        _playerRepoMock.Verify(r => r.SearchByUniqueIdAsync(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetVisibleGamesAsync_FiltersHiddenGames()
+    {
+        _gameRepoMock.Setup(r => r.GetAllAsync(default)).ReturnsAsync([
+            new() { Code = "cstrike", Name = "Counter-Strike", Hidden = "0" },
+            new() { Code = "hidden",  Name = "Hidden Game",    Hidden = "1" },
+            new() { Code = "dods",    Name = "Day of Defeat",  Hidden = "0" },
+        ]);
+
+        var result = await _service.GetVisibleGamesAsync();
+
+        result.Should().HaveCount(2);
+        result.Should().NotContain(g => g.Code == "hidden");
+    }
+
+    [Fact]
+    public async Task GetVisibleGamesAsync_SortsByName()
+    {
+        _gameRepoMock.Setup(r => r.GetAllAsync(default)).ReturnsAsync([
+            new() { Code = "tf2",     Name = "Team Fortress 2", Hidden = "0" },
+            new() { Code = "cstrike", Name = "Counter-Strike",  Hidden = "0" },
+            new() { Code = "dods",    Name = "Day of Defeat",   Hidden = "0" },
+        ]);
+
+        var result = await _service.GetVisibleGamesAsync();
+
+        result.Select(g => g.Name).Should().BeInAscendingOrder();
+    }
+
+    [Fact]
+    public async Task SearchAsync_WithStUniqueId_SkipsPlayerNameAndClanRepositories()
+    {
+        var uid = "STEAM_0:1:12345";
+        var uidResults = new List<UniqueIdSearchResult>
+        {
+            new(1, uid, "FragMaster", null, null, "cstrike")
+        };
+        _playerRepoMock
+            .Setup(r => r.SearchByUniqueIdAsync(uid, "cstrike", 1, 20, default))
+            .ReturnsAsync(PagedResult<UniqueIdSearchResult>.Create(uidResults, 1, 1, 20));
+
+        var result = await _service.SearchAsync(uid, "cstrike", "uniqueid", 1, 20);
+
+        result.UniqueIds.Should().HaveCount(1);
+        result.UniqueIds[0].UniqueId.Should().Be(uid);
+        result.Players.Should().BeEmpty();
+        result.Clans.Should().BeEmpty();
+        _playerRepoMock.Verify(
+            r => r.SearchAsync(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+        _clanRepoMock.Verify(
+            r => r.SearchAsync(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+}

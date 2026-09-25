@@ -1,0 +1,70 @@
+@model InGameClanListViewModel
+@using HLStatsX.NET.Web.Models.ViewModels
+@{
+    Layout = "~/Views/Shared/_InGameLayout.cshtml";
+    ViewData["Title"] = "Clan Rankings";
+
+    string SortUrl(string field)
+    {
+        bool nd = Model.SortBy == field ? !Model.Desc : true;
+        return Url.Action("Clans", "InGame", new { game = Model.Game, sortBy = field, desc = nd, minMembers = Model.MinMembers, page = 1 })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Desc ? " ▼" : " ▲") : "";
+
+    string FormatDuration(int seconds)
+    {
+        var d = seconds / 86400; var h = (seconds % 86400) / 3600; var m = (seconds % 3600) / 60;
+        if (d > 0) return $"{d}d {h:D2}h";
+        if (h > 0) return $"{h}h {m:D2}m";
+        return $"{m}m";
+    }
+
+    int startRank = (Model.Clans.Page - 1) * Model.Clans.PageSize + 1;
+}
+
+<table class="data-table">
+    <tr class="data-table-head">
+        <td style="text-align:right;">Rank</td>
+        <td><a href="@SortUrl("name")">Clan@(Mark("name"))</a></td>
+        <td style="text-align:center;">Tag</td>
+        <td style="text-align:right;"><a href="@SortUrl("skill")">Avg. Points@(Mark("skill"))</a></td>
+        <td style="text-align:right;"><a href="@SortUrl("members")">Members@(Mark("members"))</a></td>
+        <td>Activity</td>
+        <td style="text-align:right;"><a href="@SortUrl("connectiontime")">Time@(Mark("connectiontime"))</a></td>
+        <td style="text-align:right;"><a href="@SortUrl("kills")">Kills@(Mark("kills"))</a></td>
+        <td style="text-align:right;"><a href="@SortUrl("deaths")">Deaths@(Mark("deaths"))</a></td>
+        <td style="text-align:right;">K:D</td>
+    </tr>
+    @{ int rowNum = startRank; }
+    @foreach (var c in Model.Clans.Items)
+    {
+        <tr class="@(rowNum % 2 == 1 ? "bg1" : "bg2")">
+            <td style="text-align:right;">@rowNum</td>
+            <td><a href="@Url.Action("ClanInfo", "InGame", new { game = Model.Game, clan = c.ClanId })">@c.Name</a></td>
+            <td style="text-align:center;">@c.Tag</td>
+            <td style="text-align:right;">@c.AvgSkill.ToString("N0")@Html.Raw(c.AvgLastSkillChange > 0 ? " <span style=\"color:green\">&#x25B2;</span>" : c.AvgLastSkillChange < 0 ? " <span style=\"color:red\">&#x25BC;</span>" : "")</td>
+            <td style="text-align:right;">@c.MemberCount</td>
+            <td><meter min="0" max="100" low="25" high="50" optimum="75" value="@c.AvgActivity.ToString("F0")"></meter></td>
+            <td style="text-align:right;">@FormatDuration(c.TotalConnectionTime)</td>
+            <td style="text-align:right;">@c.TotalKills.ToString("N0")</td>
+            <td style="text-align:right;">@c.TotalDeaths.ToString("N0")</td>
+            <td style="text-align:right;">@c.KillDeathRatio.ToString("F2")</td>
+        </tr>
+        rowNum++;
+    }
+</table>
+
+@if (Model.Clans.TotalPages > 1)
+{
+    <div style="padding:4px;">
+        @if (Model.Clans.HasPreviousPage)
+        {
+            <a href="@Url.Action("Clans", "InGame", new { game = Model.Game, sortBy = Model.SortBy, desc = Model.Desc, minMembers = Model.MinMembers, page = Model.Clans.Page - 1 })">« Prev</a>
+        }
+        &nbsp;Page @Model.Clans.Page of @Model.Clans.TotalPages&nbsp;
+        @if (Model.Clans.HasNextPage)
+        {
+            <a href="@Url.Action("Clans", "InGame", new { game = Model.Game, sortBy = Model.SortBy, desc = Model.Desc, minMembers = Model.MinMembers, page = Model.Clans.Page + 1 })">Next »</a>
+        }
+    </div>
+}

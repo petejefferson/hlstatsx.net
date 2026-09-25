@@ -1,0 +1,28 @@
+@using HLStatsX.NET.Core.Models
+@model PaginationModel
+
+@if (Model.TotalPages > 1)
+{
+    <nav class="pagination" aria-label="Page navigation">
+        @if (Model.CurrentPage > 1)
+        {
+            <a href="@Model.BuildUrl(Model.CurrentPage - 1)">&laquo; Prev</a>
+        }
+        @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+        {
+            if (i == Model.CurrentPage)
+            {
+                <span class="current-page">@i</span>
+            }
+            else
+            {
+                <a href="@Model.BuildUrl(i)">@i</a>
+            }
+        }
+        @if (Model.CurrentPage < Model.TotalPages)
+        {
+            <a href="@Model.BuildUrl(Model.CurrentPage + 1)">Next &raquo;</a>
+        }
+        <span class="page-info">Page @Model.CurrentPage of @Model.TotalPages</span>
+    </nav>
+}

@@ -1,0 +1,109 @@
+@using HLStatsX.NET.Core.Models
+@model GamesListData
+@{
+    ViewData["Title"] = "Games";
+}
+
+<h2>Games</h2>
+
+<table class="data-table">
+    <thead>
+        <tr class="data-table-head">
+            <td>Game</td>
+            <td style="text-align:center;">Players</td>
+            <td>Top Player</td>
+            <td>Top Clan</td>
+        </tr>
+    </thead>
+    <tbody>
+        @{ int rowNum = 0; }
+        @foreach (var row in Model.Games)
+        {
+            var rowCss = ++rowNum % 2 == 1 ? "bg1" : "bg2";
+            var imgPath = $"{Url.Content("~/hlstatsimg")}/games/{row.Code}/game.png";
+            <tr class="@rowCss">
+                <td>
+                    <img src="@imgPath" alt="@row.Code" title="@row.Name"
+                         style="width:32px;height:32px;vertical-align:middle;margin-right:6px;"
+                         onerror="this.style.visibility='hidden'" />
+                    <a asp-controller="Home" asp-action="Index" asp-route-game="@row.Code">@row.Name</a>
+                    &nbsp;
+                    <small>
+                        <a asp-controller="Players" asp-action="Index" asp-route-game="@row.Code">Players</a>
+                        |
+                        <a asp-controller="Clans" asp-action="Index" asp-route-game="@row.Code">Clans</a>
+                    </small>
+                </td>
+                <td style="text-align:center;">
+                    @if (row.MaxPlayers > 0)
+                    {
+                        @($"{row.ActPlayers} / {row.MaxPlayers}")
+                    }
+                    else
+                    {
+                        <span>-</span>
+                    }
+                </td>
+                <td>
+                    @if (row.TopPlayerId.HasValue)
+                    {
+                        <a asp-controller="Players" asp-action="Profile" asp-route-id="@row.TopPlayerId">@row.TopPlayerName</a>
+                    }
+                    else
+                    {
+                        <span>-</span>
+                    }
+                </td>
+                <td>
+                    @if (row.TopClanId.HasValue)
+                    {
+                        <a asp-controller="Clans" asp-action="Profile" asp-route-id="@row.TopClanId">@row.TopClanName</a>
+                    }
+                    else
+                    {
+                        <span>-</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<br />
+
+<table class="data-table">
+    <thead>
+        <tr class="data-table-head">
+            <td colspan="2">General Statistics</td>
+        </tr>
+    </thead>
+    <tbody>
+        <tr class="bg1">
+            <td>Total Players</td>
+            <td>@Model.TotalPlayers.ToString("N0")</td>
+        </tr>
+        <tr class="bg2">
+            <td>Total Clans</td>
+            <td>@Model.TotalClans.ToString("N0")</td>
+        </tr>
+        <tr class="bg1">
+            <td>Total Servers</td>
+            <td>@Model.TotalServers.ToString("N0")</td>
+        </tr>
+        <tr class="bg2">
+            <td>Total Kills</td>
+            <td>@Model.TotalKills.ToString("N0")</td>
+        </tr>
+        @if (Model.LastKillTime.HasValue)
+        {
+            <tr class="bg1">
+                <td>Last Kill</td>
+                <td>@Model.LastKillTime.Value.ToString("yyyy-MM-dd HH:mm:ss")</td>
+            </tr>
+        }
+        <tr class="bg2">
+            <td>Event History</td>
+            <td>Data expires after <strong>@Model.DeleteDays</strong> days</td>
+        </tr>
+    </tbody>
+</table>

@@ -1,0 +1,34 @@
+@model InGameActionsViewModel
+@using HLStatsX.NET.Web.Models.ViewModels
+@{
+    Layout = "~/Views/Shared/_InGameLayout.cshtml";
+    ViewData["Title"] = "Server Actions";
+
+    string SortUrl(string field)
+    {
+        bool nd = Model.SortBy == field ? !Model.Desc : true;
+        return Url.Action("Actions", "InGame", new { game = Model.Game, sortBy = field, desc = nd })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Desc ? " ▼" : " ▲") : "";
+
+    int rowNum = 1;
+}
+
+<table class="data-table">
+    <tr class="data-table-head">
+        <td style="text-align:right;">Rank</td>
+        <td><a href="@SortUrl("action")">Action@(Mark("action"))</a></td>
+        <td style="text-align:right;"><a href="@SortUrl("count")">Count@(Mark("count"))</a></td>
+        <td style="text-align:right;"><a href="@SortUrl("reward")">Skill Reward@(Mark("reward"))</a></td>
+    </tr>
+    @foreach (var a in Model.Actions)
+    {
+        <tr class="@(rowNum % 2 == 1 ? "bg1" : "bg2")">
+            <td style="text-align:right;">@rowNum</td>
+            <td><a href="@Url.Action("ActionInfo", "InGame", new { game = Model.Game, action = a.Code })">@a.Description</a></td>
+            <td style="text-align:right;">@a.Count.ToString("N0")</td>
+            <td style="text-align:right;">@a.RewardPlayer</td>
+        </tr>
+        rowNum++;
+    }
+</table>

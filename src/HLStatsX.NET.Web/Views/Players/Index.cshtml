@@ -1,0 +1,125 @@
+@model PlayerLeaderboardViewModel
+@{
+    ViewData["Title"] = "Player Rankings";
+
+    string SortUrl(string field)
+    {
+        bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
+        return Url.Action("Index", new { game = Model.Game, sortBy = field, desc = nextDesc, rankType = Model.RankType, minKills = Model.MinKills })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
+}
+
+<h1>Player Rankings &mdash; @Model.Game</h1>
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap; gap:0.5rem;">
+    <form method="get" asp-controller="Search" asp-action="Index" style="display:flex; align-items:center; gap:0.4rem;">
+        <input type="hidden" name="game" value="@Model.Game" />
+        <input type="hidden" name="st" value="player" />
+        <strong>&bull;</strong> Find a player:
+        <input type="text" name="q" size="20" maxlength="64" class="form-text" placeholder="Player name&hellip;" />
+        <button type="submit" class="btn-small">Search</button>
+    </form>
+
+    <form method="get" asp-action="Index" style="display:flex; align-items:center; gap:0.4rem;">
+        <input type="hidden" name="game"     value="@Model.Game" />
+        <input type="hidden" name="sortBy"   value="@Model.SortBy" />
+        <input type="hidden" name="desc"     value="@Model.Descending.ToString().ToLower()" />
+        <input type="hidden" name="minKills" value="@Model.MinKills" />
+        <strong>&bull;</strong> Ranking view:
+        <select name="rankType">
+            <option value="total" selected="@(Model.RankType == "total" ? "selected" : null)">Total Ranking</option>
+            <option value="week"  selected="@(Model.RankType == "week"  ? "selected" : null)">Last Week</option>
+            <option value="month" selected="@(Model.RankType == "month" ? "selected" : null)">Last Month</option>
+            @foreach (var d in Model.AvailableDates)
+            {
+                var ds = d.ToString("yyyy-MM-dd");
+                <option value="@ds" selected="@(Model.RankType == ds ? "selected" : null)">@ds</option>
+            }
+        </select>
+        <button type="submit" class="btn-small">View</button>
+    </form>
+</div>
+
+<table class="data-table">
+    <thead>
+        <tr class="data-table-head">
+            <th class="rank-col" style="width:4%;">Rank</th>
+            <th style="text-align:left;"><a href="@(SortUrl("name"))">Player@(Mark("name"))</a></th>
+            <th class="ls-responsive-hide" style="text-align:center;"><a href="@(SortUrl("armyrank"))">Rank@(Mark("armyrank"))</a></th>
+            <th style="text-align:right;"><a href="@(SortUrl("skill"))">Points@(Mark("skill"))</a></th>
+            <th class="ls-responsive-hide" style="text-align:center;"><a href="@(SortUrl("activity"))">Activity@(Mark("activity"))</a></th>
+            <th class="ls-responsive-hide" style="text-align:right;"><a href="@(SortUrl("connectiontime"))">Connection Time@(Mark("connectiontime"))</a></th>
+            <th style="text-align:right;"><a href="@(SortUrl("kills"))">Kills@(Mark("kills"))</a></th>
+            <th style="text-align:right;"><a href="@(SortUrl("deaths"))">Deaths@(Mark("deaths"))</a></th>
+            <th style="text-align:right;"><a href="@(SortUrl("kd"))">K/D@(Mark("kd"))</a></th>
+            <th class="ls-responsive-hide" style="text-align:right;"><a href="@(SortUrl("headshots"))">Headshots@(Mark("headshots"))</a></th>
+            <th class="ls-responsive-hide" style="text-align:right;"><a href="@(SortUrl("hsk"))">HS:K@(Mark("hsk"))</a></th>
+            <th class="ls-responsive-hide" style="text-align:right;"><a href="@(SortUrl("accuracy"))">Accuracy@(Mark("accuracy"))</a></th>
+        </tr>
+    </thead>
+    <tbody>
+        @{ int startRank = (Model.Players.Page - 1) * Model.Players.PageSize + 1; bool alt = false; }
+        @foreach (var player in Model.Players.Items)
+        {
+            var flagFile = string.IsNullOrEmpty(player.Flag)    ? "0" : player.Flag.ToLowerInvariant();
+            var flagAlt  = string.IsNullOrEmpty(player.Country) ? ""  : player.Country;
+            var armyRank = Model.GetArmyRank(player.AllTimeKills);
+            <tr class="@((alt = !alt) ? "bg1" : "bg2")">
+                <td class="rank-col">@(startRank).</td>
+                <td style="text-align:left;">
+                    <img src="@(Url.Content("~/hlstatsimg/flags/") + flagFile + ".gif")" alt="@flagAlt" title="@flagAlt" />&nbsp;
+                    @{ var displayName = player.IsBot ? player.LastName + " (BOT)" : player.LastName; }
+                    @if (player.IsBot && Model.HideBotPlayers)
+                    {
+                        @displayName
+                    }
+                    else
+                    {
+                        <a asp-action="Profile" asp-route-id="@player.PlayerId">@displayName</a>
+                    }
+                </td>
+                <td class="ls-responsive-hide" style="text-align:center;">
+                    @if (armyRank?.Image != null)
+                    {
+                        <img src="@(Url.Content("~/hlstatsimg/ranks/") + armyRank.Image + "_small.png")" alt="@armyRank.RankName" title="@armyRank.RankName" />
+                    }
+                    else if (armyRank != null)
+                    {
+                        <text>@armyRank.RankName</text>
+                    }
+                </td>
+                <td style="text-align:right;">@player.Points.ToString("N0")@Html.Raw(player.LastSkillChange > 0 ? " <span style=\"color:green\">&#x25B2;</span>" : player.LastSkillChange < 0 ? " <span style=\"color:red\">&#x25BC;</span>" : "")</td>
+                <td class="ls-responsive-hide" style="text-align:center;">
+                    <activity-meter value="@player.ActivityScore" title="@player.ActivityScore%" />
+                </td>
+                <td class="ls-responsive-hide" style="text-align:right;">@RazorHelpers.FormatTime(player.ConnectionTime)</td>
+                <td style="text-align:right;">@player.Kills.ToString("N0")</td>
+                <td style="text-align:right;">@player.Deaths.ToString("N0")</td>
+                <td style="text-align:right;">@player.KillDeathRatio.ToString("F2")</td>
+                <td class="ls-responsive-hide" style="text-align:right;">@player.Headshots.ToString("N0")</td>
+                <td class="ls-responsive-hide" style="text-align:right;">@player.HsPerKill.ToString("F2")</td>
+                <td class="ls-responsive-hide" style="text-align:right;">@(Model.IsHistorical ? "N/A" : player.Accuracy.ToString("F1") + "%")</td>
+            </tr>
+            startRank++;
+        }
+    </tbody>
+</table>
+
+<partial name="_Pagination" model="@PaginationModel.From(Model.Players, p => Url.Action("Index", new { game = Model.Game, sortBy = Model.SortBy, desc = Model.Descending, rankType = Model.RankType, minKills = Model.MinKills, page = p })!)" />
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+    <form method="get" asp-action="Index" style="display:flex; align-items:center; gap:0.4rem;">
+        <input type="hidden" name="game"     value="@Model.Game" />
+        <input type="hidden" name="sortBy"   value="@Model.SortBy" />
+        <input type="hidden" name="desc"     value="@Model.Descending.ToString().ToLower()" />
+        <input type="hidden" name="rankType" value="@Model.RankType" />
+        <strong>&bull;</strong> Only show players with
+        <input type="text" name="minKills" value="@Model.MinKills" size="4" maxlength="6" class="form-text" />
+        or more kills.
+        <button type="submit" class="btn-small">Apply</button>
+    </form>
+    <div>
+        Go to: <a asp-controller="Clans" asp-action="Index" asp-route-game="@Model.Game">Clan Rankings</a>
+    </div>
+</div>

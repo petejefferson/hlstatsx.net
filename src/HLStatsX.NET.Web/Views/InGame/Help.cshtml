@@ -1,0 +1,73 @@
+@model InGameHelpViewModel
+@using HLStatsX.NET.Web.Models.ViewModels
+@{
+    Layout = "~/Views/Shared/_InGameLayout.cshtml";
+    ViewData["Title"] = "Help";
+
+    string FormatElapsed(int unixStart)
+    {
+        var e = Math.Max(0, (int)(DateTimeOffset.UtcNow.ToUnixTimeSeconds() - unixStart));
+        return $"{e / 3600:D2}:{(e % 3600) / 60:D2}:{e % 60:D2}";
+    }
+}
+
+<strong>&nbsp;HLStatsX.NET</strong><br /><br />
+
+<table style="width:100%;border:0;padding:1px;border-spacing:0;">
+    <tr class="data-table-head">
+        <td class="data-table" colspan="3">&nbsp;Commands display results in-game</td>
+    </tr>
+    <tr class="bg1"><td>rank [skill, points, place]</td><td>=</td><td>Current position</td></tr>
+    <tr class="bg1"><td>kpd [kdratio, kdeath]</td><td>=</td><td>Total player statistics</td></tr>
+    <tr class="bg1"><td>session [session_data]</td><td>=</td><td>Current session statistics</td></tr>
+    <tr class="bg1"><td>next</td><td>=</td><td>Players ahead in the ranking.</td></tr>
+    <tr class="data-table-head">
+        <td class="data-table" colspan="3">&nbsp;Commands display results in browser window</td>
+    </tr>
+    <tr class="bg1"><td>load</td><td>=</td><td>Statistics from all servers</td></tr>
+    <tr class="bg1"><td>status</td><td>=</td><td>Current server status</td></tr>
+    <tr class="bg1"><td>servers</td><td>=</td><td>List of all participating servers</td></tr>
+    <tr class="bg1"><td>top20 [top5, top10]</td><td>=</td><td>Top Players</td></tr>
+    <tr class="bg1"><td>clans</td><td>=</td><td>Clan ranking</td></tr>
+    <tr class="bg1"><td>cheaters</td><td>=</td><td>Banned players</td></tr>
+    <tr class="bg1"><td>statsme</td><td>=</td><td>Statistic summary</td></tr>
+    <tr class="bg1"><td>weapons [weapon]</td><td>=</td><td>Weapons usage</td></tr>
+    <tr class="bg1"><td>accuracy</td><td>=</td><td>Weapons accuracy</td></tr>
+    <tr class="bg1"><td>targets [target]</td><td>=</td><td>Target hit positions</td></tr>
+    <tr class="bg1"><td>kills [kill, player_kills]</td><td>=</td><td>Kill statistics (5 or more kills)</td></tr>
+    <tr class="bg1"><td>actions [action]</td><td>=</td><td>Server actions summary</td></tr>
+    <tr class="bg1"><td>help [cmd, cmds, commands]</td><td>=</td><td>Help screen</td></tr>
+    <tr class="data-table-head">
+        <td class="data-table" colspan="3">&nbsp;Commands to set player options</td>
+    </tr>
+    <tr class="bg1"><td>hlx_auto clear|start|end|kill command</td><td>=</td><td>Auto-Command on specific event</td></tr>
+    <tr class="bg1"><td>hlx_display 0|1</td><td>=</td><td>Enable or disable console events.</td></tr>
+    <tr class="bg1"><td>hlx_chat 0|1</td><td>=</td><td>Enable or disable global chat events.</td></tr>
+    <tr class="bg1"><td>/hlx_set realname|email|homepage [value]</td><td>=</td><td>(chat) Sets your player info.</td></tr>
+    <tr class="bg1"><td>/hlx_hideranking</td><td>=</td><td>(chat) Makes you invisible on rankings.</td></tr>
+</table>
+
+@if (Model.Servers.Any())
+{
+    <table class="data-table">
+        <tr class="data-table-head">
+            <td style="width:40%;">Participating Servers</td>
+            <td style="width:22%;">Address</td>
+            <td style="width:12%;text-align:center;">Map</td>
+            <td style="width:12%;text-align:center;">Played</td>
+            <td style="width:14%;text-align:center;">Players</td>
+        </tr>
+        @{ int rowNum = 1; }
+        @foreach (var srv in Model.Servers)
+        {
+            <tr class="@(rowNum % 2 == 1 ? "bg1" : "bg2")">
+                <td><strong>@srv.Name</strong></td>
+                <td>@srv.DisplayAddress</td>
+                <td style="text-align:center;">@srv.ActMap</td>
+                <td style="text-align:center;">@FormatElapsed(srv.MapStarted)</td>
+                <td style="text-align:center;">@srv.ActPlayers/@srv.MaxPlayers</td>
+            </tr>
+            rowNum++;
+        }
+    </table>
+}

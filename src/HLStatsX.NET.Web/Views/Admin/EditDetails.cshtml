@@ -1,0 +1,93 @@
+@model EditDetailsSearchViewModel
+@{
+    ViewData["Title"] = "Edit Player/Clan";
+    Layout = "_AdminLayout";
+}
+
+<h1>Edit Player or Clan Details</h1>
+
+<form method="get" asp-action="EditDetails">
+    <div class="form-group">
+        <label>Search by player or clan ID, or name:</label>
+        <input type="text" name="query" value="@Model.Query" style="width:300px;" placeholder="Enter name or numeric ID" />
+        <select name="type" style="margin-left:8px;">
+            <option value="" selected="@(string.IsNullOrEmpty(Model.Type) ? "selected" : null)">Players &amp; Clans</option>
+            <option value="player" selected="@(Model.Type=="player" ? "selected" : null)">Players only</option>
+            <option value="clan" selected="@(Model.Type=="clan" ? "selected" : null)">Clans only</option>
+        </select>
+        <button type="submit" class="btn btn-primary" style="margin-left:8px;">Search</button>
+    </div>
+</form>
+
+@if (!string.IsNullOrEmpty(Model.Query) && int.TryParse(Model.Query, out var numId))
+{
+    <p>
+        @if (Model.Type != "clan")
+        {
+            <a href="@Url.Action("EditPlayer", "Admin", new { id = numId })" class="btn btn-secondary">Edit Player #@numId</a>
+        }
+        @if (Model.Type != "player")
+        {
+            <a href="@Url.Action("EditClan", "Admin", new { id = numId })" class="btn btn-secondary" style="margin-left:8px;">Edit Clan #@numId</a>
+        }
+    </p>
+}
+
+@if (Model.HasSearched)
+{
+    @if (Model.Players is { Count: > 0 })
+    {
+        <h2>Players</h2>
+        <table class="admin-table">
+            <thead><tr><th>ID</th><th>Name</th><th>Country</th><th>Game</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var p in Model.Players)
+            {
+                <tr>
+                    <td>@p.PlayerId</td>
+                    <td>@p.MatchedName</td>
+                    <td>@(p.Country ?? p.Flag ?? "")</td>
+                    <td>@p.Game</td>
+                    <td><a href="@Url.Action("EditPlayer", "Admin", new { id = p.PlayerId })" class="btn btn-secondary btn-sm">Edit</a></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        @if (Model.Players.Count == 50)
+        {
+            <p><em>Showing first 50 matches — refine your search to narrow results.</em></p>
+        }
+    }
+    else if (Model.Type != "clan")
+    {
+        <p>No players found matching &ldquo;@Model.Query&rdquo;.</p>
+    }
+
+    @if (Model.Clans is { Count: > 0 })
+    {
+        <h2>Clans</h2>
+        <table class="admin-table">
+            <thead><tr><th>ID</th><th>Name</th><th>Tag</th><th>Game</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var c in Model.Clans)
+            {
+                <tr>
+                    <td>@c.ClanId</td>
+                    <td>@c.Name</td>
+                    <td>@c.Tag</td>
+                    <td>@c.Game</td>
+                    <td><a href="@Url.Action("EditClan", "Admin", new { id = c.ClanId })" class="btn btn-secondary btn-sm">Edit</a></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        @if (Model.Clans.Count == 50)
+        {
+            <p><em>Showing first 50 matches — refine your search to narrow results.</em></p>
+        }
+    }
+    else if (Model.Type != "player")
+    {
+        <p>No clans found matching &ldquo;@Model.Query&rdquo;.</p>
+    }
+}

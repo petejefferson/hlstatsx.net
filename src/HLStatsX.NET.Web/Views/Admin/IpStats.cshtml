@@ -1,0 +1,69 @@
+@model IpStatsViewModel
+@{
+    ViewData["Title"] = "IP Stats";
+    Layout = "_AdminLayout";
+
+    string SortUrl(string field)
+    {
+        bool nextDesc = Model.SortBy == field ? !Model.Descending : true;
+        return Url.Action("IpStats", "Admin", new { sortBy = field, desc = nextDesc, page = 1 })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Descending ? " ▼" : " ▲") : "";
+}
+
+<h1>IP Stats</h1>
+<p style="font-size:12px;color:#888;">Shows connection frequency by ISP / host group across all tracked events.</p>
+
+<table class="data-table">
+    <thead class="data-table-head">
+        <tr>
+            <td style="text-align:left;">Rank</td>
+            <td><a href="@(SortUrl("HostGroup"))">Host Group@(Mark("HostGroup"))</a></td>
+            <td><a href="@(SortUrl("Connects"))">Connects@(Mark("Connects"))</a></td>
+            <td>%</td>
+            <td><a href="@(SortUrl("Connects"))">Connects %@(Mark("Connects"))</a></td>
+        </tr>
+    </thead>
+    <tbody>
+    @{
+        int rowNum = (Model.Result.Page - 1) * Model.Result.PageSize + 1;
+    }
+    @foreach (var row in Model.Result.Items)
+    {
+        string bgClass = rowNum % 2 == 0 ? "bg2" : "bg1";
+        string detailUrl = Url.Action("IpStatsDetail", "Admin", new { hostGroup = row.HostGroup })!;
+        <tr class="@bgClass">
+            <td style="text-align:left;">@rowNum</td>
+            <td><a href="@detailUrl">@row.HostGroup</a></td>
+            <td style="text-align:right;">@row.Connects.ToString("N0")</td>
+            <td style="width:120px;">
+                <meter min="0" max="100" low="25" high="50" optimum="75" value="@row.Percent.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)"></meter>
+            </td>
+            <td style="text-align:right;">@row.Percent.ToString("F1")%</td>
+        </tr>
+        rowNum++;
+    }
+    @if (!Model.Result.Items.Any())
+    {
+        <tr class="bg1"><td colspan="5" style="text-align:center;">No connection data found.</td></tr>
+    }
+    </tbody>
+</table>
+
+@if (Model.Result.TotalPages > 1)
+{
+    <div style="margin-top:10px;">
+        @for (int p = 1; p <= Model.Result.TotalPages; p++)
+        {
+            string pageUrl = Url.Action("IpStats", "Admin", new { sortBy = Model.SortBy, desc = Model.Descending, page = p })!;
+            if (p == Model.Result.Page)
+            {
+                <strong style="margin-right:6px;">@p</strong>
+            }
+            else
+            {
+                <a href="@pageUrl" style="margin-right:6px;">@p</a>
+            }
+        }
+    </div>
+}

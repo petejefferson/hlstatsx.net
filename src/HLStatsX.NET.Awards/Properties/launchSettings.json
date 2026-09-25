@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "HLStatsX.NET.Awards": {
+      "commandName": "Project",
+      "commandLineArgs": "--run-now --prune --optimize"
+    }
+  }
+}

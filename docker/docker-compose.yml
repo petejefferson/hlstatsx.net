@@ -1,0 +1,25 @@
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: hlstatsx-net:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      # Allows ASP.NET Core to trust X-Forwarded-Proto from Nginx so that
+      # UseHttpsRedirection() behaves correctly behind a TLS-terminating proxy.
+      - ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
+      # Connection string and site settings are loaded from the .env file.
+      # Copy .env.example to .env and update the values before starting.
+      - ConnectionStrings__HLStats=${HLSTATSX_CONNECTION_STRING}
+      - HLStatsX__DefaultGame=${HLSTATSX_DEFAULT_GAME:-dods}
+      - HLStatsX__SiteName=${HLSTATSX_SITE_NAME:-HLStatsX.NET}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s

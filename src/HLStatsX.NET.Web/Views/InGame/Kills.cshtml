@@ -1,0 +1,55 @@
+@model InGameKillsViewModel
+@using HLStatsX.NET.Web.Models.ViewModels
+@{
+    Layout = "~/Views/Shared/_InGameLayout.cshtml";
+    ViewData["Title"] = Model.Player.LastName + " — Kill Stats";
+
+    var flagBase = Url.Content("~/hlstatsimg/flags");
+    string FlagImg(string? flag) =>
+        $"<img src=\"{flagBase}/{(string.IsNullOrEmpty(flag) ? "0" : flag.ToLowerInvariant())}.gif\" alt=\"\" />";
+}
+
+<p style="padding:2px;"><strong>@Model.Player.LastName</strong> — Kill Statistics (min. @Model.KillLimit kills)</p>
+
+@if (Model.Kills.Any())
+{
+    <table class="data-table">
+        <tr class="data-table-head">
+            <td style="text-align:right;">Rank</td>
+            <td>Victim</td>
+            <td style="text-align:right;">Kills</td>
+            <td style="text-align:right;">Deaths</td>
+            <td style="text-align:right;">Kpd</td>
+            <td style="text-align:right;">Headshots</td>
+            <td>% HS</td>
+            <td style="text-align:right;">%</td>
+            <td style="text-align:right;">Hpk</td>
+        </tr>
+        @{
+            int rowNum = 1;
+            long totalHS = Model.TotalRealHeadshots;
+        }
+        @foreach (var k in Model.Kills)
+        {
+            double kpd  = k.Deaths > 0 ? Math.Round((double)k.Kills / k.Deaths, 2) : k.Kills;
+            double hpk  = k.Kills  > 0 ? Math.Round((double)k.Headshots / k.Kills, 2) : 0;
+            double hPct = totalHS  > 0 ? Math.Round((double)k.Headshots / totalHS * 100, 2) : 0;
+            <tr class="@(rowNum % 2 == 1 ? "bg1" : "bg2")">
+                <td style="text-align:right;">@rowNum</td>
+                <td>@Html.Raw(FlagImg(k.VictimFlag)) <a href="@Url.Action("PlayerStats", "InGame", new { game = Model.Game, player = k.VictimId })">@k.VictimName</a></td>
+                <td style="text-align:right;">@k.Kills</td>
+                <td style="text-align:right;">@k.Deaths</td>
+                <td style="text-align:right;">@kpd.ToString("F2")</td>
+                <td style="text-align:right;">@k.Headshots</td>
+                <td><meter min="0" max="100" low="25" high="50" optimum="75" value="@hPct.ToString("F0")"></meter></td>
+                <td style="text-align:right;">@hPct.ToString("F2")%</td>
+                <td style="text-align:right;">@hpk.ToString("F2")</td>
+            </tr>
+            rowNum++;
+        }
+    </table>
+}
+else
+{
+    <p>No kill data available (minimum @Model.KillLimit kills required).</p>
+}

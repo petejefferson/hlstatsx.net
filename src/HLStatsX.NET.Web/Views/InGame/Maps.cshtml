@@ -1,0 +1,57 @@
+@model InGameMapsViewModel
+@using HLStatsX.NET.Web.Models.ViewModels
+@{
+    Layout = "~/Views/Shared/_InGameLayout.cshtml";
+    ViewData["Title"] = Model.Player.LastName + " — Maps";
+}
+
+<p style="padding:2px;"><strong>@Model.Player.LastName</strong> — Map Performance</p>
+
+@if (Model.Maps.Any())
+{
+    <table class="data-table">
+        <tr class="data-table-head">
+            <td style="text-align:right;">Rank</td>
+            <td>Map</td>
+            <td style="text-align:right;">Kills</td>
+            <td>% Kills</td>
+            <td style="text-align:right;">%</td>
+            <td style="text-align:right;">Deaths</td>
+            <td style="text-align:right;">Kpd</td>
+            <td style="text-align:right;">Headshots</td>
+            <td>% HS</td>
+            <td style="text-align:right;">%</td>
+            <td style="text-align:right;">Hpk</td>
+        </tr>
+        @{
+            int rowNum = 1;
+            long totalK  = Model.TotalKills;
+            long totalHS = Model.TotalHeadshots;
+        }
+        @foreach (var m in Model.Maps)
+        {
+            double kPct  = totalK  > 0 ? Math.Round((double)m.Kills     / totalK  * 100, 2) : 0;
+            double hPct  = totalHS > 0 ? Math.Round((double)m.Headshots / totalHS * 100, 2) : 0;
+            double kpd   = m.Deaths > 0 ? Math.Round((double)m.Kills / m.Deaths, 2) : m.Kills;
+            double hpk   = m.Kills  > 0 ? Math.Round((double)m.Headshots / m.Kills, 2) : 0;
+            <tr class="@(rowNum % 2 == 1 ? "bg1" : "bg2")">
+                <td style="text-align:right;">@rowNum</td>
+                <td><a href="@Url.Action("MapInfo", "InGame", new { game = Model.Game, map = m.Map })">@(string.IsNullOrEmpty(m.Map) ? "(Unaccounted)" : m.Map)</a></td>
+                <td style="text-align:right;">@m.Kills</td>
+                <td><meter min="0" max="100" low="25" high="50" optimum="75" value="@kPct.ToString("F0")"></meter></td>
+                <td style="text-align:right;">@kPct.ToString("F2")%</td>
+                <td style="text-align:right;">@m.Deaths</td>
+                <td style="text-align:right;">@kpd.ToString("F2")</td>
+                <td style="text-align:right;">@m.Headshots</td>
+                <td><meter min="0" max="100" low="25" high="50" optimum="75" value="@hPct.ToString("F0")"></meter></td>
+                <td style="text-align:right;">@hPct.ToString("F2")%</td>
+                <td style="text-align:right;">@hpk.ToString("F2")</td>
+            </tr>
+            rowNum++;
+        }
+    </table>
+}
+else
+{
+    <p>No map data available.</p>
+}

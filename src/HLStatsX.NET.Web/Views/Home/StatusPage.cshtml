@@ -1,0 +1,9 @@
+@model HLStatsX.NET.Web.Models.ViewModels.StatusPageViewModel
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<h1>@Model.Title</h1>
+
+<p>@Model.Description</p>
+<p style="margin-top:1rem;"><a asp-controller="Home" asp-action="Index">Return to home</a></p>

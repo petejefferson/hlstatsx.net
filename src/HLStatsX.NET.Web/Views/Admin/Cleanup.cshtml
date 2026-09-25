@@ -1,0 +1,39 @@
+@model CleanupViewModel
+@using HLStatsX.NET.Core.Entities
+@{
+    ViewData["Title"] = "Cleanup Inactive Players";
+    Layout = "_AdminLayout";
+    var games = ViewData["Games"] as IReadOnlyList<Game> ?? new List<Game>();
+    var log = ViewData["Log"] as IReadOnlyList<string>;
+}
+
+<h1>Cleanup Inactive Players</h1>
+<p>Deletes players with fewer kills than the threshold, then removes empty clans.</p>
+
+@if (log is not null && log.Any())
+{
+    <div class="alert-success">
+        <ul style="margin:4px 0 0 16px;">
+            @foreach (var msg in log) { <li>@msg</li> }
+        </ul>
+    </div>
+}
+
+<form asp-action="Cleanup" method="post">
+    @Html.AntiForgeryToken()
+    <div class="form-group">
+        <label asp-for="Game">Game (leave blank for all games)</label>
+        <select asp-for="Game">
+            <option value="">-- All Games --</option>
+            @foreach (var g in games) { <option value="@g.Code" selected="@(g.Code==Model.Game?"selected":null)">@g.Code — @g.Name</option> }
+        </select>
+    </div>
+    <div class="form-group">
+        <label asp-for="MinKills">Minimum kills threshold (players below this will be deleted)</label>
+        <input asp-for="MinKills" type="number" min="0" style="width:100px;" />
+    </div>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-danger"
+                onclick="return confirm('Delete players with fewer than ' + document.querySelector('[name=MinKills]').value + ' kills?')">Run Cleanup</button>
+    </div>
+</form>

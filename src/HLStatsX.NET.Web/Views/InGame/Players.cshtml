@@ -1,0 +1,74 @@
+@model InGamePlayerListViewModel
+@using HLStatsX.NET.Web.Models.ViewModels
+@{
+    Layout = "~/Views/Shared/_InGameLayout.cshtml";
+    ViewData["Title"] = "Player Rankings";
+
+    string SortUrl(string field)
+    {
+        bool nd = Model.SortBy == field ? !Model.Desc : true;
+        return Url.Action("Players", "InGame", new { game = Model.Game, sortBy = field, desc = nd, page = 1 })!;
+    }
+    string Mark(string field) => Model.SortBy == field ? (Model.Desc ? " ▼" : " ▲") : "";
+
+    var flagBase = Url.Content("~/hlstatsimg/flags");
+    string FlagImg(string? flag) =>
+        $"<img src=\"{flagBase}/{(string.IsNullOrEmpty(flag) ? "0" : flag.ToLowerInvariant())}.gif\" alt=\"\" />";
+
+    string FormatDuration(int seconds)
+    {
+        var d = seconds / 86400; var h = (seconds % 86400) / 3600; var m = (seconds % 3600) / 60;
+        if (d > 0) return $"{d}d {h:D2}h";
+        if (h > 0) return $"{h}h {m:D2}m";
+        return $"{m}m";
+    }
+
+    int startRank = (Model.Players.Page - 1) * Model.Players.PageSize + 1;
+}
+
+<table class="data-table">
+    <tr class="data-table-head">
+        <td style="text-align:right;">Rank</td>
+        <td><a href="@SortUrl("name")">Player@(Mark("name"))</a></td>
+        <td style="text-align:right;"><a href="@SortUrl("skill")">Points@(Mark("skill"))</a></td>
+        <td>Activity</td>
+        <td style="text-align:right;"><a href="@SortUrl("connectiontime")">Time@(Mark("connectiontime"))</a></td>
+        <td style="text-align:right;"><a href="@SortUrl("kills")">Kills@(Mark("kills"))</a></td>
+        <td style="text-align:right;"><a href="@SortUrl("deaths")">Deaths@(Mark("deaths"))</a></td>
+        <td style="text-align:right;">K:D</td>
+        <td style="text-align:right;"><a href="@SortUrl("headshots")">HS@(Mark("headshots"))</a></td>
+        <td style="text-align:right;">Acc%</td>
+    </tr>
+    @{ int rowNum = startRank; }
+    @foreach (var p in Model.Players.Items)
+    {
+        <tr class="@(rowNum % 2 == 1 ? "bg1" : "bg2")">
+            <td style="text-align:right;">@rowNum</td>
+            <td>@Html.Raw(FlagImg(p.Flag)) <a href="@Url.Action("PlayerStats", "InGame", new { game = Model.Game, player = p.PlayerId })">@p.LastName</a></td>
+            <td style="text-align:right;">@p.Skill.ToString("N0")@Html.Raw(p.LastSkillChange > 0 ? " <span style=\"color:green\">&#x25B2;</span>" : p.LastSkillChange < 0 ? " <span style=\"color:red\">&#x25BC;</span>" : "")</td>
+            <td><meter min="0" max="100" low="25" high="50" optimum="75" value="@p.ActivityScore"></meter></td>
+            <td style="text-align:right;">@FormatDuration(p.ConnectionTime)</td>
+            <td style="text-align:right;">@p.Kills.ToString("N0")</td>
+            <td style="text-align:right;">@p.Deaths.ToString("N0")</td>
+            <td style="text-align:right;">@p.KillDeathRatio.ToString("F2")</td>
+            <td style="text-align:right;">@p.Headshots.ToString("N0")</td>
+            <td style="text-align:right;">@p.Accuracy.ToString("F1")</td>
+        </tr>
+        rowNum++;
+    }
+</table>
+
+@if (Model.Players.TotalPages > 1)
+{
+    <div style="padding:4px;">
+        @if (Model.Players.HasPreviousPage)
+        {
+            <a href="@Url.Action("Players", "InGame", new { game = Model.Game, sortBy = Model.SortBy, desc = Model.Desc, page = Model.Players.Page - 1 })">« Prev</a>
+        }
+        &nbsp;Page @Model.Players.Page of @Model.Players.TotalPages&nbsp;
+        @if (Model.Players.HasNextPage)
+        {
+            <a href="@Url.Action("Players", "InGame", new { game = Model.Game, sortBy = Model.SortBy, desc = Model.Desc, page = Model.Players.Page + 1 })">Next »</a>
+        }
+    </div>
+}

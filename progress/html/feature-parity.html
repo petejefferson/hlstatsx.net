@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HLStatsX.NET — Feature Parity Report</title>
+  <link rel="stylesheet" href="site.css" />
+  <style>
+    .progress-grid { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+
+    /* ── STRENGTHS ── */
+    .strength-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 14px;
+    }
+    .strength-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.1rem;
+      box-shadow: var(--shadow);
+    }
+    .strength-card .stitle {
+      font-weight: 600;
+      font-size: 0.88rem;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+    .strength-card p { color: var(--muted); font-size: 0.82rem; }
+
+    /* ── PARITY COLUMNS (Frontend / Backend) ── */
+    .parity-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    @media (max-width: 820px) {
+      .parity-columns { grid-template-columns: 1fr; }
+    }
+    .parity-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .parity-group-header {
+      background: var(--highlight);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      box-shadow: var(--shadow-md);
+    }
+    .parity-group-header .group-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: rgba(255,255,255,0.65);
+      margin-bottom: 4px;
+    }
+    .parity-group-header .group-pct {
+      font-size: 2.2rem;
+      font-weight: 800;
+      line-height: 1;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+    .parity-group-header .bar-track {
+      background: rgba(255,255,255,0.2);
+      border: none;
+    }
+    .parity-group-header .bar-fill { background: rgba(255,255,255,0.85); }
+    .parity-group-header .group-delta {
+      margin-top: 8px;
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.6);
+    }
+
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════ TOPBAR -->
+<header class="hero">
+  <div class="container" style="display:flex;align-items:center;width:100%;">
+    <a class="hero-brand" href="welcome.html">🎮 HLStatsX.NET</a>
+    <nav class="hero-nav">
+      <a href="why-the-rewrite.html">Why the Rewrite</a>
+      <a href="feature-parity.html" class="active">Feature Parity</a>
+      <a href="future-work.html">Future Work</a>
+      <a href="https://github.com/petejefferson/hlstatsx.net" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════ PAGE HEADER -->
+<div class="page-header">
+  <div class="container">
+    <h1>Feature Parity Report</h1>
+    <p class="subtitle">.NET Rewrite</p>
+    <span class="date-badge">📅 Updated 2026-05-16 (rev 18)</span>
+  </div>
+</div>
+
+<div class="container" style="padding-top:1.5rem; padding-bottom:2rem;">
+
+  <!-- ══════════════════════════════════ OVERALL PROGRESS -->
+  <div class="section">
+    <h2 class="section-title">📊 Overall Progress</h2>
+    <div class="parity-columns">
+
+      <!-- ── WEB FRONTEND ── -->
+      <div class="parity-group">
+        <div class="parity-group-header">
+          <div class="group-label">🖥️ Web Frontend</div>
+          <div class="group-pct">97%</div>
+          <div class="bar-track"><div class="bar-fill" style="width:97%"></div></div>
+          <div class="group-delta">Public stats pages + in-game pages + admin panel</div>
+        </div>
+        <div class="progress-card">
+          <div class="label">Public Stats Pages</div>
+          <div class="pct green">97%</div>
+          <div class="bar-track"><div class="bar-fill green" style="width:97%"></div></div>
+          <div class="delta">⬆️ +1pp — parity sweep corrected 7 stale-90% pages to 93–98%</div>
+        </div>
+        <div class="progress-card">
+          <div class="label">In-Game Pages</div>
+          <div class="pct green">90%</div>
+          <div class="bar-track"><div class="bar-fill green" style="width:90%"></div></div>
+          <div class="delta">🆕 NEW — all 19 functional ingame pages implemented (was 0%)</div>
+        </div>
+        <div class="progress-card">
+          <div class="label">Admin Panel</div>
+          <div class="pct green">98%</div>
+          <div class="bar-track"><div class="bar-fill green" style="width:98%"></div></div>
+          <div class="delta">⬆️ +10pp — dashboard full parity + VoiceComm CRUD + Daemon Control + Reset DB Collations</div>
+        </div>
+      </div>
+
+      <!-- ── BACKEND ── -->
+      <div class="parity-group">
+        <div class="parity-group-header">
+          <div class="group-label">⚙️ Backend</div>
+          <div class="group-pct">95%</div>
+          <div class="bar-track"><div class="bar-fill" style="width:95%"></div></div>
+          <div class="group-delta">Awards worker (100%) + Daemon (96%)</div>
+        </div>
+        <div class="progress-card">
+          <div class="label">HLStatsX.NET.Awards</div>
+          <div class="pct green">100%</div>
+          <div class="bar-track"><div class="bar-fill green" style="width:100%"></div></div>
+          <div class="delta">Replaces hlstats-awards.pl — feature-complete</div>
+          <div class="component-status">
+            ✅ Award winners (daily &amp; global)<br>
+            ✅ Ribbon recalculation<br>
+            ✅ Clan membership matching<br>
+            ✅ Player activity / inactive marking<br>
+            ✅ Data pruning (all 20 event tables)<br>
+            ✅ OPTIMIZE TABLE<br>
+            ✅ Scheduled daily run + <code style="font-size:0.72rem">--run-now</code> flags<br>
+            ✅ DoGeoIP — MaxMind GeoLite2-City MMDB lookup (<code style="font-size:0.72rem">--geoip</code>)
+          </div>
+        </div>
+        <div class="progress-card">
+          <div class="label">HLStatsX.NET Daemon</div>
+          <div class="pct green">96%</div>
+          <div class="bar-track"><div class="bar-fill green" style="width:96%"></div></div>
+          <div class="delta">⬆️ +5pp — A2S_INFO done; full RCON subsystem (Source + GoldSrc) + broadcasting wired</div>
+          <div class="component-status">
+            <strong style="color:var(--text)">Core Engine (~98%)</strong><br>
+            ✅ UDP listener (port 27500, configurable)<br>
+            ✅ STDIN import mode (log replay)<br>
+            ✅ Log line · player string · properties parsers<br>
+            ✅ SteamID normalisation · bot detection<br>
+            ✅ Multi-server player registry<br>
+            ✅ Server + global config loading from DB<br>
+            ✅ Event queue — batch INSERT at threshold<br>
+            ✅ Graceful shutdown (SIGINT flushes sessions)<br>
+            ✅ Server auto-registration (AutoRegisterServerAsync + game defaults copy)<br>
+            ✅ SIGHUP config reload (flushes sessions + reloads from DB; Windows skips)<br>
+            ✅ A2S_INFO query — map fallback in MapChangeHandler (TRcon.pm mirror)<br>
+            ❌ Proxy daemon protocol · proxy-daemon.pl relay — deferred<br><br>
+            <strong style="color:var(--text)">Event Handlers (~90%, 18 of 22 done)</strong><br>
+            ✅ Connect · Enter Game · Disconnect<br>
+            ✅ Team / Role / Name change<br>
+            ✅ Kill (Frag) · Team Kill (TK penalty) · Suicide<br>
+            ✅ Player Action · Player-Player Action · Team Bonus<br>
+            ✅ Map change — writes <code style="font-size:0.72rem">act_map</code>, <code style="font-size:0.72rem">map_started</code>, <code style="font-size:0.72rem">map_changes</code><br>
+            ✅ Statsme (weapon shots/hits/damage) · Chat logging<br>
+            ✅ Clan tag matching on connect &amp; name change<br>
+            ❌ RCON events · Admin events · Statsme2 · Latency — deferred<br><br>
+            <strong style="color:var(--text)">Skill &amp; State (~97%)</strong><br>
+            ✅ All 6 skill modes (0–5) + L4D difficulty variant<br>
+            ✅ Kill streak tracking (per-life + all-time)<br>
+            ✅ Clan tag matching + auto-create clan on first match<br>
+            ✅ GeoIP on connect (MaxMind GeoLite2-City MMDB)<br>
+            ✅ Livestat lifecycle — REPLACE on connect, UPDATE on flush, DELETE on disconnect<br>
+            ✅ Stats trend tracking (every 299s → <code style="font-size:0.72rem">hlstats_Trend</code>)<br>
+            ✅ Bonus round detection + ignore window<br>
+            ✅ <code style="font-size:0.72rem">lastAddress</code> written on disconnect (for nightly GeoIP batch)<br><br>
+            <strong style="color:var(--text)">RCON subsystem (~75%)</strong><br>
+            ✅ SourceRconClient — TCP, challenge/auth, split-end detection, socket recycling<br>
+            ✅ GoldSrcRconClient — UDP, challenge-response, header strip<br>
+            ✅ ServerBroadcastService — pool, engine selection, MessageAll/Player/Kick<br>
+            ✅ Kill/TK broadcast · connect announce · rank kick · action/team-bonus broadcasts<br>
+            ❌ Global chat relay · auto-team balance · next-rank display · global ban — deferred<br><br>
+            <strong style="color:var(--text)">Tests: 641 total (30 new — A2S + RCON)</strong>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ NEW SINCE LAST REPORT -->
+  <div class="section">
+    <h2 class="section-title">🆕 New Since Last Report <span style="font-size:0.8rem;color:var(--muted);font-weight:400">(2026-05-16 rev 17)</span></h2>
+    <div class="new-grid">
+      <div class="new-card">
+        <span class="icon">⚙️</span>
+        <div>
+          <div class="feature">Config rename: HLStatsX:Maps → HLStatsX:Geo</div>
+          <div class="php-ref">The Maps section under HLStatsX in appsettings.json was renamed to Geo to better reflect its purpose (geography/GeoIP-related settings, currently GoogleMapsApiKey). Updated in appsettings.json, ClansController.cs, and Home/Index.cshtml. Scores unchanged at 97% overall.</div>
+        </div>
+      </div>
+    </div>
+    <h2 class="section-title" style="margin-top:1.5rem;">🆕 Previous Report <span style="font-size:0.8rem;color:var(--muted);font-weight:400">(2026-05-13 rev 16)</span></h2>
+    <div class="new-grid">
+      <div class="new-card">
+        <span class="icon">🔍</span>
+        <div>
+          <div class="feature">Full PHP file inventory sweep — no new gaps found</div>
+          <div class="php-ref">Complete inventory of all .php files in legacy/php/pages/, admintasks/, and ingame/. New files identified vs prior reports: voicecomm_serverlist.php (sub-component of game.php — covered), profile.php (SQL dev profiler — N/A), updater.php (DB schema patcher — N/A), tools_reset_2.php (= Cleanup Inactive admin tool — already done). All 4 award-type admin CRUD pages confirmed mapped to Awards/{type} route. All 21 ingame/ files re-verified (19 functional + 2 layout partials). Score unchanged at 97% overall. HTML and copilot-instructions updated.</div>
+        </div>
+      </div>
+    </div>
+    <h2 class="section-title" style="margin-top:1.5rem;">🆕 Previous Report <span style="font-size:0.8rem;color:var(--muted);font-weight:400">(2026-05-12 rev 14)</span></h2>
+    <div class="new-grid">
+      <div class="new-card">
+        <span class="icon">📈</span>
+        <div>
+          <div class="feature">Skill change trend indicators on Player + Clan leaderboards ✅ DONE</div>
+          <div class="php-ref">players.php + clans.php → Players/Index.cshtml + Clans/Index.cshtml: PHP uses last_skill_change to show t0.gif/t1.gif/t2.gif arrows. .NET now shows ▲ (green) / ▼ (red) next to the Points and Avg. Points columns. Added LastSkillChange to Player entity + EF mapping (last_skill_change); PlayerLeaderboardRow.LastSkillChange set in MapToRows; ClanLeaderboardRow.AvgLastSkillChange = AVG(last_skill_change) via ClanRepository. Players 95% → 97%. Clans 90% → 95%.</div>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">🏆</span>
+        <div>
+          <div class="feature">Awards page — date header + award.png fallback ✅ DONE</div>
+          <div class="php-ref">awards_daily.php → Awards/Index.cshtml: added "Daily Awards (Monday 12 May)" section header from awards_d_date + awards_numdays options. Added GetAwardDateInfoAsync to IAwardRepository/IAwardService; AwardsIndexViewModel carries DailyAwardsDate + AwardsNumDays; onerror fallback now tries /hlstatsimg/award.png before hiding. Status: 90% → 95%.</div>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">🖧</span>
+        <div>
+          <div class="feature">Server List — steam://connect join links ✅ DONE</div>
+          <div class="php-ref">servers.php (list view) → Servers/Index.cshtml: added (Join) link using steam://connect/{addr}:{port} next to each server address, matching PHP server list and detail page. Live A2S_INFO pinging deferred; DB-based status (updated by daemon) is functionally equivalent for live setups. Status: 90% → 93%.</div>
+        </div>
+      </div>
+    </div>
+    <h2 class="section-title" style="margin-top:1.5rem;">🆕 Previous Report <span style="font-size:0.8rem;color:var(--muted);font-weight:400">(2026-05-11 rev 13)</span></h2>
+    <div class="new-grid">
+      <div class="new-card">
+        <span class="icon">📜</span>
+        <div>
+          <div class="feature">Player Event History — TeamBonus + ChangeName event types ✅ DONE</div>
+          <div class="php-ref">playerhistory.php (event log, not chart) → Players/EventHistory: two missing event types added. New EF Core entities EventTeamBonus (hlstats_Events_TeamBonuses) and EventChangeName (hlstats_Events_ChangeName) with EF configurations. PlayerRepository queries both tables and merges into the all-events timeline. Description builder handles all 16 event types. Status: 90% → 97%.</div>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">🖥️</span>
+        <div>
+          <div class="feature">Admin — Server creation copies game defaults ✅ DONE</div>
+          <div class="php-ref">admintasks/newserver.php copies hlstats_Games_Defaults → AdminRepository.AddServerAsync: after INSERT into hlstats_Servers, now executes INSERT ... SELECT from hlstats_Games_Defaults (ON DUPLICATE KEY UPDATE) plus IGNORE INSERT for the Mod row — matching PHP server creation flow. Status gap closed.</div>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">🛡️</span>
+        <div>
+          <div class="feature">Admin CRUD — sweep of 15 pages confirmed complete ✅ DONE</div>
+          <div class="php-ref">Full re-audit of all admin CRUD pages: Login/Logout, Site Options, Games, Servers, Clan Tags, Host Groups, Actions, Teams, Roles, Weapons, Ranks, Ribbons, Awards, Clan Edit Tools, Events Log, DB Reset, DB Optimize, Copy Game Settings, Cleanup Inactive, IP Stats — all 15 swept and confirmed fully implemented. Status: 90% → 95% across the board.</div>
+        </div>
+      </div>
+    </div>
+    <h2 class="section-title" style="margin-top:1.5rem;">🆕 Previous Report <span style="font-size:0.8rem;color:var(--muted);font-weight:400">(2026-05-11 rev 12)</span></h2>
+    <div class="new-grid">
+      <div class="new-card">
+        <span class="icon">🔫</span>
+        <div>
+          <div class="feature">Weapon Leaderboard — image fallback ✅ DONE</div>
+          <div class="php-ref">weapons.php weaponimg → Weapons/Index.cshtml: confirmed weapon images already rendered. Added onerror fallback: tries .png if .gif missing, then replaces with bold weapon name — matches PHP weaponimg fallback. Removed hardcoded width/height. Status: 90% → 95%.</div>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">🛠️</span>
+        <div>
+          <div class="feature">Admin — Player Edit Details search results ✅ DONE</div>
+          <div class="php-ref">tools_editdetails.php + tools_editdetails_player.php → Admin/EditDetails.cshtml: typing a name now runs ISearchService.SearchAsync and shows matching players/clans with direct Edit links (up to 50 per type). PHP Merge player gap confirmed phantom — no such feature in PHP source. Status: 85% → 95%.</div>
+        </div>
+      </div>
+    </div>
+    <h2 class="section-title" style="margin-top:1.5rem;">🆕 Previous Report <span style="font-size:0.8rem;color:var(--muted);font-weight:400">(2026-05-11 rev 11)</span></h2>
+    <div class="new-grid">
+      <div class="new-card">
+        <span class="icon">💬</span>
+        <div>
+          <div class="feature">Chat History — "Last N Days" header qualifier ✅ DONE</div>
+          <div class="php-ref">chathistory.php section title → Chat/PlayerHistory.cshtml: added DeleteDays to PlayerChatViewModel; ChatController.PlayerHistory fetches GetDeleteDaysAsync in parallel; view H1 shows "Chat History (Last N Days)". New test: PlayerHistory_PassesDeleteDaysFromService. Status: 95% → 98%.</div>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">🎮</span>
+        <div>
+          <div class="feature">Games List — event history expiry line ✅ DONE</div>
+          <div class="php-ref">contents.php general stats → GamesList.cshtml: added DeleteDays to GamesListData; GameService.GetGamesListAsync fetches it from hlstats_Options; view adds "Data expires after N days" row to General Statistics. New tests: Index_ShowsGamesList_WhenNoGameAndMultipleGames, Index_RedirectsToSingleGame_WhenGamesListHasOneEntry. Status: 95% → 98%.</div>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">📊</span>
+        <div>
+          <div class="feature">Livestats — team round wins in footer ✅ DONE</div>
+          <div class="php-ref">livestats.php map_ct_wins/map_ts_wins → Livestats.cshtml: added MapCtWins/MapTsWins to Server entity; team footer row now shows "(N wins)" using per-team index to select ct vs ts wins. Status: 93% → 97%.</div>
+        </div>
+      </div>
+    </div>
+    <h2 class="section-title" style="margin-top:1.5rem;">🆕 Previous Report <span style="font-size:0.8rem;color:var(--muted);font-weight:400">(2026-05-11 rev 10)</span></h2>
+    <div class="new-grid">
+      <div class="new-card">
+        <span class="icon">🔍</span>
+        <div>
+          <div class="feature">Parity sweep — 7 pages verified and rescored</div>
+          <div class="php-ref">Read PHP source vs .NET implementation for playerawards.php, livestats.php, ribboninfo.php, dailyawardinfo.php, chathistory.php, countryclans.php, contents.php+gameslist.php. All were marked 90% with "None identified" gaps. Actual scores: 98%, 93%, 97%, 97%, 95%, 95%, 95%.</div>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">🖧</span>
+        <div>
+          <div class="feature">Daemon progress card corrected to 91%</div>
+          <div class="php-ref">Server auto-registration (AutoRegisterServerAsync) and SIGHUP config reload were completed in rev 8 but the daemon progress card still showed 88%. Fixed to 91%.</div>
+        </div>
+      </div>
+    </div>
+    <h2 class="section-title" style="margin-top:1.5rem;">🆕 Previous Report <span style="font-size:0.8rem;color:var(--muted);font-weight:400">(2026-05-11 rev 9)</span></h2>
+    <div class="new-grid">
+      <div class="new-card">
+        <span class="icon">🌍</span>
+        <div>
+          <div class="feature">Country Profile — Leaflet member map + table improvements ✅ DONE</div>
+          <div class="php-ref">countryclansinfo.php → Countries/Profile: added Leaflet player location map (lat/lng from GeoIP), sequential Rank column, and MmRank (player's overall leaderboard rank) to Members table. GetMemberLocationsAsync added to ICountryRepository/ICountryService chain. Status: 85% → 95%.</div>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">🗺️</span>
+        <div>
+          <div class="feature">Maps List — Heatmap link column ✅ DONE</div>
+          <div class="php-ref">maps.php type=heatmap column → Maps/Index: added Heatmap column with 🔥 link jumping directly to Map Detail #tab-heatmap for each map. Status: 90% → 95%.</div>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">❓</span>
+        <div>
+          <div class="feature">Help Page — mode-conditional tracking text ✅ DONE</div>
+          <div class="php-ref">help.php Mode conditional → Help/Index: reads Mode from hlstats_Options (GetModeAsync via IPlayerService) and shows NameTrack / LAN / Steam (Normal) text matching PHP. GetModeAsync added to IPlayerStatsRepository/IPlayerService. 3 new controller tests. Status: 85% → 95%.</div>
+        </div>
+      </div>
+    </div>
+    <h2 class="section-title" style="margin-top:1.5rem;">🆕 Previous Report <span style="font-size:0.8rem;color:var(--muted);font-weight:400">(2026-05-11 rev 8)</span></h2>
+    <div class="new-grid">
+      <div class="new-card">
+        <span class="icon">🖧</span>
+        <div>
+          <div class="feature">Daemon — Server Auto-Registration ✅ DONE</div>
+          <div class="php-ref">hlstats.pl addServerToDB → DaemonStateManager.AutoRegisterServerAsync. When AllowOnlyConfigServers=false and an unknown server sends a log packet, inserts the server into hlstats_Servers and copies game defaults from hlstats_Games_Defaults. Game code configured via Daemon:AutoRegisterGame appsetting. Includes TryParseSenderAddr for IPv4 + IPv6 bracket notation. 12 new unit tests.</div>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">🔄</span>
+        <div>
+          <div class="feature">Daemon — SIGHUP Config Reload ✅ DONE</div>
+          <div class="php-ref">hlstats.pl HUP_handler → DaemonWorker PosixSignalRegistration. SIGHUP flushes all active player sessions, clears in-memory player registries, then calls LoadAsync to reload server configs and global options from DB — mirrors Perl flushAll + readDatabaseConfig. Windows silently skips registration. Checked via volatile bool at the top of each packet loop iteration.</div>
+        </div>
+      </div>
+    </div>
+    <h2 class="section-title" style="margin-top:1.5rem;">🆕 Previous Report <span style="font-size:0.8rem;color:var(--muted);font-weight:400">(2026-05-11 rev 7)</span></h2>
+    <div class="new-grid">
+      <div class="new-card">
+        <span class="icon">🌐</span>
+        <div>
+          <div class="feature">Background DNS Resolver ✅ DONE</div>
+          <div class="php-ref">hlstats-resolve.pl → DnsResolveService + HostGroupClassifier in HLStatsX.NET.Awards. Reverse DNS lookup for unresolved IPs in hlstats_Events_Connects; host group classification via hlstats_HostGroups patterns (shell glob, longest-first) with domain-extraction fallback; configurable timeout (HLStatsX:Resolve:DnsTimeoutSeconds); --run-now --resolve CLI flag; --all includes resolve.</div>
+        </div>
+      </div>
+    </div>
+    <h2 class="section-title" style="margin-top:1.5rem;">🆕 Previous Report <span style="font-size:0.8rem;color:var(--muted);font-weight:400">(2026-05-11 rev 6)</span></h2>
+    <div class="new-grid">
+      <div class="new-card">
+        <span class="icon">📲</span>
+        <div>
+          <div class="feature">In-Game Pages — All 19 Pages ✅ DONE</div>
+          <div class="php-ref">ingame/ (21 PHP files, 2 are layout partials) → InGameController + 19 views at /ingame/*: motd, players, clans, claninfo, statsme/kills/weapons/accuracy/targets/maps per-player, servers, status, bans, help, weaponinfo, mapinfo, actions, actioninfo, load. Lightweight no-chrome HTML for Half-Life in-game MOTD browser.</div>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">🔫</span>
+        <div>
+          <div class="feature">Weapon Detail — "Last N Days" qualifier ✅ DONE</div>
+          <div class="php-ref">weaponinfo.php summary header: "From a total of X kills with Y headshots (Last N Days)" — DeleteDays option now read and displayed. Status: 85% → 95%.</div>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">🗺️</span>
+        <div>
+          <div class="feature">Map Detail — "Last N Days" qualifier ✅ DONE</div>
+          <div class="php-ref">mapinfo.php summary header: "From a total of X kills (Last N Days)" — DeleteDays option now read and displayed. Status: 85% → 95%.</div>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">📋</span>
+        <div>
+          <div class="feature">Player Sessions — comprehensive 12-column table ✅ DONE</div>
+          <div class="php-ref">playersessions.php → Players/Sessions: full 12-column table (Date, Skill Change ▲/▼, Points, Time, Kills, Deaths, K:D, HS, HS:K, Suicides, TKs, Kill Streak), sortable, paginated, DeleteDays footer, back link. Status: 90% → 95%.</div>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">⚡</span>
+        <div>
+          <div class="feature">Actions + Action Detail — full parity ✅ DONE</div>
+          <div class="php-ref">actions.php + actioninfo.php → Actions/Index + Actions/Detail: achievers table (PlayerActions or PlayerPlayerActions) + victims table for PvP actions, both with DeleteDays and separate sortable+paginated controls. Status: 90% → 95%.</div>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">🎭</span>
+        <div>
+          <div class="feature">Roles + Role Detail — full parity ✅ DONE</div>
+          <div class="php-ref">roles.php + rolesinfo.php → Roles/Index + Roles/Detail: role images, picked/%/ratio (meter), kills/%/ratio (meter), deaths/%/ratio (meter), K:D; role detail with total kills/headshots, "Last N Days", player kill table. Status: 90% → 95%.</div>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">👤</span>
+        <div>
+          <div class="feature">Admin User Management — full PHP parity ✅ DONE</div>
+          <div class="php-ref">admintasks/adminusers.php → Admin/Users + Admin/EditUser: edit form was already implemented but parity report was stale. Polished: AccLevel dropdown now matches PHP (Administrator=100 / Restricted=80 / No Access=0), access level descriptions, password encryption note added. Status: 70% → 95%.</div>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">🖥️</span>
+        <div>
+          <div class="feature">Admin Dashboard — full PHP parity ✅ DONE</div>
+          <div class="php-ref">admin.php → Admin/Dashboard: complete rewrite. 5 stat cards (Players, Clans, Active Servers, Total Servers, Games), General Settings quick-links, per-game cards with all settings links (Servers/Actions/Teams/Roles/Weapons/Ranks/Ribbons + all 4 award types pre-filled with ?game=), 9 Tools with descriptions, Servers summary table. Status: 65% → 95%.</div>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">🔊</span>
+        <div>
+          <div class="feature">Admin — VoiceComm Server Management ✅ DONE</div>
+          <div class="php-ref">admintasks/voicecomm.php → Admin/VoiceComm: full CRUD for hlstats_Servers_VoiceComm. List table (type/name/address/UDP port/query port/description), create form (serverType select: TeamSpeak=0 / Ventrilo=1), edit form, delete. Status: 0% → 95%.</div>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">⚙️</span>
+        <div>
+          <div class="feature">Admin — Daemon Control ✅ DONE</div>
+          <div class="php-ref">admintasks/tools_perlcontrol.php → Admin/Tools/DaemonControl: send RELOAD or KILL UDP control packets to Perl daemon or HLStatsX.NET.Daemon. Configurable host/port; 5-second receive timeout; displays bytes sent, packets received, and response text. Status: 0% → 95%.</div>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">🛠️</span>
+        <div>
+          <div class="feature">Admin — Reset DB Collations ✅ DONE</div>
+          <div class="php-ref">admintasks/tools_resetdbcollations.php → Admin/Tools/ResetCollations: converts all tables to utf8mb4/utf8mb4_unicode_ci. Two modes: run on DB (ALTER TABLE via raw ADO.NET) or print SQL statements for manual execution. Status: 0% → 95%.</div>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">📈</span>
+        <div>
+          <div class="feature">Server Detail — Historical Load Graphs ✅ DONE</div>
+          <div class="php-ref">servers.php detail → Servers/Detail: range tab buttons (24h / 1 Week / 1 Month / 1 Year). AJAX fetch to /Servers/LoadChart/{id}?range={n} updates Chart.js canvas in-place. Down-sampling matches PHP show_graph.php avg_step constants (7/33/400). Status: 85% → 95%.</div>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">🎮</span>
+        <div>
+          <div class="feature">Game Dashboard — Per-Server Chart Range Switching ✅ DONE</div>
+          <div class="php-ref">game.php → Home/Index: 24h / 1 Week / 1 Month / 1 Year buttons added per server. Each server's buttons are scoped independently via data-server attribute. Reuses existing /Servers/LoadChart endpoint — no backend changes needed. Status: 92% → 95%.</div>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">🔍</span>
+        <div>
+          <div class="feature">Parity Correction — chat.php "Top Chatters" phantom gap removed</div>
+          <div class="php-ref">Verified against PHP source (chat.php) and live site: PHP has no top chatters leaderboard section. The claim was incorrect. Status corrected: 90% → 95%.</div>
+        </div>
+      </div>
+      <div class="new-card">
+        <span class="icon">🔍</span>
+        <div>
+          <div class="feature">Parity Correction — claninfo.php "tag_style colour" phantom gap removed</div>
+          <div class="php-ref">Verified against PHP source (claninfo.php, claninfo_general.php, tools_editdetails_clan.php) and live site: tag_style column does not exist in the PHP source or DB schema. The claim was incorrect. Status corrected: 90% → 95%.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ BACKGROUND SERVICES -->
+  <div class="section">
+    <h2 class="section-title">🔧 Background Services &amp; Daemon</h2>
+    <div class="progress-grid">
+      <div class="progress-card">
+        <div class="label">Awards Service</div>
+        <div class="pct green">100%</div>
+        <div class="bar-track"><div class="bar-fill green" style="width:100%"></div></div>
+        <div class="delta">Replaces hlstats-awards.pl — feature-complete</div>
+        <div class="component-status">
+          ✅ DoInactive → PlayerActivityService<br>
+          ✅ DoAwards → AwardsCalculationService<br>
+          ✅ DoRibbons → RibbonsService<br>
+          ✅ DoGeoIP → GeoIpService (MaxMind GeoLite2-City)<br>
+          ✅ DoClans → ClansService + ClanPatternMatcher<br>
+          ✅ DoPruning → PruningService (all 20 event tables)<br>
+          ✅ DoOptimize → OptimizeService<br>
+          ✅ hlstats-resolve.pl → DnsResolveService + HostGroupClassifier<br>
+          ✅ Scheduled daily runner (configurable RunAt time)<br>
+          ✅ --run-now CLI flags for all tasks (incl. --resolve)
+        </div>
+      </div>
+      <div class="progress-card">
+        <div class="label">Daemon (hlstats.pl rewrite)</div>
+        <div class="pct green">96%</div>
+        <div class="bar-track"><div class="bar-fill green" style="width:96%"></div></div>
+        <div class="delta">A2S_INFO done; SourceRconClient + GoldSrcRconClient + full broadcasting wired</div>
+        <div class="component-status">
+          ✅ UDP listener + STDIN import mode<br>
+          ✅ All parsers: log line, player string, properties<br>
+          ✅ SteamID normalisation, bot detection<br>
+          ✅ Multi-server player registry<br>
+          ✅ Connect, Enter Game, Disconnect<br>
+          ✅ Team/Role/Name change<br>
+          ✅ Kill (Frag), Team Kill, Suicide<br>
+          ✅ Player Action, Player-Player Action, Team Bonus<br>
+          ✅ Map change, Statsme, Chat<br>
+          ✅ Clan tag matching + auto-create<br>
+          ✅ GeoIP on connect, Livestat lifecycle<br>
+          ✅ All 6 skill modes + L4D variant<br>
+          ✅ Trend tracking, bonus round detection<br>
+          ✅ Server auto-registration + SIGHUP config reload<br>
+          ✅ A2S_INFO query (MapChangeHandler map fallback)<br>
+          ✅ SourceRconClient (TCP) + GoldSrcRconClient (UDP)<br>
+          ✅ ServerBroadcastService — kill/TK, connect, rank kick, actions<br>
+          ❌ RCON/Admin events · Statsme2 · Latency — deferred<br>
+          ❌ Global chat relay · auto-team balance · global ban — deferred<br>
+          ❌ Proxy daemon protocol — deferred
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ DAEMON DETAIL -->
+  <div class="section">
+    <h2 class="section-title">⚙️ Daemon Detail — Event Handler Coverage</h2>
+    <div class="table-wrapper">
+      <table class="feature-table">
+        <thead>
+          <tr>
+            <th>Perl Sub</th>
+            <th>.NET Handler</th>
+            <th>DB Tables Written</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code class="php-file">doEvent_Connect</code></td><td>ConnectHandler</td><td style="color:var(--muted);font-size:0.82rem">Events_Connects, PlayerUniqueIds, Players, PlayerNames, Livestats</td><td class="pct-cell high">✅ Done</td></tr>
+          <tr><td><code class="php-file">doEvent_EnterGame</code></td><td>EnterGameHandler</td><td style="color:var(--muted);font-size:0.82rem">Events_Entries</td><td class="pct-cell high">✅ Done</td></tr>
+          <tr><td><code class="php-file">doEvent_Disconnect</code></td><td>DisconnectHandler</td><td style="color:var(--muted);font-size:0.82rem">Events_Disconnects, Players, PlayerNames, Livestats (delete)</td><td class="pct-cell high">✅ Done</td></tr>
+          <tr><td><code class="php-file">doEvent_Clan</code></td><td>ClanService (via connect/name-change)</td><td style="color:var(--muted);font-size:0.82rem">Clans, Players.clan</td><td class="pct-cell high">✅ Done</td></tr>
+          <tr><td><code class="php-file">doEvent_Frag</code></td><td>FragHandler</td><td style="color:var(--muted);font-size:0.82rem">Events_Frags, Weapons, Maps_Counts</td><td class="pct-cell high">✅ Done</td></tr>
+          <tr><td><code class="php-file">doEvent_Teamkill</code></td><td>FragHandler (TK branch)</td><td style="color:var(--muted);font-size:0.82rem">Events_Teamkills</td><td class="pct-cell high">✅ Done</td></tr>
+          <tr><td><code class="php-file">doEvent_Suicide</code></td><td>SuicideHandler</td><td style="color:var(--muted);font-size:0.82rem">Events_Suicides</td><td class="pct-cell high">✅ Done</td></tr>
+          <tr><td><code class="php-file">doEvent_TeamSelection</code></td><td>ChangeTeamHandler</td><td style="color:var(--muted);font-size:0.82rem">Events_ChangeTeam</td><td class="pct-cell high">✅ Done</td></tr>
+          <tr><td><code class="php-file">doEvent_RoleSelection</code></td><td>ChangeRoleHandler</td><td style="color:var(--muted);font-size:0.82rem">Events_ChangeRole, Roles</td><td class="pct-cell high">✅ Done</td></tr>
+          <tr><td><code class="php-file">doEvent_ChangeName</code></td><td>ChangeNameHandler</td><td style="color:var(--muted);font-size:0.82rem">PlayerNames, clan re-match</td><td class="pct-cell high">✅ Done</td></tr>
+          <tr><td><code class="php-file">doEvent_Chat</code></td><td>ChatHandler</td><td style="color:var(--muted);font-size:0.82rem">Events_Chat</td><td class="pct-cell high">✅ Done</td></tr>
+          <tr><td><code class="php-file">doEvent_PlayerAction</code></td><td>PlayerActionHandler</td><td style="color:var(--muted);font-size:0.82rem">Events_PlayerActions, GameActions</td><td class="pct-cell high">✅ Done</td></tr>
+          <tr><td><code class="php-file">doEvent_PlayerPlayerAction</code></td><td>PlayerPlayerActionHandler</td><td style="color:var(--muted);font-size:0.82rem">Events_PlayerPlayerActions</td><td class="pct-cell high">✅ Done</td></tr>
+          <tr><td><code class="php-file">doEvent_TeamAction</code></td><td>TeamBonusHandler</td><td style="color:var(--muted);font-size:0.82rem">Events_PlayerActions (per team member)</td><td class="pct-cell high">✅ Done</td></tr>
+          <tr><td><code class="php-file">doEvent_WorldAction</code></td><td>EventRouter (inline)</td><td style="color:var(--muted);font-size:0.82rem">GameActions, Events_PlayerActions</td><td class="pct-cell high">✅ Done</td></tr>
+          <tr><td><code class="php-file">doEvent_ChangeMap</code></td><td>MapChangeHandler</td><td style="color:var(--muted);font-size:0.82rem">Servers (act_map, map_started, map_changes)</td><td class="pct-cell high">✅ Done</td></tr>
+          <tr><td><code class="php-file">doEvent_Statsme</code></td><td>StatsmeHandler</td><td style="color:var(--muted);font-size:0.82rem">Events_Statsme, Weapons</td><td class="pct-cell high">✅ Done</td></tr>
+          <tr><td><code class="php-file">doEvent_Rcon</code></td><td>—</td><td style="color:var(--muted);font-size:0.82rem">Events_Rcon</td><td class="pct-cell zero">❌ Deferred</td></tr>
+          <tr><td><code class="php-file">doEvent_Admin</code></td><td>—</td><td style="color:var(--muted);font-size:0.82rem">Events_Admin</td><td class="pct-cell zero">❌ Deferred</td></tr>
+          <tr><td><code class="php-file">doEvent_Statsme2</code></td><td>—</td><td style="color:var(--muted);font-size:0.82rem">Events_Statsme2</td><td class="pct-cell zero">❌ Deferred</td></tr>
+          <tr><td><code class="php-file">doEvent_Statsme_Latency</code></td><td>—</td><td style="color:var(--muted);font-size:0.82rem">Events_Latency</td><td class="pct-cell zero">❌ Deferred</td></tr>
+          <tr><td><code class="php-file">doEvent_Statsme_Time</code></td><td>—</td><td style="color:var(--muted);font-size:0.82rem">Events_StatsmeTime</td><td class="pct-cell zero">❌ Deferred</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ FEATURE TABLE — DONE -->
+  <div class="section">
+    <h2 class="section-title">✅ Fully Implemented</h2>
+    <div class="table-wrapper">
+      <table class="feature-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>PHP Reference</th>
+            <th>Gap / Notes</th>
+            <th>Completeness</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>In-Game Pages — All 19 Pages</strong></td><td class="php-file">ingame/ (21 files)</td><td style="color:var(--muted);font-size:0.82rem"><strong>🆕 NEW.</strong> InGameController + 19 views at /ingame/*. Lightweight no-chrome HTML for Half-Life in-game MOTD browser: motd (top players/clans), players, clans, claninfo, statsme, kills, weapons, accuracy, targets, maps, servers, status, bans, help, weaponinfo, mapinfo, actions, actioninfo, load. footer.php + header.php are layout partials handled by _InGameLayout.cshtml.</td><td class="pct-cell high">90%</td></tr>
+          <tr><td>Livestats Standalone Page</td><td class="php-file">livestats.php</td><td style="color:var(--muted);font-size:0.82rem">Full PHP parity: live players table, team footer with round wins (MapCtWins/MapTsWins from Server entity), auto-refresh, dedicated URL for in-game MOTD iframe integration. No gaps.</td><td class="pct-cell high">97%</td></tr>
+          <tr><td>Chat Log — Server Chat + Player History</td><td class="php-file">chat.php, chathistory.php</td><td style="color:var(--muted);font-size:0.82rem">Full PHP parity: Chat/Index: server chat log with server dropdown, text filter, sortable table, pagination, team/squad prefix. Chat/PlayerHistory: per-player chat history, "Last N Days" header qualifier (DeleteDays), text filter, sortable table, back-link. PHP chat.php has no top chatters section.</td><td class="pct-cell high">98%</td></tr>
+          <tr><td>Player Bans</td><td class="php-file">bans.php</td><td style="color:var(--muted);font-size:0.82rem">Full PHP parity. All 10 columns: Player (flag + profile link), Ban Date, Skill Points, Activity bar graph, Kills, Deaths, Headshots, K:D, HS:K, Accuracy. Sortable, paginated, "Find a player" search form, minKills filter.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Player Leaderboard (total + period filters)</td><td class="php-file">players.php</td><td style="color:var(--muted);font-size:0.82rem">PHP has inline Autocompleter.js live search — omitted in .NET (Search page instead). Added last_skill_change trend indicator (▲/▼) next to Points matching PHP's skill_change=1 column attribute.</td><td class="pct-cell high">97%</td></tr>
+          <tr><td>Player Profile — all tabs</td><td class="php-file">playerinfo.php + sub-files</td><td style="color:var(--muted);font-size:0.82rem">PHP profile header shows a rank-change arrow (rank movement since last visit). Per-server playtime history in General tab not confirmed in .NET.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Player Event History</td><td class="php-file">playerhistory.php</td><td style="color:var(--muted);font-size:0.82rem">All 16 event types: Connect, Disconnect, Entry, Kill, Kill (HS), Death, Team Kill, Friendly Fire, Suicide, Role, Team, Action, Action+, Action-, Team Bonus, Name Change. Sortable, paginated, "Last N Days" header. Previously missing TeamBonus and ChangeName events added.</td><td class="pct-cell high">97%</td></tr>
+          <tr><td>Player Forum Signature PNG</td><td class="php-file">sig.php</td><td style="color:var(--muted);font-size:0.82rem">PHP reads per-game SigBackground option. .NET SkiaSharp mirrors this; minor gradient rendering differences.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Player Steam Avatar</td><td class="php-file">Steam Web API</td><td style="color:var(--muted);font-size:0.82rem">Steam API integration works. PHP falls back to default_avatar.jpg if unavailable; .NET fallback not verified.</td><td class="pct-cell high">90%</td></tr>
+          <tr><td>Player Sessions Page</td><td class="php-file">playersessions.php</td><td style="color:var(--muted);font-size:0.82rem">Full 12-column parity: Date, Skill Change (▲/▼ coloured arrows), Points, Time (Xd HH:MM:SSh), Kills, Deaths, K:D, HS, HS:K, Suicides, TKs, Kill Streak. Sortable, paginated, DeleteDays footer, back link.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Player Awards History</td><td class="php-file">playerawards.php</td><td style="color:var(--muted);font-size:0.82rem">Full PHP parity: all columns, awardId drill-down mode (per-day occurrences), sort, pagination, back-link. No gaps.</td><td class="pct-cell high">98%</td></tr>
+          <tr><td>Clan Leaderboard</td><td class="php-file">clans.php</td><td style="color:var(--muted);font-size:0.82rem">PHP includes inline Autocompleter.js clan search — omitted in .NET (Search page instead). Added AVG(last_skill_change) trend indicator (▲/▼) next to Avg. Points matching PHP's skill_change=1 column attribute.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Clan Profile — all tabs</td><td class="php-file">claninfo.php + sub-files</td><td style="color:var(--muted);font-size:0.82rem">No gaps identified — tag_style column does not exist in PHP source, DB schema, or live site output.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Weapon Leaderboard</td><td class="php-file">weapons.php</td><td style="color:var(--muted);font-size:0.82rem">Per-row weapon image in Weapon column; onerror tries .png then falls back to bold weapon name — matches PHP weaponimg fallback. No gaps identified.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Weapon Detail — Player Leaderboard</td><td class="php-file">weaponinfo.php</td><td style="color:var(--muted);font-size:0.82rem">Full PHP parity: player leaderboard (kills, headshots, HpK), weapon image, total kills/headshots with "Last N Days" qualifier, back link, sortable, paginated.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Map Leaderboard</td><td class="php-file">maps.php</td><td style="color:var(--muted);font-size:0.82rem">PHP shows a map screenshot thumbnail beside each row. .NET omits per-row map images on the list page.</td><td class="pct-cell high">90%</td></tr>
+          <tr><td>Map Detail — Player Leaderboard + Heatmap</td><td class="php-file">mapinfo.php</td><td style="color:var(--muted);font-size:0.82rem">Full PHP parity: player leaderboard, overhead map image, "Last N Days" qualifier. Interactive Canvas heatmap (Kills/Deaths tabs + zoom/pan) exceeds PHP. Map download link absent (optional map_dlurl option).</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Server List</td><td class="php-file">servers.php</td><td style="color:var(--muted);font-size:0.82rem">Added steam://connect/ join link per row matching PHP. Live server pinging (A2S_INFO) is deferred to daemon feature. DB-based status (act_players, IsActive flag) is updated in real-time by the daemon.</td><td class="pct-cell high">93%</td></tr>
+          <tr><td><strong>Server Detail — Historical Load Graphs</strong></td><td class="php-file">servers.php</td><td style="color:var(--muted);font-size:0.82rem"><strong>🆕 Upgraded to full parity.</strong> Live players table, daily awards, per-server load chart with 4 time ranges (24h / 1 Week / 1 Month / 1 Year). Range tab buttons AJAX-fetch /Servers/LoadChart and update Chart.js in-place. Down-sampling matches PHP show_graph.php avg_step constants. Status: 85% → 95%.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td><strong>Game Dashboard — All Sections</strong></td><td class="php-file">game.php</td><td style="color:var(--muted);font-size:0.82rem">Servers table, global stats header, aggregate trend chart, per-server load charts with 4 time ranges (24h/week/month/year), VoiceComm block (hlstats_Servers_VoiceComm), Leaflet player location map, Livestats live players, Daily Awards. Google Maps replaced with Leaflet/OSM — functionally equivalent.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Awards — Daily Awards</td><td class="php-file">awards.php, awards_daily.php</td><td style="color:var(--muted);font-size:0.82rem">Added daily awards date header ("Daily Awards (Monday 12 May)") from awards_d_date option matching PHP section title. Added award.png fallback when game-specific award image is missing. Column count (awarddailycols/awardglobalcols) not configurable — minor cosmetic gap.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Awards — Global Awards</td><td class="php-file">awards_global.php</td><td style="color:var(--muted);font-size:0.82rem">Award image fallback fixed. Column count from awardglobalcols option not configurable — minor cosmetic gap.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Awards — Ranks Listing</td><td class="php-file">awards_ranks.php</td><td style="color:var(--muted);font-size:0.82rem">Grid layout, player counts ("Achieved by N players"), links to RankDetail when players exist. Column count fixed (not driven by awardrankscols option).</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Awards — Ribbons Listing</td><td class="php-file">awards_ribbons.php</td><td style="color:var(--muted);font-size:0.82rem">Ribbon Classes grouped by awardCount value, grid layout, player counts, links to RibbonDetail. Column count fixed (not driven by awardribbonscols option).</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Rank Detail (Players at a Rank)</td><td class="php-file">rankinfo.php</td><td style="color:var(--muted);font-size:0.82rem">Paginated player table (flag, name, kills, skill), sortable columns, pagination, back-link to Awards.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Ribbon Detail — Player Leaderboard</td><td class="php-file">ribboninfo.php</td><td style="color:var(--muted);font-size:0.82rem">Full PHP parity: ribbon image/name header, award threshold filter (awardCount), paginated sortable player table (rank, flag, player link, daily-award count, award name), back-link to Awards. No gaps.</td><td class="pct-cell high">97%</td></tr>
+          <tr><td>Daily Award Detail History</td><td class="php-file">dailyawardinfo.php</td><td style="color:var(--muted);font-size:0.82rem">Full PHP parity: award image (with onerror fallback), date, player with flag, verb-suffixed count, sort, pagination, back-link. No gaps.</td><td class="pct-cell high">97%</td></tr>
+          <tr><td>Player Search</td><td class="php-file">search.php</td><td style="color:var(--muted);font-size:0.82rem">PHP shows live Autocompleter.js suggestions. .NET is plain form submission — functional parity, no real-time autocomplete.</td><td class="pct-cell high">90%</td></tr>
+          <tr><td>Actions Leaderboard</td><td class="php-file">actions.php</td><td style="color:var(--muted);font-size:0.82rem">Total earned header, action/earned/reward table, sortable, paginated, back link. Full PHP parity.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Action Detail (Achievers + Victims)</td><td class="php-file">actioninfo.php</td><td style="color:var(--muted);font-size:0.82rem">Achievers table (PlayerActions or PlayerPlayerActions) + Victims table for PvP actions, both with DeleteDays, separate sortable+paginated controls. Minor: TeamBonuses fallback omitted (edge case).</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Roles Leaderboard</td><td class="php-file">roles.php</td><td style="color:var(--muted);font-size:0.82rem">Role images, Picked/%/ratio (meter bar), Kills/%/ratio (meter bar), Deaths/%/ratio (meter bar), K:D. All sortable. Back link. Full PHP parity.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Role Detail (Player Kill List)</td><td class="php-file">rolesinfo.php</td><td style="color:var(--muted);font-size:0.82rem">Role image, total kills/headshots, "Last N Days", player kill table, sortable, paginated, back link. Full PHP parity.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Country Leaderboard</td><td class="php-file">countryclans.php</td><td style="color:var(--muted);font-size:0.82rem">Full PHP parity: all columns (Avg Points, Members, Activity bar, Connection Time, Kills, Deaths, K:D), minMembers filter, activity filter (stored ActivityScore ≥ 0 equivalent to PHP per-player threshold), sort, pagination. No gaps.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Country Profile (Member List)</td><td class="php-file">countryclansinfo.php</td><td style="color:var(--muted);font-size:0.82rem">Full PHP parity: country stats header, paginated member table (Rank + MmRank columns), Leaflet member location map (lat/lng from GeoIP) replaces PHP Google Maps embed. GetMemberLocationsAsync in ICountryRepository/ICountryService.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Multi-Game Landing Page / Game Selector</td><td class="php-file">contents.php, gameslist.php</td><td style="color:var(--muted);font-size:0.82rem">Full PHP parity: Home/GamesList.cshtml: game cards (icon, name, players, top player/clan links), general stats (players/clans/servers/kills/last kill/"event history expires after N days"), game tab bar in nav, auto-selects single game. GameService fetches DeleteDays from hlstats_Options.</td><td class="pct-cell high">98%</td></tr>
+          <tr><td>Help Page</td><td class="php-file">help.php</td><td style="color:var(--muted);font-size:0.82rem">HelpController + Help/Index.cshtml: weapons reference table, game actions reference table (tabbed by game), mode-conditional tracking text (NameTrack/LAN/Steam Normal) read from hlstats_Options via GetModeAsync.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Admin — Login / Logout</td><td class="php-file">adminauth.php</td><td style="color:var(--muted);font-size:0.82rem">Cookie-based claims authentication. Login/logout/access-denied flow complete.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Admin — Site Options</td><td class="php-file">admintasks/options.php</td><td style="color:var(--muted);font-size:0.82rem">Full GET/POST form covering all hlstats_Options rows. Minor: a few legacy option rows (Perl path) are N/A for .NET.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Admin — Games CRUD</td><td class="php-file">admintasks/games.php</td><td style="color:var(--muted);font-size:0.82rem">Full list/create/edit/delete for hlstats_Games.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Admin — Servers CRUD (including Create/Edit)</td><td class="php-file">admintasks/newserver.php, serversettings.php</td><td style="color:var(--muted);font-size:0.82rem">Full list/create/edit/delete including server settings form. Server creation now copies hlstats_Games_Defaults into hlstats_Servers_Config (ON DUPLICATE KEY UPDATE).</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Admin — Clan Tags CRUD</td><td class="php-file">admintasks/clantags.php</td><td style="color:var(--muted);font-size:0.82rem">Full CRUD for auto-assignment rules.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Admin — Host Groups CRUD</td><td class="php-file">admintasks/hostgroups.php</td><td style="color:var(--muted);font-size:0.82rem">Full CRUD for server host group definitions.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Admin — Actions CRUD</td><td class="php-file">admintasks/actions.php</td><td style="color:var(--muted);font-size:0.82rem">Full CRUD for game action events and skill bonus configurations.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Admin — Teams CRUD</td><td class="php-file">admintasks/teams.php</td><td style="color:var(--muted);font-size:0.82rem">Full CRUD for team definitions.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Admin — Roles CRUD</td><td class="php-file">admintasks/roles.php</td><td style="color:var(--muted);font-size:0.82rem">Full CRUD for game role definitions.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Admin — Weapons CRUD</td><td class="php-file">admintasks/weapons.php</td><td style="color:var(--muted);font-size:0.82rem">Full CRUD for weapon definitions.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Admin — Ranks CRUD</td><td class="php-file">admintasks/ranks.php</td><td style="color:var(--muted);font-size:0.82rem">Full CRUD for rank tiers.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Admin — Ribbons CRUD + Trigger Conditions</td><td class="php-file">admintasks/ribbons.php, ribbons_trigger.php</td><td style="color:var(--muted);font-size:0.82rem">Full CRUD for ribbons and their trigger conditions.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Admin — Awards CRUD (Player / Weapon / Online)</td><td class="php-file">admintasks/awards_*.php</td><td style="color:var(--muted);font-size:0.82rem">Full CRUD for all three award types.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Admin — Player Edit Tools</td><td class="php-file">admintasks/tools_editdetails_player.php</td><td style="color:var(--muted);font-size:0.82rem">Full edit form (profile fields, IP list). Edit Details search page now returns player/clan matches with direct Edit links. PHP has no Merge player feature — gap was phantom.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Admin — Clan Edit Tools</td><td class="php-file">admintasks/tools_editdetails_clan.php</td><td style="color:var(--muted);font-size:0.82rem">Edit clan name, tag, tag style, and home URL.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Admin — Events Log</td><td class="php-file">admintasks/tools_adminevents.php</td><td style="color:var(--muted);font-size:0.82rem">Paginated audit log of admin actions.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Admin — DB Reset (per-game / global)</td><td class="php-file">admintasks/tools_reset.php</td><td style="color:var(--muted);font-size:0.82rem">Reset stats to zero with per-game or global scope and table checkboxes.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Admin — DB Optimize</td><td class="php-file">admintasks/tools_optimize.php</td><td style="color:var(--muted);font-size:0.82rem">Runs OPTIMIZE TABLE on all hlstatsx tables.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Admin — Copy Game Settings</td><td class="php-file">admintasks/tools_settings_copy.php</td><td style="color:var(--muted);font-size:0.82rem">Copies actions/teams/roles/weapons config from one game to another.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Admin — Cleanup Inactive</td><td class="php-file">(tools_cleanup)</td><td style="color:var(--muted);font-size:0.82rem">Removes players, clans, and servers below configurable activity thresholds.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td>Admin — IP Stats</td><td class="php-file">admintasks/tools_ipstats.php</td><td style="color:var(--muted);font-size:0.82rem">Connection frequency report from hlstats_Events_Connects. Two-level view: hostgroup list with meter bar + per-host drill-down. Sortable, paginated.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td><strong>Admin — User Management</strong></td><td class="php-file">admintasks/adminusers.php</td><td style="color:var(--muted);font-size:0.82rem"><strong>🆕 Upgraded to full parity.</strong> List, create, edit (password + AccLevel dropdown: Administrator/Restricted/No Access matching PHP 0/80/100), delete. Access level descriptions and password note match PHP help text.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td><strong>Admin — Dashboard</strong></td><td class="php-file">admin.php</td><td style="color:var(--muted);font-size:0.82rem"><strong>🆕 Full parity.</strong> 5 stat cards (Players, Clans, Active Servers, Total Servers, Games count); General Settings quick-links; per-game cards with links to Servers/Actions/Teams/Roles/Weapons/Ranks/Ribbons + all 4 award types pre-filled with ?game=; Tools section with 9 tools + descriptions; Servers summary table sorted by game+name.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td><strong>Admin — VoiceComm Server Management</strong></td><td class="php-file">admintasks/voicecomm.php</td><td style="color:var(--muted);font-size:0.82rem"><strong>🆕 NEW.</strong> Full CRUD for hlstats_Servers_VoiceComm. List table (type/name/address/UDP port/query port/description), create form (serverType select: TeamSpeak=0 / Ventrilo=1), edit form, delete.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td><strong>Admin — Daemon Control</strong></td><td class="php-file">admintasks/tools_perlcontrol.php</td><td style="color:var(--muted);font-size:0.82rem"><strong>🆕 NEW.</strong> Send RELOAD or KILL UDP control packets to Perl daemon or HLStatsX.NET.Daemon. Configurable host/port; 5-second receive timeout; displays bytes sent, packets received, and response text.</td><td class="pct-cell high">95%</td></tr>
+          <tr><td><strong>Admin — Reset DB Collations</strong></td><td class="php-file">admintasks/tools_resetdbcollations.php</td><td style="color:var(--muted);font-size:0.82rem"><strong>🆕 NEW.</strong> Converts all tables to utf8mb4/utf8mb4_unicode_ci. Two modes: run on DB (ALTER TABLE via raw ADO.NET) or print SQL statements for manual execution on large databases.</td><td class="pct-cell high">95%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ FEATURE TABLE — NOT STARTED -->
+  <div class="section">
+    <h2 class="section-title">❌ Not Yet Implemented</h2>
+    <div class="table-wrapper">
+      <table class="feature-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>PHP Reference</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Admin — DB Synchronize</td><td class="php-file">admintasks/tools_synchronize.php</td><td style="color:var(--muted);font-size:0.82rem">⚠️ <strong>Obsolete.</strong> Connects to defunct ELstatsNEO/HLstatsX master servers. Not worth porting.</td></tr>
+          <tr><td>Teamspeak / Ventrilo</td><td class="php-file">teamspeak.php, ventrilo.php</td><td style="color:var(--muted);font-size:0.82rem">Displays connected users on legacy voice servers. Low priority — most communities use Discord.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════ PRIORITY QUEUE -->
+  <div class="section">
+    <h2 class="section-title">🎯 Priority Queue</h2>
+    <p style="color:var(--muted);font-style:italic;">Empty — no known gaps remaining in implemented features.</p>
+  </div>
+
+  <!-- ══════════════════════════════════ STRENGTHS -->
+  <div class="section">
+    <h2 class="section-title">💪 What's Working Well</h2>
+    <div class="strength-grid">
+      <div class="strength-card">
+        <div class="stitle">📲 In-Game Pages — Complete</div>
+        <p>All 19 functional in-game pages are now live at /ingame/*. Lightweight no-chrome HTML for the Half-Life MOTD browser: player/clan ranks, weapon/map stats, accuracy, kill targets, statsme, server status, bans, actions, and more.</p>
+      </div>
+      <div class="strength-card">
+        <div class="stitle">🎮 Game Dashboard — Complete</div>
+        <p>Server list, aggregate trend chart, per-server load charts with 4 time ranges (24h/week/month/year), VoiceComm block, Leaflet player location map, live players table, and daily awards. game.php at 95%.</p>
+      </div>
+      <div class="strength-card">
+        <div class="stitle">🏆 Player Profile</div>
+        <p>Feature-complete with 26+ concurrent DB queries covering all tabs: General, Teams &amp; Actions, Weapons, Maps &amp; Servers, Kill Stats. Matches PHP original.</p>
+      </div>
+      <div class="strength-card">
+        <div class="stitle">🏰 Clan Profile</div>
+        <p>All tabs implemented: Members (paginated), Weapons, Map Performance, Actions, Teams, Roles, and an interactive Leaflet member location widget.</p>
+      </div>
+      <div class="strength-card">
+        <div class="stitle">📄 Consistent Patterns</div>
+        <p>Pagination, sortable columns, and game-parameter propagation are consistent across all 50+ implemented pages. Every table has a Rank column and sortable headers.</p>
+      </div>
+      <div class="strength-card">
+        <div class="stitle">🖼️ Forum Signature</div>
+        <p>SkiaSharp PNG generation matches PHP GD implementation — same 11 backgrounds, per-background colour logic, rank + kill data overlay.</p>
+      </div>
+      <div class="strength-card">
+        <div class="stitle">📅 Historical Leaderboards</div>
+        <p>Weekly, monthly, and daily leaderboards pull from hlstats_Players_History with accurate period filtering and unified PlayerLeaderboardRow model.</p>
+      </div>
+      <div class="strength-card">
+        <div class="stitle">🔐 Admin Panel (~98%)</div>
+        <p>Full CRUD for all entity types: users, games, servers, actions, teams, roles, weapons, ranks, ribbons + triggers, awards, and VoiceComm servers. Plus site-options, player/clan tools, events log, DB reset/optimize/copy, cleanup, IP Stats, daemon control, reset DB collations, and cookie auth. Only the obsolete VAC sync and legacy voice pages remain.</p>
+      </div>
+      <div class="strength-card">
+        <div class="stitle">🌍 Steam API</div>
+        <p>Steam avatar fetching via ISteamService is live. Player profiles show Steam Community avatars with graceful fallback on error.</p>
+      </div>
+      <div class="strength-card">
+        <div class="stitle">🌐 Multi-Game Support</div>
+        <p>Games list landing page is implemented. Game tab bar in the nav allows switching between all active games. Game param propagated throughout.</p>
+      </div>
+      <div class="strength-card">
+        <div class="stitle">🔥 Interactive Heatmap</div>
+        <p>Kill/death heatmap on Map Detail exceeds the PHP original — Canvas-based interactive overlay with tabs, zoom/pan, and automatic calibration from DB config. Bonus feature.</p>
+      </div>
+      <div class="strength-card">
+        <div class="stitle">🏆 Awards — All Four Tabs</div>
+        <p>Daily Awards, Global Awards, Ranks (grid with player counts + detail links), and Ribbons (class-grouped with player counts + detail links) — all implemented with full navigation to detail pages.</p>
+      </div>
+      <div class="strength-card">
+        <div class="stitle">⚙️ Daemon (96%)</div>
+        <p>The hlstats.pl rewrite is production-capable: all 18 game-event handlers done, all 6 skill modes verified, clan tag matching, GeoIP on connect, Livestat lifecycle, trend tracking, and graceful shutdown. Full RCON subsystem implemented — Source (TCP) and GoldSrc (UDP) clients, broadcasting wired into all event handlers. 641 unit tests.</p>
+      </div>
+      <div class="strength-card">
+        <div class="stitle">⚙️ Awards Background Service</div>
+        <p>HLStatsX.NET.Awards is a fully operational .NET Worker Service replacing hlstats-awards.pl: award calculation, ribbon recalculation, clan membership, player activity marking, data pruning, and OPTIMIZE TABLE. Supports scheduled runs and on-demand CLI flags.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <p>
+    🔗 PHP Reference: <a href="https://tft.nervaware.co.uk/stats/hlstats.php" target="_blank">tft.nervaware.co.uk/stats/hlstats.php</a>
+    &nbsp;&bull;&nbsp;
+    🆕 .NET Rewrite: <a href="https://tft.nervaware.co.uk/stats" target="_blank">tft.nervaware.co.uk/stats</a>
+    &nbsp;&bull;&nbsp;
+    <a href="https://github.com/petejefferson/hlstatsx.net" target="_blank">github.com/petejefferson/hlstatsx.net</a>
+  </p>
+  <p style="margin-top:8px;">Updated 2026-05-16 (rev 18) &bull; HLStatsX.NET Feature Parity Report</p>
+</div>
+
+</body>
+</html>

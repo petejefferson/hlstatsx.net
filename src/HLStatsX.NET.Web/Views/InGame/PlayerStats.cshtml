@@ -1,0 +1,80 @@
+@model InGamePlayerStatsViewModel
+@using HLStatsX.NET.Web.Models.ViewModels
+@{
+    Layout = "~/Views/Shared/_InGameLayout.cshtml";
+    ViewData["Title"] = Model.Player.LastName;
+
+    var flagBase = Url.Content("~/hlstatsimg/flags");
+    string FlagImg(string? flag) =>
+        $"<img src=\"{flagBase}/{(string.IsNullOrEmpty(flag) ? "0" : flag.ToLowerInvariant())}.gif\" alt=\"\" />";
+
+    string FormatDuration(int seconds)
+    {
+        var d = seconds / 86400; var h = (seconds % 86400) / 3600; var m = (seconds % 3600) / 60;
+        if (d > 0) return $"{d}d {h:D2}h {m:D2}m";
+        if (h > 0) return $"{h}h {m:D2}m";
+        return $"{m}m";
+    }
+
+    var p = Model.Player;
+    var r = Model.RealStats;
+}
+
+<table class="data-table">
+    <tr class="data-table-head"><td colspan="3">Statistics Summary</td></tr>
+    <tr class="bg1">
+        <td style="width:45%;">Name:</td>
+        <td colspan="2"><strong>@Html.Raw(FlagImg(p.Flag)) @p.LastName</strong></td>
+    </tr>
+    <tr class="bg2">
+        <td>Member of Clan:</td>
+        <td colspan="2">
+            @if (p.Clan != null)
+            {
+                <a href="@Url.Action("ClanInfo", "InGame", new { game = Model.Game, clan = p.ClanId })">@p.Clan.Name</a>
+            }
+            else { <text>(None)</text> }
+        </td>
+    </tr>
+    <tr class="bg1">
+        <td>Rank:</td>
+        <td colspan="2"><strong>@(p.ActivityScore > 0 ? Model.Rank.ToString("N0") : "Not active")</strong></td>
+    </tr>
+    <tr class="bg2"><td>Points:</td><td colspan="2"><strong>@p.Skill.ToString("N0")</strong></td></tr>
+    <tr class="bg1">
+        <td>Activity:*</td>
+        <td><meter min="0" max="100" low="25" high="50" optimum="75" value="@p.ActivityScore"></meter></td>
+        <td>@p.ActivityScore%</td>
+    </tr>
+    <tr class="bg2">
+        <td>Kills:</td>
+        <td colspan="2">@p.Kills.ToString("N0") (@r.RealKills.ToString("N0"))</td>
+    </tr>
+    <tr class="bg1"><td>Deaths:</td><td colspan="2">@p.Deaths.ToString("N0")</td></tr>
+    <tr class="bg2"><td>Suicides:</td><td colspan="2">@p.Suicides.ToString("N0")</td></tr>
+    <tr class="bg1">
+        <td>Kills per Death:</td>
+        <td colspan="2">@p.KillDeathRatio.ToString("F2") (@r.RealKpd.ToString("F2"))</td>
+    </tr>
+    <tr class="bg2">
+        <td>Headshots:</td>
+        <td colspan="2">@p.Headshots.ToString("N0") (@r.RealHeadshots.ToString("N0"))</td>
+    </tr>
+    <tr class="bg1">
+        <td>Headshots per Kill:</td>
+        <td colspan="2">@(p.Kills > 0 ? ((double)p.Headshots / p.Kills).ToString("F2") : "-") (@r.RealHpk.ToString("F2"))</td>
+    </tr>
+    <tr class="bg2">
+        <td>Weapon Accuracy:</td>
+        <td colspan="2">@p.Accuracy.ToString("F1")% (@Model.StatsmeAccuracy.ToString("F1")%)</td>
+    </tr>
+    <tr class="bg1">
+        <td>Teammate Kills:</td>
+        <td colspan="2">@p.Teamkills.ToString("N0") (@r.RealTeamkills.ToString("N0"))</td>
+    </tr>
+    <tr class="bg2"><td>Longest Kill Streak:</td><td colspan="2">@p.KillStreak.ToString("N0")</td></tr>
+    <tr class="bg1"><td>Longest Death Streak:</td><td colspan="2">@p.DeathStreak.ToString("N0")</td></tr>
+    <tr class="bg2"><td>Total Connection Time:</td><td colspan="2">@FormatDuration(p.ConnectionTime)</td></tr>
+</table>
+
+<p style="font-size:10px;padding:2px;">* Activity decays over time based on last play date.</p>

@@ -1,0 +1,16 @@
+[Unit]
+Description=HLStatsX.NET Capture — UDP log tap and forwarder
+Requires=docker.service
+After=docker.service network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/hlstatsx-capture
+
+ExecStartPre=docker compose pull
+ExecStart=docker compose up -d
+ExecStop=docker compose down
+
+[Install]
+WantedBy=multi-user.target

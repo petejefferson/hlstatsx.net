@@ -1,0 +1,698 @@
+using HLStatsX.NET.Core.Entities;
+using HLStatsX.NET.Core.Interfaces.Repositories;
+using HLStatsX.NET.Core.Models;
+using HLStatsX.NET.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+
+namespace HLStatsX.NET.Infrastructure.Repositories;
+
+/// <summary>
+/// Core player data access: CRUD, leaderboard, search, history, and basic profile lists.
+/// Profile-stat queries live in PlayerStatsRepository.
+/// </summary>
+public class PlayerRepository : IPlayerRepository
+{
+    private readonly IDbContextFactory<HLStatsDbContext> _factory;
+
+    public PlayerRepository(IDbContextFactory<HLStatsDbContext> factory) => _factory = factory;
+
+    public async Task<Player?> GetByIdAsync(int playerId, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        return await db.Players
+            .Include(p => p.Clan)
+            .Include(p => p.UniqueIds)
+            .SingleOrDefaultAsync(p => p.PlayerId == playerId, ct);
+    }
+
+    public async Task<PagedResult<Player>> GetRankingsAsync(string game, int page, int pageSize,
+        string sortBy = "skill", bool descending = true, int minKills = 1, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+
+        IQueryable<Player> query = db.Players
+            .Where(p => p.Game == game && p.HideRanking == 0 && p.Kills >= minKills)
+            .Include(p => p.Clan)
+            .Include(p => p.UniqueIds);
+
+        query = (sortBy.ToLowerInvariant(), descending) switch
+        {
+            ("skill",          true)  => query.OrderByDescending(p => p.Skill),
+            ("skill",          false) => query.OrderBy(p => p.Skill),
+            ("kills",          true)  => query.OrderByDescending(p => p.Kills),
+            ("kills",          false) => query.OrderBy(p => p.Kills),
+            ("deaths",         true)  => query.OrderByDescending(p => p.Deaths),
+            ("deaths",         false) => query.OrderBy(p => p.Deaths),
+            ("headshots",      true)  => query.OrderByDescending(p => p.Headshots),
+            ("headshots",      false) => query.OrderBy(p => p.Headshots),
+            ("connectiontime", true)  => query.OrderByDescending(p => p.ConnectionTime),
+            ("connectiontime", false) => query.OrderBy(p => p.ConnectionTime),
+            ("name",           true)  => query.OrderByDescending(p => p.LastName),
+            ("name",           false) => query.OrderBy(p => p.LastName),
+            ("clan",           true)  => query.OrderByDescending(p => p.Clan!.Tag),
+            ("clan",           false) => query.OrderBy(p => p.Clan!.Tag),
+            ("activity",       true)  => query.OrderByDescending(p => p.ActivityScore),
+            ("activity",       false) => query.OrderBy(p => p.ActivityScore),
+            ("armyrank",       true)  => query.OrderByDescending(p => p.Kills),
+            ("armyrank",       false) => query.OrderBy(p => p.Kills),
+            ("kd",             true)  => query.OrderByDescending(p => p.Deaths == 0 ? (double)p.Kills : (double)p.Kills / p.Deaths),
+            ("kd",             false) => query.OrderBy(p => p.Deaths == 0 ? (double)p.Kills : (double)p.Kills / p.Deaths),
+            ("hspct",          true)  => query.OrderByDescending(p => p.Kills == 0 ? 0.0 : (double)p.Headshots / p.Kills),
+            ("hspct",          false) => query.OrderBy(p => p.Kills == 0 ? 0.0 : (double)p.Headshots / p.Kills),
+            ("hsk",            true)  => query.OrderByDescending(p => p.Kills == 0 ? 0.0 : (double)p.Headshots / p.Kills),
+            ("hsk",            false) => query.OrderBy(p => p.Kills == 0 ? 0.0 : (double)p.Headshots / p.Kills),
+            ("accuracy",       true)  => query.OrderByDescending(p => p.Shots == 0 ? 0.0 : (double)p.Hits / p.Shots),
+            ("accuracy",       false) => query.OrderBy(p => p.Shots == 0 ? 0.0 : (double)p.Hits / p.Shots),
+            _                         => query.OrderByDescending(p => p.Skill)
+        };
+
+        var total = await query.CountAsync(ct);
+        var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+        return PagedResult<Player>.Create(items, total, page, pageSize);
+    }
+
+    public async Task<IReadOnlyList<PlayerName>> GetAliasesAsync(int playerId, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        return await db.PlayerNames
+            .Where(n => n.PlayerId == playerId)
+            .OrderByDescending(n => n.LastUse)
+            .ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<PlayerHistory>> GetHistoryAsync(int playerId, int days = 30, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        var cutoff = DateTime.Now.AddDays(-days);
+        return await db.PlayerHistories
+            .Where(h => h.PlayerId == playerId && h.EventTime >= cutoff)
+            .OrderBy(h => h.EventTime)
+            .ToListAsync(ct);
+    }
+
+    // Private DTO for raw event data before descriptions are built
+    private sealed class RawEvent
+    {
+        public DateTime EventTime { get; set; }
+        public string EventType { get; set; } = "";
+        public int ServerId { get; set; }
+        public string Map { get; set; } = "";
+        public int? LinkedPlayerId { get; set; }
+        public string? Weapon { get; set; }
+        public string? TextData1 { get; set; }
+        public string? TextData2 { get; set; }
+        public int? Bonus { get; set; }
+        public bool IsHeadshot { get; set; }
+    }
+
+    public async Task<PagedResult<PlayerEventRow>> GetEventHistoryAsync(
+        int playerId, string game, int page, int pageSize, string sortBy, bool descending, CancellationToken ct)
+    {
+        await using var db = _factory.CreateDbContext();
+
+        var connects     = await db.EventConnects
+            .Where(e => e.PlayerId == playerId && e.EventTime != null)
+            .Select(e => new RawEvent { EventTime = e.EventTime!.Value, EventType = "Connect", ServerId = e.ServerId, Map = e.Map })
+            .ToListAsync(ct);
+
+        var disconnects  = await db.EventDisconnects
+            .Where(e => e.PlayerId == playerId)
+            .Select(e => new RawEvent { EventTime = e.EventTime, EventType = "Disconnect", ServerId = e.ServerId, Map = e.Map })
+            .ToListAsync(ct);
+
+        var entries      = await db.EventEntries
+            .Where(e => e.PlayerId == playerId && e.EventTime != null)
+            .Select(e => new RawEvent { EventTime = e.EventTime!.Value, EventType = "Entry", ServerId = e.ServerId, Map = e.Map ?? "" })
+            .ToListAsync(ct);
+
+        var kills        = await db.EventFrags
+            .Where(e => e.KillerId == playerId && !e.Headshot)
+            .Select(e => new RawEvent { EventTime = e.EventTime, EventType = "Kill", ServerId = e.ServerId, Map = e.Map, LinkedPlayerId = e.VictimId, Weapon = e.Weapon, IsHeadshot = false })
+            .ToListAsync(ct);
+
+        var hsKills      = await db.EventFrags
+            .Where(e => e.KillerId == playerId && e.Headshot)
+            .Select(e => new RawEvent { EventTime = e.EventTime, EventType = "Kill", ServerId = e.ServerId, Map = e.Map, LinkedPlayerId = e.VictimId, Weapon = e.Weapon, IsHeadshot = true })
+            .ToListAsync(ct);
+
+        var deaths       = await db.EventFrags
+            .Where(e => e.VictimId == playerId)
+            .Select(e => new RawEvent { EventTime = e.EventTime, EventType = "Death", ServerId = e.ServerId, Map = e.Map, LinkedPlayerId = e.KillerId, Weapon = e.Weapon })
+            .ToListAsync(ct);
+
+        var tks          = await db.EventTeamkills
+            .Where(e => e.KillerId == playerId)
+            .Select(e => new RawEvent { EventTime = e.EventTime, EventType = "Team Kill", ServerId = e.ServerId, Map = e.Map, LinkedPlayerId = e.VictimId, Weapon = e.WeaponCode })
+            .ToListAsync(ct);
+
+        var ffs          = await db.EventTeamkills
+            .Where(e => e.VictimId == playerId)
+            .Select(e => new RawEvent { EventTime = e.EventTime, EventType = "Friendly Fire", ServerId = e.ServerId, Map = e.Map, LinkedPlayerId = e.KillerId, Weapon = e.WeaponCode })
+            .ToListAsync(ct);
+
+        var suicides     = await db.EventSuicides
+            .Where(e => e.PlayerId == playerId)
+            .Select(e => new RawEvent { EventTime = e.EventTime, EventType = "Suicide", ServerId = e.ServerId, Map = e.Map, Weapon = e.WeaponCode })
+            .ToListAsync(ct);
+
+        var roles        = await db.EventChangeRoles
+            .Where(e => e.PlayerId == playerId && e.EventTime != null)
+            .Select(e => new RawEvent { EventTime = e.EventTime!.Value, EventType = "Role", ServerId = e.ServerId, Map = e.Map, TextData1 = e.Role })
+            .ToListAsync(ct);
+
+        var teams        = await (
+            from e in db.EventChangeTeams
+            where e.PlayerId == playerId && e.EventTime != null
+            from t in db.Teams.Where(t => t.Code == e.Team && t.Game == game).DefaultIfEmpty()
+            select new RawEvent { EventTime = e.EventTime!.Value, EventType = "Team", ServerId = e.ServerId, Map = e.Map, TextData1 = e.Team, TextData2 = t != null ? t.Name : null }
+        ).ToListAsync(ct);
+
+        var actions      = await (
+            from e in db.EventPlayerActions
+            where e.PlayerId == playerId && e.EventTime != null
+            from a in db.GameActions.Where(a => a.ActionId == e.ActionId && a.Game == game).DefaultIfEmpty()
+            select new RawEvent { EventTime = e.EventTime!.Value, EventType = "Action", ServerId = e.ServerId, Map = e.Map ?? "", TextData1 = a != null ? a.Description : null, Bonus = e.Bonus }
+        ).ToListAsync(ct);
+
+        var ppaInit      = await (
+            from e in db.EventPlayerPlayerActions
+            where e.PlayerId == playerId && e.EventTime != null
+            from a in db.GameActions.Where(a => a.ActionId == e.ActionId && a.Game == game).DefaultIfEmpty()
+            select new RawEvent { EventTime = e.EventTime!.Value, EventType = "Action+", ServerId = e.ServerId, Map = e.Map ?? "", LinkedPlayerId = e.VictimId, TextData1 = a != null ? a.Description : null, Bonus = e.Bonus }
+        ).ToListAsync(ct);
+
+        var ppaVictim    = await (
+            from e in db.EventPlayerPlayerActions
+            where e.VictimId == playerId && e.EventTime != null
+            from a in db.GameActions.Where(a => a.ActionId == e.ActionId && a.Game == game).DefaultIfEmpty()
+            select new RawEvent { EventTime = e.EventTime!.Value, EventType = "Action-", ServerId = e.ServerId, Map = e.Map ?? "", LinkedPlayerId = e.PlayerId, TextData1 = a != null ? a.Description : null }
+        ).ToListAsync(ct);
+
+        var teamBonuses  = await (
+            from e in db.EventTeamBonuses
+            where e.PlayerId == playerId && e.EventTime != null
+            from a in db.GameActions.Where(a => a.ActionId == e.ActionId && a.Game == game).DefaultIfEmpty()
+            select new RawEvent { EventTime = e.EventTime!.Value, EventType = "Team Bonus", ServerId = e.ServerId, Map = e.Map, TextData1 = a != null ? a.Description : null, Bonus = e.Bonus }
+        ).ToListAsync(ct);
+
+        var nameChanges  = await db.EventChangeNames
+            .Where(e => e.PlayerId == playerId && e.EventTime != null)
+            .Select(e => new RawEvent { EventTime = e.EventTime!.Value, EventType = "Name", ServerId = e.ServerId, Map = e.Map, TextData1 = e.OldName, TextData2 = e.NewName })
+            .ToListAsync(ct);
+
+        var all = connects
+            .Concat(disconnects)
+            .Concat(entries)
+            .Concat(kills)
+            .Concat(hsKills)
+            .Concat(deaths)
+            .Concat(tks)
+            .Concat(ffs)
+            .Concat(suicides)
+            .Concat(roles)
+            .Concat(teams)
+            .Concat(actions)
+            .Concat(ppaInit)
+            .Concat(ppaVictim)
+            .Concat(teamBonuses)
+            .Concat(nameChanges)
+            .ToList();
+
+        var serverIds = all.Select(e => e.ServerId).Distinct().ToList();
+        var playerIds = all.Where(e => e.LinkedPlayerId.HasValue).Select(e => e.LinkedPlayerId!.Value).Distinct().ToList();
+
+        var serverNames = serverIds.Count > 0
+            ? await db.Servers.Where(s => serverIds.Contains(s.ServerId)).ToDictionaryAsync(s => s.ServerId, s => s.Name, ct)
+            : new Dictionary<int, string>();
+        var playerNames = playerIds.Count > 0
+            ? await db.Players.Where(p => playerIds.Contains(p.PlayerId)).ToDictionaryAsync(p => p.PlayerId, p => p.LastName, ct)
+            : new Dictionary<int, string>();
+
+        string PLink(int id) => $"<a href=\"/Players/{id}\">{playerNames.GetValueOrDefault(id, "Unknown")}</a>";
+        string Srv(int id) => serverNames.GetValueOrDefault(id, "Unknown");
+
+        IEnumerable<RawEvent> sorted = (sortBy, descending) switch
+        {
+            ("eventType", true)  => all.OrderByDescending(e => e.EventType).ThenByDescending(e => e.EventTime),
+            ("eventType", false) => all.OrderBy(e => e.EventType).ThenByDescending(e => e.EventTime),
+            (_,           false) => all.OrderBy(e => e.EventTime),
+            _                    => all.OrderByDescending(e => e.EventTime),
+        };
+
+        var page_items = sorted.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+        var rows = page_items.Select(e =>
+        {
+            string desc = e.EventType switch
+            {
+                "Connect"       => "I connected to the server",
+                "Disconnect"    => "I left the game",
+                "Entry"         => "I entered the game",
+                "Kill"          => e.IsHeadshot
+                                   ? $"I killed {PLink(e.LinkedPlayerId!.Value)} with a headshot from {e.Weapon}"
+                                   : $"I killed {PLink(e.LinkedPlayerId!.Value)} with {e.Weapon}",
+                "Death"         => $"{PLink(e.LinkedPlayerId!.Value)} killed me with {e.Weapon}",
+                "Team Kill"     => $"I killed teammate {PLink(e.LinkedPlayerId!.Value)} with {e.Weapon}",
+                "Friendly Fire" => $"My teammate {PLink(e.LinkedPlayerId!.Value)} killed me with {e.Weapon}",
+                "Suicide"       => $"I committed suicide with \"{e.Weapon}\"",
+                "Role"          => $"I changed role to {e.TextData1}",
+                "Team"          => string.IsNullOrEmpty(e.TextData2)
+                                   ? $"I joined team \"{e.TextData1}\""
+                                   : $"I joined team \"{e.TextData1}\" ({e.TextData2})",
+                "Action"        => $"I received a points bonus of {e.Bonus} for triggering \"{e.TextData1 ?? "Unknown"}\"",
+                "Action+"       => $"I received a points bonus of {e.Bonus} for triggering \"{e.TextData1 ?? "Unknown"}\" against {PLink(e.LinkedPlayerId!.Value)}",
+                "Action-"       => $"{PLink(e.LinkedPlayerId!.Value)} triggered \"{e.TextData1 ?? "Unknown"}\" against me",
+                "Team Bonus"    => $"My team received a points bonus of {e.Bonus} for triggering \"{e.TextData1 ?? "Unknown"}\"",
+                "Name"          => $"I changed my name from \"{e.TextData1}\" to \"{e.TextData2}\"",
+                _               => e.EventType,
+            };
+            string displayType = e.EventType.TrimEnd('+', '-');
+            return new PlayerEventRow(e.EventTime, displayType, desc, Srv(e.ServerId), e.Map);
+        }).ToList();
+
+        return PagedResult<PlayerEventRow>.Create(rows, all.Count, page, pageSize);
+    }
+
+    public async Task<PagedResult<PlayerSessionRow>> GetSessionsAsync(
+        int playerId, int page, int pageSize, string sortBy, bool descending, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        var query = db.PlayerHistories.Where(h => h.PlayerId == playerId);
+
+        query = (sortBy, descending) switch
+        {
+            ("skill_change", true)       => query.OrderByDescending(h => h.SkillChange).ThenByDescending(h => h.EventTime),
+            ("skill_change", false)      => query.OrderBy(h => h.SkillChange).ThenByDescending(h => h.EventTime),
+            ("skill", true)              => query.OrderByDescending(h => h.Skill).ThenByDescending(h => h.EventTime),
+            ("skill", false)             => query.OrderBy(h => h.Skill).ThenByDescending(h => h.EventTime),
+            ("connection_time", true)    => query.OrderByDescending(h => h.ConnectionTime).ThenByDescending(h => h.EventTime),
+            ("connection_time", false)   => query.OrderBy(h => h.ConnectionTime).ThenByDescending(h => h.EventTime),
+            ("kills", true)              => query.OrderByDescending(h => h.Kills).ThenByDescending(h => h.EventTime),
+            ("kills", false)             => query.OrderBy(h => h.Kills).ThenByDescending(h => h.EventTime),
+            ("deaths", true)             => query.OrderByDescending(h => h.Deaths).ThenByDescending(h => h.EventTime),
+            ("deaths", false)            => query.OrderBy(h => h.Deaths).ThenByDescending(h => h.EventTime),
+            ("headshots", true)          => query.OrderByDescending(h => h.Headshots).ThenByDescending(h => h.EventTime),
+            ("headshots", false)         => query.OrderBy(h => h.Headshots).ThenByDescending(h => h.EventTime),
+            ("suicides", true)           => query.OrderByDescending(h => h.Suicides).ThenByDescending(h => h.EventTime),
+            ("suicides", false)          => query.OrderBy(h => h.Suicides).ThenByDescending(h => h.EventTime),
+            ("teamkills", true)          => query.OrderByDescending(h => h.TeamKills).ThenByDescending(h => h.EventTime),
+            ("teamkills", false)         => query.OrderBy(h => h.TeamKills).ThenByDescending(h => h.EventTime),
+            ("kill_streak", true)        => query.OrderByDescending(h => h.KillStreak).ThenByDescending(h => h.EventTime),
+            ("kill_streak", false)       => query.OrderBy(h => h.KillStreak).ThenByDescending(h => h.EventTime),
+            _                            => query.OrderByDescending(h => h.EventTime).ThenByDescending(h => h.SkillChange),
+        };
+
+        var total = await query.CountAsync(ct);
+        var rows = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(h => new PlayerSessionRow(
+                h.EventTime,
+                h.SkillChange,
+                h.Skill,
+                h.ConnectionTime,
+                h.Kills,
+                h.Deaths,
+                h.Deaths == 0 ? (double)h.Kills : Math.Round((double)h.Kills / h.Deaths, 2),
+                h.Headshots,
+                h.Kills == 0 ? (double)h.Headshots : Math.Round((double)h.Headshots / h.Kills, 2),
+                h.Suicides,
+                h.TeamKills,
+                h.KillStreak))
+            .ToListAsync(ct);
+
+        return PagedResult<PlayerSessionRow>.Create(rows, total, page, pageSize);
+    }
+
+    public async Task<IReadOnlyList<PlayerAward>> GetAwardsAsync(int playerId, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        return await db.PlayerAwards
+            .Include(a => a.Award)
+            .Where(a => a.PlayerId == playerId)
+            .OrderByDescending(a => a.Count)
+            .ToListAsync(ct);
+    }
+
+    public async Task<PagedResult<PlayerAwardRow>> GetAwardsSummaryAsync(int playerId, int page, int pageSize, string sortBy, bool descending, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+
+        var baseQuery = db.PlayerAwards
+            .Where(pa => pa.PlayerId == playerId)
+            .Join(db.Awards, pa => pa.AwardId, a => a.AwardId,
+                  (pa, a) => new { pa.AwardTime, a.AwardId, a.Name, a.Verb })
+            .GroupBy(x => new { x.AwardId, x.Name, x.Verb })
+            .Select(g => new {
+                g.Key.AwardId, g.Key.Name, g.Key.Verb,
+                LastEarned = g.Max(x => x.AwardTime),
+                Count = g.Count()
+            });
+
+        var total = await baseQuery.CountAsync(ct);
+
+        var sorted = (sortBy, descending) switch
+        {
+            ("name",  true)  => baseQuery.OrderByDescending(x => x.Name),
+            ("name",  false) => baseQuery.OrderBy(x => x.Name),
+            ("verb",  true)  => baseQuery.OrderByDescending(x => x.Verb),
+            ("verb",  false) => baseQuery.OrderBy(x => x.Verb),
+            ("count", true)  => baseQuery.OrderByDescending(x => x.Count),
+            ("count", false) => baseQuery.OrderBy(x => x.Count),
+            (_,       true)  => baseQuery.OrderByDescending(x => x.LastEarned),
+            (_,       false) => baseQuery.OrderBy(x => x.LastEarned),
+        };
+
+        var items = await sorted
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(x => new PlayerAwardRow(x.AwardId, x.Name, x.Verb, x.LastEarned, x.Count))
+            .ToListAsync(ct);
+
+        return PagedResult<PlayerAwardRow>.Create(items, total, page, pageSize);
+    }
+
+    public async Task<PagedResult<PlayerAwardRow>> GetAwardDetailAsync(int playerId, int awardId, int page, int pageSize, string sortBy, bool descending, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+
+        var baseQuery = db.PlayerAwards
+            .Where(pa => pa.PlayerId == playerId && pa.AwardId == awardId)
+            .Join(db.Awards, pa => pa.AwardId, a => a.AwardId,
+                  (pa, a) => new { pa.AwardTime, a.AwardId, a.Name, a.Verb, pa.Count });
+
+        var total = await baseQuery.CountAsync(ct);
+
+        var sorted = (sortBy, descending) switch
+        {
+            ("name",  true)  => baseQuery.OrderByDescending(x => x.Name),
+            ("name",  false) => baseQuery.OrderBy(x => x.Name),
+            ("verb",  true)  => baseQuery.OrderByDescending(x => x.Verb),
+            ("verb",  false) => baseQuery.OrderBy(x => x.Verb),
+            ("count", true)  => baseQuery.OrderByDescending(x => x.Count),
+            ("count", false) => baseQuery.OrderBy(x => x.Count),
+            (_,       true)  => baseQuery.OrderByDescending(x => x.AwardTime),
+            (_,       false) => baseQuery.OrderBy(x => x.AwardTime),
+        };
+
+        var items = await sorted
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(x => new PlayerAwardRow(x.AwardId, x.Name, x.Verb, x.AwardTime, x.Count))
+            .ToListAsync(ct);
+
+        return PagedResult<PlayerAwardRow>.Create(items, total, page, pageSize);
+    }
+
+    public async Task<IReadOnlyList<PlayerRibbon>> GetRibbonsAsync(int playerId, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        return await db.PlayerRibbons
+            .Include(r => r.Ribbon)
+            .Where(r => r.PlayerId == playerId)
+            .ToListAsync(ct);
+    }
+
+    public async Task<int> GetRankAsync(int playerId, string game, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        var player = await db.Players.FindAsync(new object[] { playerId }, ct);
+        if (player is null) return 0;
+
+        // Count how many players have more skill — add 1 for 1-based rank
+        return await db.Players
+            .Where(p => p.Game == game && p.HideRanking == 0 && p.Kills > 0 && p.Skill > player.Skill)
+            .CountAsync(ct) + 1;
+    }
+
+    public async Task<PagedResult<PlayerSearchResult>> SearchAsync(string query, string? game, int page, int pageSize, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+
+        // Search all aliases (PlayerNames) like the PHP site does — not just the current LastName
+        var q = from pn in db.PlayerNames
+                join p  in db.Players on pn.PlayerId equals p.PlayerId
+                join g  in db.Games   on p.Game      equals g.Code
+                where EF.Functions.Like(pn.Name, $"%{query}%")
+                   && (game == null || p.Game == game)
+                   && g.Hidden != "1"
+                orderby pn.Name
+                select new PlayerSearchResult(p.PlayerId, pn.Name, p.Flag, p.Country, g.Name);
+
+        var total = await q.CountAsync(ct);
+        var items = await q.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+
+        if (items.Count > 0)
+        {
+            var playerIds = items.Select(r => r.PlayerId).Distinct().ToList();
+            var botIds = await db.PlayerUniqueIds
+                .Where(u => playerIds.Contains(u.PlayerId) && EF.Functions.Like(u.UniqueId, "BOT%"))
+                .Select(u => u.PlayerId)
+                .ToHashSetAsync(ct);
+            items = items.Select(r => r with { IsBot = botIds.Contains(r.PlayerId) }).ToList();
+        }
+
+        return PagedResult<PlayerSearchResult>.Create(items, total, page, pageSize);
+    }
+
+    public async Task<PagedResult<UniqueIdSearchResult>> SearchByUniqueIdAsync(string query, string? game, int page, int pageSize, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+
+        var q = from u in db.PlayerUniqueIds
+                join p in db.Players on u.PlayerId equals p.PlayerId
+                join g in db.Games on u.Game equals g.Code
+                where g.Hidden != "1"
+                   && EF.Functions.Like(u.UniqueId, $"%{query}%")
+                   && (game == null || u.Game == game)
+                orderby u.UniqueId
+                select new UniqueIdSearchResult(p.PlayerId, u.UniqueId, p.LastName, p.Flag, p.Country, g.Name);
+
+        var total = await q.CountAsync(ct);
+        var items = await q.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+        return PagedResult<UniqueIdSearchResult>.Create(items, total, page, pageSize);
+    }
+
+    public async Task<PagedResult<BanListRow>> GetBannedAsync(
+        string game, int page, int pageSize, string sortBy, bool desc, int minKills,
+        CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+
+        // hideranking = 2 is the banned state in HLStatsX (= 1 is hidden-from-rankings, not banned).
+        var query = db.Players
+            .Where(p => p.Game == game && p.HideRanking == 2 && p.Kills >= minKills);
+
+        var total = await query.CountAsync(ct);
+
+        // Ratio columns are sorted on raw values so the ORDER BY stays SQL-translatable.
+        IQueryable<Player> ordered = sortBy switch
+        {
+            "player"    => desc ? query.OrderByDescending(p => p.LastName)   : query.OrderBy(p => p.LastName),
+            "skill"     => desc ? query.OrderByDescending(p => p.Skill)      : query.OrderBy(p => p.Skill),
+            "kills"     => desc ? query.OrderByDescending(p => p.Kills)      : query.OrderBy(p => p.Kills),
+            "deaths"    => desc ? query.OrderByDescending(p => p.Deaths)     : query.OrderBy(p => p.Deaths),
+            "headshots" => desc ? query.OrderByDescending(p => p.Headshots)  : query.OrderBy(p => p.Headshots),
+            "kpd"       => desc ? query.OrderByDescending(p => (double)p.Kills / (p.Deaths == 0 ? 1 : p.Deaths))
+                                : query.OrderBy(p => (double)p.Kills / (p.Deaths == 0 ? 1 : p.Deaths)),
+            "hsk"       => desc ? query.OrderByDescending(p => p.Kills == 0 ? 0.0 : (double)p.Headshots / p.Kills)
+                                : query.OrderBy(p => p.Kills == 0 ? 0.0 : (double)p.Headshots / p.Kills),
+            "accuracy"  => desc ? query.OrderByDescending(p => p.Shots == 0 ? 0.0 : (double)p.Hits / p.Shots)
+                                : query.OrderBy(p => p.Shots == 0 ? 0.0 : (double)p.Hits / p.Shots),
+            // Default: most-recently-active first, skill as tiebreak — mirrors bans.php default sort.
+            _           => desc ? query.OrderByDescending(p => p.LastEvent).ThenByDescending(p => p.Skill)
+                                : query.OrderBy(p => p.LastEvent).ThenBy(p => p.Skill),
+        };
+
+        var raw = await ordered
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(p => new {
+                p.PlayerId, p.LastName, p.Flag, p.LastEvent,
+                p.Skill, p.ActivityScore, p.Kills, p.Deaths, p.Headshots, p.Shots, p.Hits
+            })
+            .ToListAsync(ct);
+
+        var rows = raw.Select(p => new BanListRow(
+            p.PlayerId,
+            p.LastName,
+            p.Flag,
+            DateTimeOffset.FromUnixTimeSeconds(p.LastEvent).LocalDateTime,
+            p.Skill,
+            p.ActivityScore,
+            p.Kills,
+            p.Deaths,
+            p.Headshots,
+            Math.Round((double)p.Kills / (p.Deaths == 0 ? 1 : p.Deaths), 2),
+            p.Kills == 0 ? null : Math.Round((double)p.Headshots / p.Kills, 2),
+            p.Shots == 0 ? 0.0  : Math.Round((double)p.Hits / p.Shots * 100, 0)
+        )).ToList();
+
+        return PagedResult<BanListRow>.Create(rows, total, page, pageSize);
+    }
+
+    public async Task<IReadOnlyList<DateTime>> GetHistoryDatesAsync(string game, int count = 50, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        return await db.PlayerHistories
+            .Where(h => h.Game == game)
+            .Select(h => h.EventTime.Date)
+            .Distinct()
+            .OrderByDescending(d => d)
+            .Take(count)
+            .ToListAsync(ct);
+    }
+
+    public async Task<PagedResult<PlayerLeaderboardRow>> GetHistoryRankingsAsync(
+        string game, DateTime from, DateTime to,
+        int page, int pageSize, string sortBy = "kills", bool descending = true,
+        int minKills = 1, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+
+        var histAgg = db.PlayerHistories
+            .Where(h => h.Game == game && h.EventTime >= from && h.EventTime < to)
+            .GroupBy(h => h.PlayerId)
+            .Select(g => new
+            {
+                PlayerId  = g.Key,
+                Points    = g.Sum(h => h.SkillChange),
+                Kills     = g.Sum(h => h.Kills),
+                Deaths    = g.Sum(h => h.Deaths),
+                Headshots = g.Sum(h => h.Headshots),
+                ConnTime  = g.Sum(h => h.ConnectionTime)
+            });
+
+        var joined =
+            from agg  in histAgg
+            join p    in db.Players on agg.PlayerId equals p.PlayerId
+            where p.HideRanking == 0 && agg.Kills >= minKills
+            join c    in db.Clans on p.ClanId equals c.ClanId into cg
+            from clan in cg.DefaultIfEmpty()
+            select new
+            {
+                agg.PlayerId,
+                p.LastName,
+                p.Flag,
+                p.Country,
+                Clan         = clan,
+                p.ActivityScore,
+                AllTimeKills = p.Kills,
+                agg.Points,
+                PeriodKills  = agg.Kills,
+                agg.Deaths,
+                agg.Headshots,
+                ConnTime     = agg.ConnTime
+            };
+
+        var ordered = (sortBy.ToLowerInvariant(), descending) switch
+        {
+            ("kills",          true)  => joined.OrderByDescending(x => x.PeriodKills),
+            ("kills",          false) => joined.OrderBy(x => x.PeriodKills),
+            ("deaths",         true)  => joined.OrderByDescending(x => x.Deaths),
+            ("deaths",         false) => joined.OrderBy(x => x.Deaths),
+            ("headshots",      true)  => joined.OrderByDescending(x => x.Headshots),
+            ("headshots",      false) => joined.OrderBy(x => x.Headshots),
+            ("connectiontime", true)  => joined.OrderByDescending(x => x.ConnTime),
+            ("connectiontime", false) => joined.OrderBy(x => x.ConnTime),
+            ("name",           true)  => joined.OrderByDescending(x => x.LastName),
+            ("name",           false) => joined.OrderBy(x => x.LastName),
+            ("clan",           true)  => joined.OrderByDescending(x => x.Clan!.Tag),
+            ("clan",           false) => joined.OrderBy(x => x.Clan!.Tag),
+            ("activity",       true)  => joined.OrderByDescending(x => x.ActivityScore),
+            ("activity",       false) => joined.OrderBy(x => x.ActivityScore),
+            ("armyrank",       true)  => joined.OrderByDescending(x => x.AllTimeKills),
+            ("armyrank",       false) => joined.OrderBy(x => x.AllTimeKills),
+            ("kd",             true)  => joined.OrderByDescending(x => x.Deaths == 0 ? (double)x.PeriodKills : (double)x.PeriodKills / x.Deaths),
+            ("kd",             false) => joined.OrderBy(x => x.Deaths == 0 ? (double)x.PeriodKills : (double)x.PeriodKills / x.Deaths),
+            ("hsk",            true)  => joined.OrderByDescending(x => x.PeriodKills == 0 ? 0.0 : (double)x.Headshots / x.PeriodKills),
+            ("hsk",            false) => joined.OrderBy(x => x.PeriodKills == 0 ? 0.0 : (double)x.Headshots / x.PeriodKills),
+            _                         => joined.OrderByDescending(x => x.Points)
+        };
+
+        var total = await ordered.CountAsync(ct);
+        var raw   = await ordered.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+
+        var botIds = new HashSet<int>();
+        if (raw.Count > 0)
+        {
+            var playerIds = raw.Select(x => x.PlayerId).ToList();
+            botIds = await db.PlayerUniqueIds
+                .Where(u => playerIds.Contains(u.PlayerId) && EF.Functions.Like(u.UniqueId, "BOT%"))
+                .Select(u => u.PlayerId)
+                .ToHashSetAsync(ct);
+        }
+
+        var items = raw.Select(x => new PlayerLeaderboardRow
+        {
+            PlayerId       = x.PlayerId,
+            LastName       = x.LastName,
+            Flag           = x.Flag,
+            Country        = x.Country,
+            Clan           = x.Clan,
+            ActivityScore  = x.ActivityScore,
+            AllTimeKills   = x.AllTimeKills,
+            Points         = x.Points,
+            Kills          = x.PeriodKills,
+            Deaths         = x.Deaths,
+            Headshots      = x.Headshots,
+            ConnectionTime = x.ConnTime,
+            Shots          = 0,   // not recorded in history table
+            Hits           = 0,   // not recorded in history table
+            IsBot          = botIds.Contains(x.PlayerId)
+        }).ToList();
+
+        return PagedResult<PlayerLeaderboardRow>.Create(items, total, page, pageSize);
+    }
+
+    public async Task<Player?> GetBySteamIdAsync(string steamId, string game, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        return await db.PlayerUniqueIds
+            .Where(u => u.UniqueId == steamId && u.Game == game)
+            .Select(u => u.Player)
+            .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task UpdateAsync(Player player, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        db.Players.Update(player);
+        await db.SaveChangesAsync(ct);
+    }
+
+    public async Task<int> GetTotalCountAsync(string game, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        return await db.Players.CountAsync(p => p.Game == game, ct);
+    }
+
+    public async Task<long> GetTotalKillsAsync(string game, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        return await db.Players.Where(p => p.Game == game).SumAsync(p => (long)p.Kills, ct);
+    }
+
+    public async Task<IReadOnlyList<TrendPoint>> GetTrendAsync(int playerId, int limit = 30, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        // Take the most recent `limit` entries then reorder ascending for chart display
+        return await db.PlayerHistories
+            .Where(h => h.PlayerId == playerId)
+            .OrderByDescending(h => h.EventTime)
+            .Take(limit)
+            .OrderBy(h => h.EventTime)
+            .Select(h => new TrendPoint(h.EventTime, h.Skill, h.SkillChange))
+            .ToListAsync(ct);
+    }
+
+    public async Task<int?> GetPlayerIdByUniqueIdAsync(string uniqueId, string game, CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        var ids = await db.PlayerUniqueIds
+            .Where(u => u.UniqueId == uniqueId && u.Game == game)
+            .Select(u => u.PlayerId)
+            .ToListAsync(ct);
+        return ids.Count == 1 ? ids[0] : null;
+    }
+}

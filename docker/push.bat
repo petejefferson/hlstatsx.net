@@ -1,0 +1,1 @@
+docker push petejuk/hlstatsx-net:latest
