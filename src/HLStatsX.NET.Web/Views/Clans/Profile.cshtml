@@ -320,7 +320,7 @@
   @* Members table *@
   <div class="profile-section" style="margin-top:20px;">
     <h2>Members</h2>
-    <table class="data-table">
+    <table class="data-table wide-table">
       <tr class="data-table-head">
         <th class="rank-col">Rank</th>
         <th><a href="@(MemberSortUrl("name"))">Name@(MemberMark("name"))</a></th>
@@ -394,7 +394,7 @@
   else
   {
     <h2>Weapon Usage *</h2>
-    <table class="data-table">
+    <table class="data-table wide-table">
       <tr class="data-table-head">
         <th class="rank-col">Rank</th>
         <th><a href="@(WeaponSortUrl("name"))">Weapon@(WeaponMark("name"))</a></th>
@@ -435,7 +435,7 @@
   @if (Model.WeaponStats.Any())
   {
     <h2 style="margin-top:24px;">Weapon Stats *</h2>
-    <table class="data-table">
+    <table class="data-table wide-table">
       <tr class="data-table-head">
         <th class="rank-col">Rank</th>
         <th><a href="@(WeaponStatsSortUrl("name"))">Weapon@(WeaponStatsMark("name"))</a></th>
@@ -481,7 +481,7 @@
   @if (Model.WeaponTargets.Any())
   {
     <h2 style="margin-top:24px;">Weapon Targets *</h2>
-    <table class="data-table">
+    <table class="data-table wide-table">
       <tr class="data-table-head">
         <th class="rank-col">Rank</th>
         <th><a href="@(WeaponTargetsSortUrl("name"))">Weapon@(WeaponTargetsMark("name"))</a></th>
@@ -539,7 +539,7 @@
   else
   {
     <h2>Map Performance *</h2>
-    <table class="data-table">
+    <table class="data-table wide-table">
       <tr class="data-table-head">
         <th class="rank-col">Rank</th>
         <th><a href="@(MapSortUrl("map"))">Map@(MapMark("map"))</a></th>
@@ -668,7 +668,7 @@
   @if (Model.Roles.Any())
   {
     <h2>Role Selection *</h2>
-    <table class="data-table">
+    <table class="data-table wide-table">
       <tr class="data-table-head">
         <th class="rank-col">Rank</th>
         <th><a href="@(RoleSortUrl("role"))">Role@(RoleMark("role"))</a></th>

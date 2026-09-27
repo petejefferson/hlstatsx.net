@@ -47,7 +47,7 @@
                                s.SkillChange < 0 ? "<span style=\"color:red\">&#x25BC;</span>" : "";
                 <tr>
                     <td class="@row rank-col">@(rowNum).</td>
-                    <td class="@row">@s.EventTime.ToString("yyyy-MM-dd")</td>
+                    <td class="@row" style="white-space:nowrap;">$1s.EventTime.ToString("yyyy-MM-dd")</td>
                     <td class="@row" style="text-align:right">@s.SkillChange.ToString("N0") @Html.Raw(arrow)</td>
                     <td class="@row" style="text-align:right">@s.Skill.ToString("N0")</td>
                     <td class="@row ls-responsive-hide" style="text-align:right">@FormatTime(s.ConnectionTime)</td>
