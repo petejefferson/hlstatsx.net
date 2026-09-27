@@ -36,7 +36,7 @@
         <tr class="@(rowNum % 2 == 1 ? "bg1" : "bg2")">
             <td style="text-align:right;">@rowNum</td>
             <td>@Html.Raw(FlagImg(b.Flag)) <a href="@Url.Action("PlayerStats", "InGame", new { game = Model.Game, player = b.PlayerId })">@b.PlayerName</a></td>
-            <td style="text-align:right;">@b.BanDate.ToString("yyyy.MM.dd HH:mm:ss")</td>
+            <td style="text-align:right;white-space:nowrap;">@b.BanDate.ToString("yyyy.MM.dd HH:mm:ss")</td>
             <td style="text-align:right;">@b.Skill.ToString("N0")</td>
             <td style="text-align:right;">@b.Kills.ToString("N0")</td>
             <td style="text-align:right;">@b.Deaths.ToString("N0")</td>

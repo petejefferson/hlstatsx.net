@@ -34,11 +34,26 @@
       @{
           var steamUniqueId = Model.Player.UniqueIds.FirstOrDefault()?.UniqueId;
           bool isBot = steamUniqueId?.StartsWith("BOT", StringComparison.OrdinalIgnoreCase) == true;
+          Func<object?, object> avatarImg = @<text>
+            @if (Model.Player.IsBot)
+            {
+              <img src="@(Url.Content("~/hlstatsimg/bot.png"))" style="height:158px;width:158px;" alt="Bot" loading="lazy" />
+            }
+            else if (!previewMode && Model.Steam64Id.HasValue)
+            {
+              <img src="@(Url.Action("Avatar", "Players", new { steam64 = Model.Steam64Id.Value }))"
+                   style="height:158px;width:158px;" alt="Steam Community Avatar" loading="lazy"
+                   onerror="this.style.display='none'" />
+            }
+          </text>;
       }
-      <table class="data-table">
+      <table class="data-table profile-info-table">
         <colgroup><col style="width:200px"><col><col style="width:170px"></colgroup>
         <tr class="data-table-head">
           <td colspan="3">Player Profile</td>
+        </tr>
+        <tr class="profile-avatar-row">
+          <td colspan="3">@avatarImg(null)</td>
         </tr>
         <tr class="bg1">
           <td colspan="2">
@@ -48,18 +63,7 @@
             }
             <strong>@(Model.Player.IsBot ? Model.Player.LastName + " (BOT)" : Model.Player.LastName)</strong>
           </td>
-          <td id="player_avatar" rowspan="13" style="text-align:center;vertical-align:top;padding:8px;">
-            @if (Model.Player.IsBot)
-            {
-              <img src="~/hlstatsimg/bot.png" style="height:158px;width:158px;" alt="Bot" />
-            }
-            else if (!previewMode && Model.Steam64Id.HasValue)
-            {
-              <img src="@(Url.Action("Avatar", "Players", new { steam64 = Model.Steam64Id.Value }))"
-                   style="height:158px;width:158px;" alt="Steam Community Avatar"
-                   onerror="this.style.display='none'" />
-            }
-          </td>
+          <td id="player_avatar" rowspan="13" style="text-align:center;vertical-align:top;padding:8px;">@avatarImg(null)</td>
         </tr>
         <tr class="bg2">
           <td>Location:</td>
@@ -372,7 +376,7 @@
 @if (Model.Aliases.Count > 1)
   {
   <h2>Aliases</h2>
-  <table class="data-table">
+  <table class="data-table wide-table">
     <thead>
       <tr class="data-table-head">
         <th class="rank-col">Rank</th>
@@ -398,7 +402,7 @@
           <td class="@alRow rank-col">@(aliasRank).</td>
           <td class="@alRow">@a.Name</td>
           <td class="@alRow" style="text-align:right">@RazorHelpers.FormatTimeFull(a.ConnectionTime)</td>
-          <td class="@alRow" style="text-align:right">@(a.LastUse.HasValue ? a.LastUse.Value.ToString("yyyy-MM-dd") : "-")</td>
+          <td class="@alRow" style="text-align:right;white-space:nowrap">@(a.LastUse.HasValue ? a.LastUse.Value.ToString("yyyy-MM-dd") : "-")</td>
           <td class="@alRow" style="text-align:right">@a.Kills.ToString("N0")</td>
           <td class="@alRow" style="text-align:right">@a.Deaths.ToString("N0")</td>
           <td class="@alRow" style="text-align:right">@a.KdRatio</td>
@@ -593,14 +597,17 @@
   }
   else
   {
-    <table class="data-table">
+    <table class="data-table role-table">
+      <colgroup>
+        <col class="rc-rank"><col class="rc-role"><col class="rc-joined"><col class="rc-pct"><col class="rc-ratio"><col class="rc-kills"><col class="rc-deaths"><col class="rc-kd">
+      </colgroup>
       <thead>
         <tr class="data-table-head">
           <th>Rank</th>
           <th><a href="@(RsSortUrl("role"))">Role@(RsMark("role"))</a></th>
           <th style="text-align:right"><a href="@(RsSortUrl("joined"))">Joined@(RsMark("joined"))</a></th>
           <th style="text-align:right">%</th>
-          <th>Ratio</th>
+          <th class="role-ratio">Ratio</th>
           <th style="text-align:right"><a href="@(RsSortUrl("kills"))">Kills@(RsMark("kills"))</a></th>
           <th style="text-align:right"><a href="@(RsSortUrl("deaths"))">Deaths@(RsMark("deaths"))</a></th>
           <th style="text-align:right"><a href="@(RsSortUrl("kpd"))">K:D@(RsMark("kpd"))</a></th>
@@ -623,7 +630,7 @@
             </td>
             <td style="text-align:right">@r.JoinCount times</td>
             <td style="text-align:right">@(rolePct > 0 ? $"{rolePct:F2}%" : "-")</td>
-            <td><activity-meter value="@rolePct" /></td>
+            <td class="role-ratio"><activity-meter value="@rolePct" /></td>
             <td style="text-align:right">@r.Kills.ToString("N0")</td>
             <td style="text-align:right">@r.Deaths.ToString("N0")</td>
             <td style="text-align:right">@(r.Deaths == 0 ? r.Kills.ToString("N0") : $"{(double)r.Kills / r.Deaths:F2}")</td>
@@ -675,7 +682,7 @@
     long wuRealKills = Model.RealStats.RealKills > 0 ? Model.RealStats.RealKills : 1;
     long wuRealHS    = Model.RealStats.RealHeadshots > 0 ? Model.RealStats.RealHeadshots : 1;
     <h2>Weapon Usage *</h2>
-    <table class="data-table">
+    <table class="data-table wide-table">
       <thead>
         <tr class="data-table-head">
           <th>Rank</th>
@@ -733,7 +740,7 @@
   @if (Model.WeaponStatsme.Any())
   {
     <h2>Weapon Statistics *</h2>
-    <table class="data-table">
+    <table class="data-table wide-table">
       <thead>
         <tr class="data-table-head">
           <th>Rank</th>
@@ -790,7 +797,7 @@
   @if (Model.WeaponTargets.Any())
   {
     <h2>Weapon Targets *</h2>
-    <table class="data-table">
+    <table class="data-table wide-table">
       <thead>
         <tr class="data-table-head">
           <th>Rank</th>
@@ -887,7 +894,7 @@
     long mpRealDeaths = Model.RealStats.RealDeaths > 0 ? Model.RealStats.RealDeaths : 1;
     long mpRealHS     = Model.RealStats.RealHeadshots > 0 ? Model.RealStats.RealHeadshots : 1;
     <h2>Map Performance *</h2>
-    <table class="data-table">
+    <table class="data-table wide-table">
       <thead>
         <tr class="data-table-head">
           <th>Rank</th>
@@ -943,7 +950,7 @@
     long spRealKills = Model.RealStats.RealKills      > 0 ? Model.RealStats.RealKills      : 1;
     long spRealHS    = Model.RealStats.RealHeadshots  > 0 ? Model.RealStats.RealHeadshots  : 1;
     <h2>Server Activity *</h2>
-    <table class="data-table">
+    <table class="data-table wide-table">
       <thead>
         <tr class="data-table-head">
           <th>Rank</th>
@@ -1033,7 +1040,7 @@
     long ksRealKills  = Model.RealStats.RealKills  > 0 ? Model.RealStats.RealKills  : 1;
     long ksRealDeaths = Model.RealStats.RealDeaths > 0 ? Model.RealStats.RealDeaths : 1;
     long ksRealHS     = Model.KillStatsRealHS > 0 ? Model.KillStatsRealHS : 1;
-    <table class="data-table">
+    <table class="data-table wide-table">
       <thead>
         <tr class="data-table-head">
           <th>Rank</th>

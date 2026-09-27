@@ -73,7 +73,7 @@ else
                 string? flagFile = string.IsNullOrEmpty(row.Player?.Flag) ? null : row.Player.Flag.ToLowerInvariant();
                 <tr>
                     <td class="@rowClass" style="text-align:right;">@rowNum</td>
-                    <td class="@rowClass">@row.EventTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                    <td class="@rowClass" style="white-space:nowrap;">$1row.EventTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
                     <td class="@rowClass">
                         @if (!string.IsNullOrEmpty(flagFile))
                         {

@@ -48,7 +48,7 @@ else
                 string? flagFile = string.IsNullOrEmpty(row.Flag) ? null : row.Flag.ToLowerInvariant();
                 <tr>
                     <td class="@rowClass rank-col">@(rowNum).</td>
-                    <td class="@rowClass">@row.AwardTime.ToString("yyyy-MM-dd")</td>
+                    <td class="@rowClass" style="white-space:nowrap;">$1row.AwardTime.ToString("yyyy-MM-dd")</td>
                     <td class="@rowClass">
                         @if (!string.IsNullOrEmpty(flagFile))
                         {

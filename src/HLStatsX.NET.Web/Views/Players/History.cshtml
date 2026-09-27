@@ -30,7 +30,7 @@
             {
                 string row = bg ? "bg2" : "bg1"; bg = !bg;
                 <tr>
-                    <td class="@row">@e.EventTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                    <td class="@row" style="white-space:nowrap;">$1e.EventTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
                     <td class="@row" style="text-align:center">@e.EventType</td>
                     <td class="@row">@Html.Raw(e.Description)</td>
                     <td class="@row">@e.ServerName</td>

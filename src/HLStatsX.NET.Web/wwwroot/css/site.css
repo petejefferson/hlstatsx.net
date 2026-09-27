@@ -619,6 +619,9 @@ select[name="rankType"] {
     margin-bottom: 1rem;
 }
 
+/* Mobile-only avatar row on the player profile (desktop uses the right-hand column) */
+.profile-avatar-row { display: none; }
+
 /* ============================================================
    RESPONSIVE TABLE WRAPPER
    ============================================================ */
@@ -732,12 +735,70 @@ meter:-moz-meter-sub-sub-optimum::-moz-meter-bar {
 
     .stat-summary-extended { display: none; }
     .ls-responsive-hide { display: none; }
-    .data-table, .stats-table { table-layout: fixed !important; width: 100% !important; }
+    /* Tables size to their content (auto layout) and wrap at spaces. The old fixed layout gave every
+       column the same width, which clipped wide tables and split names mid-word in narrow ones.
+       A word too long to fit widens its column and the .table-responsive wrapper scrolls instead. */
+    .data-table, .stats-table { width: 100% !important; }
     .data-table th, .data-table td,
-    .stats-table th, .stats-table td { width: auto !important; overflow-wrap: break-word; word-break: break-word; white-space: normal; }
-    .data-table td *, .stats-table td * { white-space: normal; word-break: break-word; }
+    .stats-table th, .stats-table td { width: auto !important; overflow-wrap: break-word; word-break: normal; white-space: normal; }
+    .data-table td *, .stats-table td * { white-space: normal; word-break: normal; }
+    .data-table:not(.wide-table) .data-table-head a,
+    .stats-table thead a { white-space: normal; }
 
     h1 { font-size: 1.2rem; }
+
+    /* Player profile: with table-layout:fixed the 200px + 170px colgroup leaves the
+       value column almost no width, so text wraps one character per line. Drop the
+       avatar column, show the avatar in its own row, and let label/value share the width. */
+    .profile-info-table col:nth-child(1) { width: 36% !important; }
+    .profile-info-table col:nth-child(3) { width: 0 !important; }
+    .profile-info-table #player_avatar { display: none; }
+    .profile-avatar-row { display: table-row; }
+    .profile-avatar-row td { text-align: center; padding: 8px; }
+    .profile-avatar-row img { height: 120px !important; width: 120px !important; }
+
+    /* Role selection: table-layout:fixed gives all 8 columns equal width (~45px), which splits
+       role names mid-word. Hide the ratio bar (it repeats the % column), tighten the cell
+       padding, and give the Role column the most room. */
+    .role-table .role-ratio,
+    .role-table col.rc-ratio { display: none; }
+    .role-table th, .role-table td { padding-left: 6px; padding-right: 6px; }
+    .role-table td img { display: block; margin-bottom: 2px; }
+    .role-table col.rc-rank   { width: 11%; }
+    .role-table col.rc-role   { width: 27%; }
+    .role-table col.rc-joined { width: 16%; }
+    .role-table col.rc-pct    { width: 13%; }
+    .role-table col.rc-kills  { width: 11%; }
+    .role-table col.rc-deaths { width: 12%; }
+    .role-table col.rc-kd     { width: 10%; }
+
+    /* Wide tables (.wide-table): 8+ columns of numbers won't fit a phone even at natural width.
+       Keep each cell on one line and let the .table-responsive wrapper (added by site.js) scroll
+       the table sideways, with the name column (2nd) pinned so rows stay identifiable. */
+    .table-responsive > .data-table.wide-table {
+        table-layout: auto !important;
+        width: max-content !important;
+        min-width: 100% !important;
+        overflow: visible;
+    }
+    .wide-table th,
+    .wide-table td,
+    .wide-table td * { white-space: nowrap; word-break: normal; overflow-wrap: normal; }
+    .wide-table th:nth-child(2),
+    .wide-table td:nth-child(2) {
+        position: sticky;
+        left: 0;
+        z-index: 1;
+        box-shadow: 1px 0 0 var(--border);
+    }
+    .wide-table td:nth-child(2) {
+        background: inherit;
+        width: 9rem !important;
+        min-width: 9rem;
+        max-width: 9rem;
+    }
+    .wide-table td:nth-child(2),
+    .wide-table td:nth-child(2) * { white-space: normal; overflow-wrap: anywhere; }
 
     /* Chart containers: enforce a minimum readable height */
     .chart-container { height: 140px; }
