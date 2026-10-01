@@ -146,7 +146,6 @@
     <thead>
         <tr class="data-table-head">
             <th style="text-align:right;">Rank</th>
-            <th style="text-align:right;">Rank #</th>
             <th style="text-align:left;"><a href="@(SortUrl("name"))">Name@(Mark("name"))</a></th>
             <th style="text-align:right;"><a href="@(SortUrl("skill"))">Points@(Mark("skill"))</a></th>
             <th style="text-align:center;">Activity</th>
@@ -169,7 +168,6 @@
             var memberFlag = string.IsNullOrEmpty(m.Flag) ? "0" : m.Flag.ToLowerInvariant();
             <tr class="@rowClass">
                 <td style="text-align:right;">@(rowNum++)</td>
-                <td style="text-align:right;">@(m.MmRank.HasValue ? m.MmRank.Value.ToString("N0") : "-")</td>
                 <td>
                     <img src="@(Url.Content("~/hlstatsimg/flags/") + memberFlag + ".gif")" alt="@m.Country" title="@m.Country" />
                     &nbsp;<a asp-controller="Players" asp-action="Profile" asp-route-id="@m.PlayerId">@m.Name</a>

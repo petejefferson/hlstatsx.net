@@ -31,7 +31,6 @@ public record CountryMember
     public string? Flag { get; init; }
     public string? Country { get; init; }
     public int Skill { get; init; }
-    public int? MmRank { get; init; }
     public double Activity { get; init; }
     public int ConnectionTime { get; init; }
     public int Kills { get; init; }

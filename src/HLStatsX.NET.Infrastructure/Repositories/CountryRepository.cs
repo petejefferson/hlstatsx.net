@@ -165,7 +165,6 @@ public class CountryRepository : ICountryRepository
             Flag           = p.Flag,
             Country        = p.Country,
             Skill          = p.Skill,
-            MmRank         = p.MmRank,
             Activity       = p.ActivityScore,
             ConnectionTime = p.ConnectionTime,
             Kills          = p.Kills,
