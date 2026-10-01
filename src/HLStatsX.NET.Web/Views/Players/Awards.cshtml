@@ -38,7 +38,7 @@
                 string row = bg ? "bg2" : "bg1"; bg = !bg;
                 <tr>
                     <td class="@row rank-col">@(rowNum).</td>
-                    <td class="@row" style="white-space:nowrap;">$1a.AwardTime.ToString("yyyy-MM-dd")</td>
+                    <td class="@row" style="white-space:nowrap;">@a.AwardTime.ToString("yyyy-MM-dd")</td>
                     <td class="@row">
                         @if (!Model.AwardId.HasValue)
                         {
