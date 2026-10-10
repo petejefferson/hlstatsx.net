@@ -1,6 +1,6 @@
 # Compare to PHP Site
 
-Perform a comprehensive feature parity check between the current PHP HLStatsX implementation and the .NET rewrite. Analyse `legacy/php` as the authoritative spec, inspect the .NET source in `src/`. A running version of the PHP site can be found at http://localhost:5080/hlstats.php and the .NET site can be found at https://localhost:7017/.
+Perform a comprehensive feature parity check between the current PHP HLStatsX implementation and the .NET rewrite. Analyse `legacy/php` as the authoritative spec, inspect the .NET source in `src/`. A running version of the PHP site can be found at http://localhost:5080/hlstats.php and the .NET site can be found at https://localhost:5017/.
 
 ## Steps
 

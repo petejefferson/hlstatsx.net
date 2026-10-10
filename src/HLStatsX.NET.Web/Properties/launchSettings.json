@@ -6,7 +6,7 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "https://0.0.0.0:7017;http://0.0.0.0:7018"
+      "applicationUrl": "https://0.0.0.0:5017;http://0.0.0.0:5018"
     },
     "HLStatsX.Web (Production)": {
       "commandName": "Project",
@@ -14,7 +14,7 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Production"
       },
-      "applicationUrl": "https://0.0.0.0:7017;http://0.0.0.0:7018"
+      "applicationUrl": "https://0.0.0.0:5017;http://0.0.0.0:5018"
     }
   }
 }

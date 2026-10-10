@@ -130,6 +130,7 @@ All settings can be passed as environment variables (using `__` as the section s
 | `HLStatsX:HideBotPlayers` | `HLStatsX__HideBotPlayers` | `false` | Exclude bots from leaderboards |
 | `HLStatsX:PreviewMode` | `HLStatsX__PreviewMode` | `false` | Hides some sensitive data (for public demos) |
 | `HLStatsX:Geo:GoogleMapsApiKey` | `HLStatsX__Geo__GoogleMapsApiKey` | *(empty)* | Google Maps API key — enables satellite map overlays on clan/country profiles (Leaflet/OSM used when absent) |
+| `HLStatsX:Steam:ApiKey` | `HLStatsX__Steam__ApiKey` | *(empty)* | [Steam Web API key](https://steamcommunity.com/dev/apikey) — used for player avatars. Strongly recommended in production: without it the app scrapes steamcommunity.com, which rate-limits (HTTP 429) shared server IPs and leaves many avatars missing |
 | `PathBase` | `PathBase` | *(empty)* | URL path base, e.g. `/stats` |
 
 ---
@@ -147,7 +148,7 @@ dotnet run --project src/HLStatsX.NET.Web
 dotnet test --filter "FullyQualifiedName!~RepositoryTests"
 ```
 
-The app defaults to `https://localhost:7017` when run locally via `dotnet run` or Visual Studio.
+The app defaults to `https://localhost:5017` when run locally via `dotnet run` or Visual Studio.
 
 ---
 

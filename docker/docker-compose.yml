@@ -16,6 +16,7 @@ services:
       - ConnectionStrings__HLStats=${HLSTATSX_CONNECTION_STRING}
       - HLStatsX__DefaultGame=${HLSTATSX_DEFAULT_GAME:-dods}
       - HLStatsX__SiteName=${HLSTATSX_SITE_NAME:-HLStatsX.NET}
+      - HLStatsX__Steam__ApiKey=${HLSTATSX_STEAM_API_KEY:-}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/"]
