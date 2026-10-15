@@ -18,6 +18,11 @@ RUN dotnet publish src/HLStatsX.NET.Web/HLStatsX.NET.Web.csproj \
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
+# curl is required by the compose healthcheck; the aspnet base image does not include it
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY --from=build /app/publish .
 
 # Listen on HTTP only — TLS termination is handled by a reverse proxy (e.g. Nginx)

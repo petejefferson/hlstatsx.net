@@ -47,15 +47,15 @@
             <th class="rank-col" style="width:4%;">Rank</th>
             <th style="text-align:left;"><a href="@(SortUrl("name"))">Player@(Mark("name"))</a></th>
             <th class="ls-responsive-hide" style="text-align:center;"><a href="@(SortUrl("armyrank"))">Rank@(Mark("armyrank"))</a></th>
-            <th style="text-align:right;"><a href="@(SortUrl("skill"))">Points@(Mark("skill"))</a></th>
+            <th style="text-align:center;"><a href="@(SortUrl("skill"))">Points@(Mark("skill"))</a></th>
             <th class="ls-responsive-hide" style="text-align:center;"><a href="@(SortUrl("activity"))">Activity@(Mark("activity"))</a></th>
-            <th class="ls-responsive-hide" style="text-align:right;"><a href="@(SortUrl("connectiontime"))">Connection Time@(Mark("connectiontime"))</a></th>
-            <th style="text-align:right;"><a href="@(SortUrl("kills"))">Kills@(Mark("kills"))</a></th>
-            <th style="text-align:right;"><a href="@(SortUrl("deaths"))">Deaths@(Mark("deaths"))</a></th>
-            <th style="text-align:right;"><a href="@(SortUrl("kd"))">K/D@(Mark("kd"))</a></th>
-            <th class="ls-responsive-hide" style="text-align:right;"><a href="@(SortUrl("headshots"))">Headshots@(Mark("headshots"))</a></th>
-            <th class="ls-responsive-hide" style="text-align:right;"><a href="@(SortUrl("hsk"))">HS:K@(Mark("hsk"))</a></th>
-            <th class="ls-responsive-hide" style="text-align:right;"><a href="@(SortUrl("accuracy"))">Accuracy@(Mark("accuracy"))</a></th>
+            <th class="ls-responsive-hide" style="text-align:center;"><a href="@(SortUrl("connectiontime"))">Connection Time@(Mark("connectiontime"))</a></th>
+            <th style="text-align:center;"><a href="@(SortUrl("kills"))">Kills@(Mark("kills"))</a></th>
+            <th style="text-align:center;"><a href="@(SortUrl("deaths"))">Deaths@(Mark("deaths"))</a></th>
+            <th style="text-align:center;"><a href="@(SortUrl("kd"))">K/D@(Mark("kd"))</a></th>
+            <th class="ls-responsive-hide" style="text-align:center;"><a href="@(SortUrl("headshots"))">Headshots@(Mark("headshots"))</a></th>
+            <th class="ls-responsive-hide" style="text-align:center;"><a href="@(SortUrl("hsk"))">HS:K@(Mark("hsk"))</a></th>
+            <th class="ls-responsive-hide" style="text-align:center;"><a href="@(SortUrl("accuracy"))">Accuracy@(Mark("accuracy"))</a></th>
         </tr>
     </thead>
     <tbody>
@@ -89,17 +89,17 @@
                         <text>@armyRank.RankName</text>
                     }
                 </td>
-                <td style="text-align:right;">@player.Points.ToString("N0")@Html.Raw(player.LastSkillChange > 0 ? " <span style=\"color:green\">&#x25B2;</span>" : player.LastSkillChange < 0 ? " <span style=\"color:red\">&#x25BC;</span>" : "")</td>
+                <td style="text-align:center;">@player.Points.ToString("N0")@Html.Raw(player.LastSkillChange > 0 ? " <span style=\"color:green\">&#x25B2;</span>" : player.LastSkillChange < 0 ? " <span style=\"color:red\">&#x25BC;</span>" : "")</td>
                 <td class="ls-responsive-hide" style="text-align:center;">
                     <activity-meter value="@player.ActivityScore" title="@player.ActivityScore%" />
                 </td>
-                <td class="ls-responsive-hide" style="text-align:right;">@RazorHelpers.FormatTime(player.ConnectionTime)</td>
-                <td style="text-align:right;">@player.Kills.ToString("N0")</td>
-                <td style="text-align:right;">@player.Deaths.ToString("N0")</td>
-                <td style="text-align:right;">@player.KillDeathRatio.ToString("F2")</td>
-                <td class="ls-responsive-hide" style="text-align:right;">@player.Headshots.ToString("N0")</td>
-                <td class="ls-responsive-hide" style="text-align:right;">@player.HsPerKill.ToString("F2")</td>
-                <td class="ls-responsive-hide" style="text-align:right;">@(Model.IsHistorical ? "N/A" : player.Accuracy.ToString("F1") + "%")</td>
+                <td class="ls-responsive-hide" style="text-align:center;">@RazorHelpers.FormatTime(player.ConnectionTime)</td>
+                <td style="text-align:center;">@player.Kills.ToString("N0")</td>
+                <td style="text-align:center;">@player.Deaths.ToString("N0")</td>
+                <td style="text-align:center;">@player.KillDeathRatio.ToString("F2")</td>
+                <td class="ls-responsive-hide" style="text-align:center;">@player.Headshots.ToString("N0")</td>
+                <td class="ls-responsive-hide" style="text-align:center;">@player.HsPerKill.ToString("F2")</td>
+                <td class="ls-responsive-hide" style="text-align:center;">@(Model.IsHistorical ? "N/A" : player.Accuracy.ToString("F1") + "%")</td>
             </tr>
             startRank++;
         }

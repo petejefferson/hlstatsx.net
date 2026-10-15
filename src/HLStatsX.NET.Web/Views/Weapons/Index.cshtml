@@ -22,14 +22,14 @@
         <tr class="data-table-head">
             <th>Rank</th>
             <th><a href="@(SortUrl("weapon"))">Weapon@(Mark("weapon"))</a></th>
-            <th><a href="@(SortUrl("modifier"))">Modifier@(Mark("modifier"))</a></th>
-            <th><a href="@(SortUrl("kills"))">Kills@(Mark("kills"))</a></th>
-            <th><a href="@(SortUrl("kpercent"))">%@(Mark("kpercent"))</a></th>
-            <th><a href="@(SortUrl("kpercent"))">Ratio@(Mark("kpercent"))</a></th>
-            <th><a href="@(SortUrl("headshots"))">Headshots@(Mark("headshots"))</a></th>
-            <th><a href="@(SortUrl("hpercent"))">%@(Mark("hpercent"))</a></th>
-            <th><a href="@(SortUrl("hpercent"))">Ratio@(Mark("hpercent"))</a></th>
-            <th><a href="@(SortUrl("hpk"))">HS:K@(Mark("hpk"))</a></th>
+            <th style="text-align:center;"><a href="@(SortUrl("modifier"))">Modifier@(Mark("modifier"))</a></th>
+            <th style="text-align:center;"><a href="@(SortUrl("kills"))">Kills@(Mark("kills"))</a></th>
+            <th style="text-align:center;"><a href="@(SortUrl("kpercent"))">%@(Mark("kpercent"))</a></th>
+            <th style="text-align:center;"><a href="@(SortUrl("kpercent"))">Ratio@(Mark("kpercent"))</a></th>
+            <th style="text-align:center;"><a href="@(SortUrl("headshots"))">Headshots@(Mark("headshots"))</a></th>
+            <th style="text-align:center;"><a href="@(SortUrl("hpercent"))">%@(Mark("hpercent"))</a></th>
+            <th style="text-align:center;"><a href="@(SortUrl("hpercent"))">Ratio@(Mark("hpercent"))</a></th>
+            <th style="text-align:center;"><a href="@(SortUrl("hpk"))">HS:K@(Mark("hpk"))</a></th>
         </tr>
     </thead>
     <tbody>
@@ -47,20 +47,20 @@
             string imgBase = $"{Url.Content("~/hlstatsimg")}/games/{Model.Game}/weapons/{w.Code.ToLower()}";
             <tr class="@rowClass">
                 <td class="rank-col">@(rank).</td>
-                <td style="text-align:center">
+                <td style="text-align:left">
                     <a asp-controller="Weapons" asp-action="Detail" asp-route-id="@w.WeaponId">
                         <img src="@(imgBase).gif" alt="@w.Name" title="@w.Name"
                              onerror="if(!this.dataset.t){this.dataset.t='1';this.src='@(imgBase).png';}else{this.replaceWith(Object.assign(document.createElement('b'),{textContent:this.alt}));}" />
                     </a>
                 </td>
-                <td style="text-align:right">@w.Modifier.ToString("F2")</td>
-                <td style="text-align:right">@w.Kills.ToString("N0")</td>
-                <td style="text-align:right">@(kpct.ToString("F2"))%</td>
+                <td style="text-align:center">@w.Modifier.ToString("F2")</td>
+                <td style="text-align:center">@w.Kills.ToString("N0")</td>
+                <td style="text-align:center">@(kpct.ToString("F2"))%</td>
                 <td><activity-meter value="@kpct" /></td>
-                <td style="text-align:right">@w.Headshots.ToString("N0")</td>
-                <td style="text-align:right">@(hpct.ToString("F2"))%</td>
+                <td style="text-align:center">@w.Headshots.ToString("N0")</td>
+                <td style="text-align:center">@(hpct.ToString("F2"))%</td>
                 <td><activity-meter value="@hpct" /></td>
-                <td style="text-align:right">@hpk.ToString("F2")</td>
+                <td style="text-align:center">@hpk.ToString("F2")</td>
             </tr>
             rank++;
         }
