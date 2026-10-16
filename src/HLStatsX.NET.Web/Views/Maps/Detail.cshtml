@@ -38,8 +38,8 @@
             <tr class="data-table-head">
                 <th class="rank-col">Rank</th>
                 <th><a href="@(SortUrl("name"))">Player@(Mark("name"))</a></th>
-                <th style="text-align:right;"><a href="@(SortUrl("kills"))">Kills on @Model.MapName@(Mark("kills"))</a></th>
-                <th style="text-align:right;"><a href="@(SortUrl("headshots"))">Headshots@(Mark("headshots"))</a></th>
+                <th style="text-align:center;"><a href="@(SortUrl("kills"))">Kills on @Model.MapName@(Mark("kills"))</a></th>
+                <th style="text-align:center;"><a href="@(SortUrl("headshots"))">Headshots@(Mark("headshots"))</a></th>
                 <th style="text-align:right;"><a href="@(SortUrl("hpk"))">HpK@(Mark("hpk"))</a></th>
             </tr>
         </thead>
@@ -63,8 +63,8 @@
                         }
                         <a asp-controller="Players" asp-action="Profile" asp-route-id="@p.PlayerId">@p.PlayerName</a>
                     </td>
-                    <td style="text-align:right;">@p.Kills.ToString("N0")</td>
-                    <td style="text-align:right;">@p.Headshots.ToString("N0")</td>
+                    <td style="text-align:center;">@p.Kills.ToString("N0")</td>
+                    <td style="text-align:center;">@p.Headshots.ToString("N0")</td>
                     <td style="text-align:right;">@p.HeadshotsPerKill.ToString("F2")</td>
                 </tr>
             }

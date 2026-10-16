@@ -25,6 +25,16 @@ public class PlayerRepository : IPlayerRepository
             .SingleOrDefaultAsync(p => p.PlayerId == playerId, ct);
     }
 
+    public async Task<IReadOnlySet<int>> GetBotPlayerIdsAsync(CancellationToken ct = default)
+    {
+        await using var db = _factory.CreateDbContext();
+        return await (from u in db.PlayerUniqueIds
+                      join p in db.Players on u.PlayerId equals p.PlayerId
+                      where EF.Functions.Like(u.UniqueId, "BOT%") && p.LastName != "SourceTV"
+                      select u.PlayerId)
+            .ToHashSetAsync(ct);
+    }
+
     public async Task<PagedResult<Player>> GetRankingsAsync(string game, int page, int pageSize,
         string sortBy = "skill", bool descending = true, int minKills = 1, CancellationToken ct = default)
     {

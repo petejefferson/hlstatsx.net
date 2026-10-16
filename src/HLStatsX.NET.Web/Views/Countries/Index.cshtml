@@ -29,12 +29,12 @@
         <tr class="data-table-head">
             <th class="rank-col" style="width:4%;">Rank</th>
             <th style="text-align:left;"><a href="@(SortUrl("name"))">Country@(Mark("name"))</a></th>
-            <th class="ls-responsive-hide" style="text-align:right;"><a href="@(SortUrl("skill"))">Avg. Points@(Mark("skill"))</a></th>
-            <th style="text-align:right;"><a href="@(SortUrl("members"))">Members@(Mark("members"))</a></th>
+            <th class="ls-responsive-hide" style="text-align:center;"><a href="@(SortUrl("skill"))">Avg. Points@(Mark("skill"))</a></th>
+            <th style="text-align:center;"><a href="@(SortUrl("members"))">Members@(Mark("members"))</a></th>
             <th class="ls-responsive-hide" style="text-align:center;">Activity</th>
-            <th class="ls-responsive-hide" style="text-align:right;"><a href="@(SortUrl("connection_time"))">Connection Time@(Mark("connection_time"))</a></th>
-            <th style="text-align:right;"><a href="@(SortUrl("kills"))">Kills@(Mark("kills"))</a></th>
-            <th style="text-align:right;"><a href="@(SortUrl("deaths"))">Deaths@(Mark("deaths"))</a></th>
+            <th class="ls-responsive-hide" style="text-align:center;"><a href="@(SortUrl("connection_time"))">Connection Time@(Mark("connection_time"))</a></th>
+            <th style="text-align:center;"><a href="@(SortUrl("kills"))">Kills@(Mark("kills"))</a></th>
+            <th style="text-align:center;"><a href="@(SortUrl("deaths"))">Deaths@(Mark("deaths"))</a></th>
             <th class="ls-responsive-hide" style="text-align:right;"><a href="@(SortUrl("kpd"))">K:D@(Mark("kpd"))</a></th>
         </tr>
     </thead>
@@ -50,14 +50,14 @@
                     <img src="@(Url.Content("~/hlstatsimg/flags/") + flagFile + ".gif")" alt="@country.Name" title="@country.Name" />
                     &nbsp;<a asp-action="Profile" asp-route-flag="@country.Flag" asp-route-game="@Model.Game">@country.Name</a>
                 </td>
-                <td class="ls-responsive-hide" style="text-align:right;">@country.AvgSkill.ToString("N0")</td>
-                <td style="text-align:right;">@country.MemberCount</td>
+                <td class="ls-responsive-hide" style="text-align:center;">@country.AvgSkill.ToString("N0")</td>
+                <td style="text-align:center;">@country.MemberCount</td>
                 <td class="ls-responsive-hide" style="text-align:center;">
                     <activity-meter value="@country.AvgActivity" title="@country.AvgActivity.ToString("F2")%" />
                 </td>
-                <td class="ls-responsive-hide" style="text-align:right;">@RazorHelpers.FormatTime(country.TotalConnectionTime)</td>
-                <td style="text-align:right;">@country.TotalKills.ToString("N0")</td>
-                <td style="text-align:right;">@country.TotalDeaths.ToString("N0")</td>
+                <td class="ls-responsive-hide" style="text-align:center;">@RazorHelpers.FormatTime(country.TotalConnectionTime)</td>
+                <td style="text-align:center;">@country.TotalKills.ToString("N0")</td>
+                <td style="text-align:center;">@country.TotalDeaths.ToString("N0")</td>
                 <td class="ls-responsive-hide" style="text-align:right;">@country.KillDeathRatio.ToString("F2")</td>
             </tr>
             rank++;

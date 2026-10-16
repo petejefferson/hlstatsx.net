@@ -22,8 +22,8 @@
         <tr class="data-table-head">
             <td class="rank-col">Rank</td>
             <td><a href="@(SortUrl("description"))">Action@(Mark("description"))</a></td>
-            <td style="text-align:right;"><a href="@(SortUrl("count"))">Earned@(Mark("count"))</a></td>
-            <td style="text-align:right;"><a href="@(SortUrl("reward"))">Reward@(Mark("reward"))</a></td>
+            <td style="text-align:center;"><a href="@(SortUrl("count"))">Earned@(Mark("count"))</a></td>
+            <td style="text-align:center;"><a href="@(SortUrl("reward"))">Reward@(Mark("reward"))</a></td>
         </tr>
     </thead>
     <tbody>
@@ -36,8 +36,8 @@
                 <td>
                     <a asp-controller="Actions" asp-action="Detail" asp-route-code="@a.Code" asp-route-game="@Model.Game">@a.Description</a>
                 </td>
-                <td style="text-align:right;">@a.Count.ToString("N0") times</td>
-                <td style="text-align:right;">@a.RewardPlayer</td>
+                <td style="text-align:center;">@a.Count.ToString("N0") times</td>
+                <td style="text-align:center;">@a.RewardPlayer</td>
             </tr>
             rank++;
         }

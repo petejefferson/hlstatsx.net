@@ -24,6 +24,9 @@ public class PlayerService : IPlayerService
     public Task<Player?> GetPlayerAsync(int playerId, CancellationToken ct = default) =>
         _players.GetByIdAsync(playerId, ct);
 
+    public Task<IReadOnlySet<int>> GetBotPlayerIdsAsync(CancellationToken ct = default) =>
+        _players.GetBotPlayerIdsAsync(ct);
+
     public Task<PagedResult<Player>> GetLeaderboardAsync(string game, int page, int pageSize,
         string sortBy = "skill", bool descending = true, int minKills = 1, CancellationToken ct = default) =>
         _players.GetRankingsAsync(game, page, pageSize, sortBy, descending, minKills, ct);

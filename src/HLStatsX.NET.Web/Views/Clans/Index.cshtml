@@ -28,12 +28,12 @@
             <th class="rank-col" style="width:4%;">Rank</th>
             <th style="text-align:left;"><a href="@(SortUrl("name"))">Clan@(Mark("name"))</a></th>
             <th class="ls-responsive-hide" style="text-align:left;">Tag</th>
-            <th style="text-align:right;"><a href="@(SortUrl("skill"))">Avg. Points@(Mark("skill"))</a></th>
-            <th style="text-align:right;"><a href="@(SortUrl("members"))">Members@(Mark("members"))</a></th>
+            <th style="text-align:center;"><a href="@(SortUrl("skill"))">Avg. Points@(Mark("skill"))</a></th>
+            <th style="text-align:center;"><a href="@(SortUrl("members"))">Members@(Mark("members"))</a></th>
             <th class="ls-responsive-hide" style="text-align:center;"><a href="@(SortUrl("activity"))">Activity@(Mark("activity"))</a></th>
-            <th class="ls-responsive-hide" style="text-align:right;"><a href="@(SortUrl("kills"))">Kills@(Mark("kills"))</a></th>
-            <th class="ls-responsive-hide" style="text-align:right;"><a href="@(SortUrl("deaths"))">Deaths@(Mark("deaths"))</a></th>
-            <th class="ls-responsive-hide" style="text-align:right;">K:D</th>
+            <th class="ls-responsive-hide" style="text-align:center;"><a href="@(SortUrl("kills"))">Kills@(Mark("kills"))</a></th>
+            <th class="ls-responsive-hide" style="text-align:center;"><a href="@(SortUrl("deaths"))">Deaths@(Mark("deaths"))</a></th>
+            <th class="ls-responsive-hide" style="text-align:center;">K:D</th>
             <th class="ls-responsive-hide" style="text-align:right;">Connection Time</th>
         </tr>
     </thead>
@@ -46,12 +46,12 @@
                 <td class="rank-col">@(rank).</td>
                 <td><img src="~/hlstatsimg/clan.gif" alt="" style="vertical-align:middle;margin-right:4px;" /><a asp-action="Profile" asp-route-id="@clan.ClanId" asp-route-game="@Model.Game">@clan.Name</a></td>
                 <td class="ls-responsive-hide">@clan.Tag</td>
-                <td style="text-align:right;">@clan.AvgSkill.ToString("N0")@Html.Raw(clan.AvgLastSkillChange > 0 ? " <span style=\"color:green\">&#x25B2;</span>" : clan.AvgLastSkillChange < 0 ? " <span style=\"color:red\">&#x25BC;</span>" : "")</td>
-                <td style="text-align:right;">@clan.MemberCount</td>
+                <td style="text-align:center;">@clan.AvgSkill.ToString("N0")@Html.Raw(clan.AvgLastSkillChange > 0 ? " <span style=\"color:green\">&#x25B2;</span>" : clan.AvgLastSkillChange < 0 ? " <span style=\"color:red\">&#x25BC;</span>" : "")</td>
+                <td style="text-align:center;">@clan.MemberCount</td>
                 <td class="ls-responsive-hide" style="text-align:center;"><activity-meter value="@clan.AvgActivity" title="@clan.AvgActivity%" /></td>
-                <td class="ls-responsive-hide" style="text-align:right;">@clan.TotalKills.ToString("N0")</td>
-                <td class="ls-responsive-hide" style="text-align:right;">@clan.TotalDeaths.ToString("N0")</td>
-                <td class="ls-responsive-hide" style="text-align:right;">@clan.KillDeathRatio</td>
+                <td class="ls-responsive-hide" style="text-align:center;">@clan.TotalKills.ToString("N0")</td>
+                <td class="ls-responsive-hide" style="text-align:center;">@clan.TotalDeaths.ToString("N0")</td>
+                <td class="ls-responsive-hide" style="text-align:center;">@clan.KillDeathRatio</td>
                 <td class="ls-responsive-hide" style="text-align:right;">@RazorHelpers.FormatTime(clan.TotalConnectionTime)</td>
             </tr>
             rank++;
