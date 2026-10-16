@@ -294,7 +294,7 @@
         </table>
       </section>
       <section style="height:100%;">
-        <table class="stats-table" style="height:100%;">
+        <table class="stats-table" style="height:100%;width:100%;">
           <thead><tr><th>Rank history</th></tr></thead>
           <tbody>
             <tr><td style="text-align:center;">
@@ -498,8 +498,8 @@
       <tr class="data-table-head">
         <th>Rank</th>
         <th><a href="@(PaSortUrl("action"))">Action@(PaMark("action"))</a></th>
-        <th style="text-align:right"><a href="@(PaSortUrl("count"))">Earned@(PaMark("count"))</a></th>
-        <th style="text-align:right"><a href="@(PaSortUrl("points"))">Accumulated Points@(PaMark("points"))</a></th>
+        <th style="text-align:center"><a href="@(PaSortUrl("count"))">Earned@(PaMark("count"))</a></th>
+        <th style="text-align:center"><a href="@(PaSortUrl("points"))">Accumulated Points@(PaMark("points"))</a></th>
       </tr>
     </thead>
     <tbody>
@@ -510,8 +510,8 @@
         <tr class="@paRow">
           <td class="rank-col">@(paRank).</td>
           <td>@a.Description</td>
-          <td style="text-align:right">@a.Count.ToString("N0") times</td>
-          <td style="text-align:right">@a.AccumulatedPoints.ToString("N0")</td>
+          <td style="text-align:center">@a.Count.ToString("N0") times</td>
+          <td style="text-align:center">@a.AccumulatedPoints.ToString("N0")</td>
         </tr>
         paRank++;
       }
@@ -529,8 +529,8 @@
       <tr class="data-table-head">
         <th>Rank</th>
         <th><a href="@(PavSortUrl("action"))">Action@(PavMark("action"))</a></th>
-        <th style="text-align:right"><a href="@(PavSortUrl("count"))">Earned Against@(PavMark("count"))</a></th>
-        <th style="text-align:right"><a href="@(PavSortUrl("points"))">Accumulated Points@(PavMark("points"))</a></th>
+        <th style="text-align:center"><a href="@(PavSortUrl("count"))">Earned Against@(PavMark("count"))</a></th>
+        <th style="text-align:center"><a href="@(PavSortUrl("points"))">Accumulated Points@(PavMark("points"))</a></th>
       </tr>
     </thead>
     <tbody>
@@ -541,8 +541,8 @@
         <tr class="@pavRow">
           <td class="rank-col">@(pavRank).</td>
           <td>@a.Description</td>
-          <td style="text-align:right">@a.Count.ToString("N0") times</td>
-          <td style="text-align:right">@a.AccumulatedPoints.ToString("N0")</td>
+          <td style="text-align:center">@a.Count.ToString("N0") times</td>
+          <td style="text-align:center">@a.AccumulatedPoints.ToString("N0")</td>
         </tr>
         pavRank++;
       }
@@ -564,8 +564,8 @@
         <tr class="data-table-head">
           <th>Rank</th>
           <th><a href="@(TsSortUrl("team"))">Team@(TsMark("team"))</a></th>
-          <th style="text-align:right"><a href="@(TsSortUrl("joined"))">Joined@(TsMark("joined"))</a></th>
-          <th style="text-align:right">%</th>
+          <th style="text-align:center"><a href="@(TsSortUrl("joined"))">Joined@(TsMark("joined"))</a></th>
+          <th style="text-align:center">%</th>
           <th>Ratio</th>
         </tr>
       </thead>
@@ -578,8 +578,8 @@
           <tr class="@teamRow">
             <td class="rank-col">@(teamRank).</td>
             <td>@t.TeamName</td>
-            <td style="text-align:right">@t.JoinCount times</td>
-            <td style="text-align:right">@pct.ToString("F2")%</td>
+            <td style="text-align:center">@t.JoinCount times</td>
+            <td style="text-align:center">@pct.ToString("F2")%</td>
             <td><activity-meter value="@pct" /></td>
           </tr>
           teamRank++;
@@ -605,11 +605,11 @@
         <tr class="data-table-head">
           <th>Rank</th>
           <th><a href="@(RsSortUrl("role"))">Role@(RsMark("role"))</a></th>
-          <th style="text-align:right"><a href="@(RsSortUrl("joined"))">Joined@(RsMark("joined"))</a></th>
-          <th style="text-align:right">%</th>
+          <th style="text-align:center"><a href="@(RsSortUrl("joined"))">Joined@(RsMark("joined"))</a></th>
+          <th style="text-align:center">%</th>
           <th class="role-ratio">Ratio</th>
-          <th style="text-align:right"><a href="@(RsSortUrl("kills"))">Kills@(RsMark("kills"))</a></th>
-          <th style="text-align:right"><a href="@(RsSortUrl("deaths"))">Deaths@(RsMark("deaths"))</a></th>
+          <th style="text-align:center"><a href="@(RsSortUrl("kills"))">Kills@(RsMark("kills"))</a></th>
+          <th style="text-align:center"><a href="@(RsSortUrl("deaths"))">Deaths@(RsMark("deaths"))</a></th>
           <th style="text-align:right"><a href="@(RsSortUrl("kpd"))">K:D@(RsMark("kpd"))</a></th>
         </tr>
       </thead>
@@ -628,11 +628,11 @@
               }
               @r.RoleName
             </td>
-            <td style="text-align:right">@r.JoinCount times</td>
-            <td style="text-align:right">@(rolePct > 0 ? $"{rolePct:F2}%" : "-")</td>
+            <td style="text-align:center">@r.JoinCount times</td>
+            <td style="text-align:center">@(rolePct > 0 ? $"{rolePct:F2}%" : "-")</td>
             <td class="role-ratio"><activity-meter value="@rolePct" /></td>
-            <td style="text-align:right">@r.Kills.ToString("N0")</td>
-            <td style="text-align:right">@r.Deaths.ToString("N0")</td>
+            <td style="text-align:center">@r.Kills.ToString("N0")</td>
+            <td style="text-align:center">@r.Deaths.ToString("N0")</td>
             <td style="text-align:right">@(r.Deaths == 0 ? r.Kills.ToString("N0") : $"{(double)r.Kills / r.Deaths:F2}")</td>
           </tr>
           roleRank++;
@@ -686,13 +686,13 @@
       <thead>
         <tr class="data-table-head">
           <th>Rank</th>
-          <th><a href="@(WuSortUrl("weapon"))">Weapon@(WuMark("weapon"))</a></th>
-          <th style="text-align:right"><a href="@(WuSortUrl("modifier"))">Modifier@(WuMark("modifier"))</a></th>
-          <th style="text-align:right"><a href="@(WuSortUrl("kills"))">Kills@(WuMark("kills"))</a></th>
-          <th style="text-align:right"><a href="@(WuSortUrl("kpercent"))">%@(WuMark("kpercent"))</a></th>
+          <th style="text-align:left"><a href="@(WuSortUrl("weapon"))">Weapon@(WuMark("weapon"))</a></th>
+          <th style="text-align:center"><a href="@(WuSortUrl("modifier"))">Modifier@(WuMark("modifier"))</a></th>
+          <th style="text-align:center"><a href="@(WuSortUrl("kills"))">Kills@(WuMark("kills"))</a></th>
+          <th style="text-align:center"><a href="@(WuSortUrl("kpercent"))">%@(WuMark("kpercent"))</a></th>
           <th><a href="@(WuSortUrl("kpercent"))">Ratio@(WuMark("kpercent"))</a></th>
-          <th style="text-align:right"><a href="@(WuSortUrl("headshots"))">Headshots@(WuMark("headshots"))</a></th>
-          <th style="text-align:right"><a href="@(WuSortUrl("hpercent"))">%@(WuMark("hpercent"))</a></th>
+          <th style="text-align:center"><a href="@(WuSortUrl("headshots"))">Headshots@(WuMark("headshots"))</a></th>
+          <th style="text-align:center"><a href="@(WuSortUrl("hpercent"))">%@(WuMark("hpercent"))</a></th>
           <th><a href="@(WuSortUrl("hpercent"))">Ratio@(WuMark("hpercent"))</a></th>
           <th style="text-align:right"><a href="@(WuSortUrl("hpk"))">HS:K@(WuMark("hpk"))</a></th>
         </tr>
@@ -708,7 +708,7 @@
           string imgSrc = $"{imgRoot}/games/{Model.Player.Game}/weapons/{w.WeaponCode.ToLower()}.gif";
           <tr class="@wuRow">
             <td class="rank-col">@(wuRank).</td>
-            <td style="text-align:center">
+            <td style="text-align:left">
               @if (w.WeaponId.HasValue)
               {
                 <a asp-controller="Weapons" asp-action="Detail" asp-route-id="@w.WeaponId">
@@ -720,12 +720,12 @@
                 <img src="@imgSrc" width="90" height="17" alt="@w.WeaponName" title="@w.WeaponName" />
               }
             </td>
-            <td style="text-align:right">@w.Modifier.ToString("F2")</td>
-            <td style="text-align:right">@w.Kills.ToString("N0")</td>
-            <td style="text-align:right">@(kpct.ToString("F2"))%</td>
+            <td style="text-align:center">@w.Modifier.ToString("F2")</td>
+            <td style="text-align:center">@w.Kills.ToString("N0")</td>
+            <td style="text-align:center">@(kpct.ToString("F2"))%</td>
             <td><activity-meter value="@kpct" /></td>
-            <td style="text-align:right">@w.Headshots.ToString("N0")</td>
-            <td style="text-align:right">@(hpct.ToString("F2"))%</td>
+            <td style="text-align:center">@w.Headshots.ToString("N0")</td>
+            <td style="text-align:center">@(hpct.ToString("F2"))%</td>
             <td><activity-meter value="@hpct" /></td>
             <td style="text-align:right">@(hpk.ToString("F2"))</td>
           </tr>
@@ -745,14 +745,14 @@
         <tr class="data-table-head">
           <th>Rank</th>
           <th><a href="@(WsSortUrl("weapon"))">Weapon@(WsMark("weapon"))</a></th>
-          <th style="text-align:right"><a href="@(WsSortUrl("shots"))">Shots@(WsMark("shots"))</a></th>
-          <th style="text-align:right"><a href="@(WsSortUrl("hits"))">Hits@(WsMark("hits"))</a></th>
-          <th style="text-align:right"><a href="@(WsSortUrl("damage"))">Damage@(WsMark("damage"))</a></th>
-          <th style="text-align:right"><a href="@(WsSortUrl("headshots"))">Headshots@(WsMark("headshots"))</a></th>
-          <th style="text-align:right"><a href="@(WsSortUrl("kills"))">Kills@(WsMark("kills"))</a></th>
-          <th style="text-align:right"><a href="@(WsSortUrl("kdr"))">K:D@(WsMark("kdr"))</a></th>
-          <th style="text-align:right"><a href="@(WsSortUrl("accuracy"))">Accuracy@(WsMark("accuracy"))</a></th>
-          <th style="text-align:right"><a href="@(WsSortUrl("dph"))">Dmg/Hit@(WsMark("dph"))</a></th>
+          <th style="text-align:center"><a href="@(WsSortUrl("shots"))">Shots@(WsMark("shots"))</a></th>
+          <th style="text-align:center"><a href="@(WsSortUrl("hits"))">Hits@(WsMark("hits"))</a></th>
+          <th style="text-align:center"><a href="@(WsSortUrl("damage"))">Damage@(WsMark("damage"))</a></th>
+          <th style="text-align:center"><a href="@(WsSortUrl("headshots"))">Headshots@(WsMark("headshots"))</a></th>
+          <th style="text-align:center"><a href="@(WsSortUrl("kills"))">Kills@(WsMark("kills"))</a></th>
+          <th style="text-align:center"><a href="@(WsSortUrl("kdr"))">K:D@(WsMark("kdr"))</a></th>
+          <th style="text-align:center"><a href="@(WsSortUrl("accuracy"))">Accuracy@(WsMark("accuracy"))</a></th>
+          <th style="text-align:center"><a href="@(WsSortUrl("dph"))">Dmg/Hit@(WsMark("dph"))</a></th>
           <th style="text-align:right"><a href="@(WsSortUrl("spk"))">Shots/Kill@(WsMark("spk"))</a></th>
         </tr>
       </thead>
@@ -776,14 +776,14 @@
                 <img src="@wsImg" width="90" height="17" alt="@w.WeaponName" title="@w.WeaponName" />
               }
             </td>
-            <td style="text-align:right">@w.Shots.ToString("N0")</td>
-            <td style="text-align:right">@w.Hits.ToString("N0")</td>
-            <td style="text-align:right">@w.Damage.ToString("N0")</td>
-            <td style="text-align:right">@w.Headshots.ToString("N0")</td>
-            <td style="text-align:right">@w.Kills.ToString("N0")</td>
-            <td style="text-align:right">@w.Kdr.ToString("F2")</td>
-            <td style="text-align:right">@(w.Accuracy.ToString("F1"))%</td>
-            <td style="text-align:right">@w.DamagePerHit.ToString("F1")</td>
+            <td style="text-align:center">@w.Shots.ToString("N0")</td>
+            <td style="text-align:center">@w.Hits.ToString("N0")</td>
+            <td style="text-align:center">@w.Damage.ToString("N0")</td>
+            <td style="text-align:center">@w.Headshots.ToString("N0")</td>
+            <td style="text-align:center">@w.Kills.ToString("N0")</td>
+            <td style="text-align:center">@w.Kdr.ToString("F2")</td>
+            <td style="text-align:center">@(w.Accuracy.ToString("F1"))%</td>
+            <td style="text-align:center">@w.DamagePerHit.ToString("F1")</td>
             <td style="text-align:right">@w.ShotsPerKill.ToString("F1")</td>
           </tr>
           wsRank++;
@@ -802,16 +802,16 @@
         <tr class="data-table-head">
           <th>Rank</th>
           <th><a href="@(WtSortUrl("weapon"))">Weapon@(WtMark("weapon"))</a></th>
-          <th style="text-align:right"><a href="@(WtSortUrl("hits"))">Hits@(WtMark("hits"))</a></th>
-          <th style="text-align:right"><a href="@(WtSortUrl("head"))">Head@(WtMark("head"))</a></th>
-          <th style="text-align:right"><a href="@(WtSortUrl("chest"))">Chest@(WtMark("chest"))</a></th>
-          <th style="text-align:right"><a href="@(WtSortUrl("stomach"))">Stomach@(WtMark("stomach"))</a></th>
-          <th style="text-align:right"><a href="@(WtSortUrl("leftarm"))">Left Arm@(WtMark("leftarm"))</a></th>
-          <th style="text-align:right"><a href="@(WtSortUrl("rightarm"))">Right Arm@(WtMark("rightarm"))</a></th>
-          <th style="text-align:right"><a href="@(WtSortUrl("leftleg"))">Left Leg@(WtMark("leftleg"))</a></th>
-          <th style="text-align:right"><a href="@(WtSortUrl("rightleg"))">Right Leg@(WtMark("rightleg"))</a></th>
-          <th style="text-align:right"><a href="@(WtSortUrl("left"))">Left %@(WtMark("left"))</a></th>
-          <th style="text-align:right"><a href="@(WtSortUrl("middle"))">Middle %@(WtMark("middle"))</a></th>
+          <th style="text-align:center"><a href="@(WtSortUrl("hits"))">Hits@(WtMark("hits"))</a></th>
+          <th style="text-align:center"><a href="@(WtSortUrl("head"))">Head@(WtMark("head"))</a></th>
+          <th style="text-align:center"><a href="@(WtSortUrl("chest"))">Chest@(WtMark("chest"))</a></th>
+          <th style="text-align:center"><a href="@(WtSortUrl("stomach"))">Stomach@(WtMark("stomach"))</a></th>
+          <th style="text-align:center"><a href="@(WtSortUrl("leftarm"))">Left Arm@(WtMark("leftarm"))</a></th>
+          <th style="text-align:center"><a href="@(WtSortUrl("rightarm"))">Right Arm@(WtMark("rightarm"))</a></th>
+          <th style="text-align:center"><a href="@(WtSortUrl("leftleg"))">Left Leg@(WtMark("leftleg"))</a></th>
+          <th style="text-align:center"><a href="@(WtSortUrl("rightleg"))">Right Leg@(WtMark("rightleg"))</a></th>
+          <th style="text-align:center"><a href="@(WtSortUrl("left"))">Left %@(WtMark("left"))</a></th>
+          <th style="text-align:center"><a href="@(WtSortUrl("middle"))">Middle %@(WtMark("middle"))</a></th>
           <th style="text-align:right"><a href="@(WtSortUrl("right"))">Right %@(WtMark("right"))</a></th>
         </tr>
       </thead>
@@ -835,16 +835,16 @@
                 <img src="@wtImg" width="90" height="17" alt="@w.WeaponName" title="@w.WeaponName" />
               }
             </td>
-            <td style="text-align:right">@w.Hits.ToString("N0")</td>
-            <td style="text-align:right">@w.Head.ToString("N0")</td>
-            <td style="text-align:right">@w.Chest.ToString("N0")</td>
-            <td style="text-align:right">@w.Stomach.ToString("N0")</td>
-            <td style="text-align:right">@w.LeftArm.ToString("N0")</td>
-            <td style="text-align:right">@w.RightArm.ToString("N0")</td>
-            <td style="text-align:right">@w.LeftLeg.ToString("N0")</td>
-            <td style="text-align:right">@w.RightLeg.ToString("N0")</td>
-            <td style="text-align:right">@(w.LeftPct.ToString("F1"))%</td>
-            <td style="text-align:right">@(w.MiddlePct.ToString("F1"))%</td>
+            <td style="text-align:center">@w.Hits.ToString("N0")</td>
+            <td style="text-align:center">@w.Head.ToString("N0")</td>
+            <td style="text-align:center">@w.Chest.ToString("N0")</td>
+            <td style="text-align:center">@w.Stomach.ToString("N0")</td>
+            <td style="text-align:center">@w.LeftArm.ToString("N0")</td>
+            <td style="text-align:center">@w.RightArm.ToString("N0")</td>
+            <td style="text-align:center">@w.LeftLeg.ToString("N0")</td>
+            <td style="text-align:center">@w.RightLeg.ToString("N0")</td>
+            <td style="text-align:center">@(w.LeftPct.ToString("F1"))%</td>
+            <td style="text-align:center">@(w.MiddlePct.ToString("F1"))%</td>
             <td style="text-align:right">@(w.RightPct.ToString("F1"))%</td>
           </tr>
           wtRank++;
@@ -899,15 +899,15 @@
         <tr class="data-table-head">
           <th>Rank</th>
           <th><a href="@(MpSortUrl("map"))">Map@(MpMark("map"))</a></th>
-          <th style="text-align:right"><a href="@(MpSortUrl("kills"))">Kills@(MpMark("kills"))</a></th>
-          <th style="text-align:right"><a href="@(MpSortUrl("kpercent"))">%@(MpMark("kpercent"))</a></th>
+          <th style="text-align:center"><a href="@(MpSortUrl("kills"))">Kills@(MpMark("kills"))</a></th>
+          <th style="text-align:center"><a href="@(MpSortUrl("kpercent"))">%@(MpMark("kpercent"))</a></th>
           <th><a href="@(MpSortUrl("kpercent"))">Ratio@(MpMark("kpercent"))</a></th>
-          <th style="text-align:right"><a href="@(MpSortUrl("deaths"))">Deaths@(MpMark("deaths"))</a></th>
-          <th style="text-align:right"><a href="@(MpSortUrl("dpercent"))">%@(MpMark("dpercent"))</a></th>
+          <th style="text-align:center"><a href="@(MpSortUrl("deaths"))">Deaths@(MpMark("deaths"))</a></th>
+          <th style="text-align:center"><a href="@(MpSortUrl("dpercent"))">%@(MpMark("dpercent"))</a></th>
           <th><a href="@(MpSortUrl("dpercent"))">Ratio@(MpMark("dpercent"))</a></th>
-          <th style="text-align:right"><a href="@(MpSortUrl("kpd"))">K:D@(MpMark("kpd"))</a></th>
-          <th style="text-align:right"><a href="@(MpSortUrl("headshots"))">Headshots@(MpMark("headshots"))</a></th>
-          <th style="text-align:right"><a href="@(MpSortUrl("hpercent"))">%@(MpMark("hpercent"))</a></th>
+          <th style="text-align:center"><a href="@(MpSortUrl("kpd"))">K:D@(MpMark("kpd"))</a></th>
+          <th style="text-align:center"><a href="@(MpSortUrl("headshots"))">Headshots@(MpMark("headshots"))</a></th>
+          <th style="text-align:center"><a href="@(MpSortUrl("hpercent"))">%@(MpMark("hpercent"))</a></th>
           <th><a href="@(MpSortUrl("hpercent"))">Ratio@(MpMark("hpercent"))</a></th>
           <th style="text-align:right"><a href="@(MpSortUrl("hpk"))">HS:K@(MpMark("hpk"))</a></th>
         </tr>
@@ -925,15 +925,15 @@
           <tr class="@mpRow">
             <td class="rank-col">@(mpRank).</td>
             <td><a asp-controller="Maps" asp-action="Detail" asp-route-name="@m.Map">@m.Map</a></td>
-            <td style="text-align:right">@m.Kills.ToString("N0")</td>
-            <td style="text-align:right">@(mpKpct.ToString("F2"))%</td>
+            <td style="text-align:center">@m.Kills.ToString("N0")</td>
+            <td style="text-align:center">@(mpKpct.ToString("F2"))%</td>
             <td><activity-meter value="@mpKpct" /></td>
-            <td style="text-align:right">@m.Deaths.ToString("N0")</td>
-            <td style="text-align:right">@(mpDpct.ToString("F2"))%</td>
+            <td style="text-align:center">@m.Deaths.ToString("N0")</td>
+            <td style="text-align:center">@(mpDpct.ToString("F2"))%</td>
             <td><activity-meter value="@mpDpct" /></td>
-            <td style="text-align:right">@mpKpd.ToString("F2")</td>
-            <td style="text-align:right">@m.Headshots.ToString("N0")</td>
-            <td style="text-align:right">@(mpHpct.ToString("F2"))%</td>
+            <td style="text-align:center">@mpKpd.ToString("F2")</td>
+            <td style="text-align:center">@m.Headshots.ToString("N0")</td>
+            <td style="text-align:center">@(mpHpct.ToString("F2"))%</td>
             <td><activity-meter value="@mpHpct" /></td>
             <td style="text-align:right">@(m.Kills == 0 ? "-" : mpHpk.ToString("F2"))</td>
           </tr>
@@ -955,14 +955,14 @@
         <tr class="data-table-head">
           <th>Rank</th>
           <th><a href="@(SpSortUrl("server"))">Server@(SpMark("server"))</a></th>
-          <th style="text-align:right"><a href="@(SpSortUrl("kills"))">Kills@(SpMark("kills"))</a></th>
-          <th style="text-align:right"><a href="@(SpSortUrl("kpercent"))">%@(SpMark("kpercent"))</a></th>
+          <th style="text-align:center"><a href="@(SpSortUrl("kills"))">Kills@(SpMark("kills"))</a></th>
+          <th style="text-align:center"><a href="@(SpSortUrl("kpercent"))">%@(SpMark("kpercent"))</a></th>
           <th><a href="@(SpSortUrl("kpercent"))">Ratio@(SpMark("kpercent"))</a></th>
-          <th style="text-align:right"><a href="@(SpSortUrl("deaths"))">Deaths@(SpMark("deaths"))</a></th>
-          <th style="text-align:right"><a href="@(SpSortUrl("kpd"))">K:D@(SpMark("kpd"))</a></th>
-          <th style="text-align:right"><a href="@(SpSortUrl("headshots"))">Headshots@(SpMark("headshots"))</a></th>
+          <th style="text-align:center"><a href="@(SpSortUrl("deaths"))">Deaths@(SpMark("deaths"))</a></th>
+          <th style="text-align:center"><a href="@(SpSortUrl("kpd"))">K:D@(SpMark("kpd"))</a></th>
+          <th style="text-align:center"><a href="@(SpSortUrl("headshots"))">Headshots@(SpMark("headshots"))</a></th>
           <th><a href="@(SpSortUrl("hpercent"))">Ratio@(SpMark("hpercent"))</a></th>
-          <th style="text-align:right"><a href="@(SpSortUrl("hpercent"))">%@(SpMark("hpercent"))</a></th>
+          <th style="text-align:center"><a href="@(SpSortUrl("hpercent"))">%@(SpMark("hpercent"))</a></th>
           <th style="text-align:right"><a href="@(SpSortUrl("hpk"))">HS:K@(SpMark("hpk"))</a></th>
         </tr>
       </thead>
@@ -978,14 +978,14 @@
           <tr class="@spRow">
             <td class="rank-col">@(spRank).</td>
             <td>@s.ServerName</td>
-            <td style="text-align:right">@s.Kills.ToString("N0")</td>
-            <td style="text-align:right">@(spKpct.ToString("F2"))%</td>
+            <td style="text-align:center">@s.Kills.ToString("N0")</td>
+            <td style="text-align:center">@(spKpct.ToString("F2"))%</td>
             <td><activity-meter value="@spKpct" /></td>
-            <td style="text-align:right">@s.Deaths.ToString("N0")</td>
-            <td style="text-align:right">@spKpd.ToString("F2")</td>
-            <td style="text-align:right">@s.Headshots.ToString("N0")</td>
+            <td style="text-align:center">@s.Deaths.ToString("N0")</td>
+            <td style="text-align:center">@spKpd.ToString("F2")</td>
+            <td style="text-align:center">@s.Headshots.ToString("N0")</td>
             <td><activity-meter value="@spHpct" /></td>
-            <td style="text-align:right">@(spHpct.ToString("F2"))%</td>
+            <td style="text-align:center">@(spHpct.ToString("F2"))%</td>
             <td style="text-align:right">@(s.Kills == 0 ? "-" : spHpk.ToString("F2"))</td>
           </tr>
           spRank++;
@@ -1045,15 +1045,15 @@
         <tr class="data-table-head">
           <th>Rank</th>
           <th><a href="@(KsSortUrl("name"))">Victim@(KsMark("name"))</a></th>
-          <th style="text-align:right"><a href="@(KsSortUrl("kills"))">Kills@(KsMark("kills"))</a></th>
-          <th style="text-align:right"><a href="@(KsSortUrl("kpercent"))">%@(KsMark("kpercent"))</a></th>
+          <th style="text-align:center"><a href="@(KsSortUrl("kills"))">Kills@(KsMark("kills"))</a></th>
+          <th style="text-align:center"><a href="@(KsSortUrl("kpercent"))">%@(KsMark("kpercent"))</a></th>
           <th><a href="@(KsSortUrl("kpercent"))">Ratio@(KsMark("kpercent"))</a></th>
-          <th style="text-align:right"><a href="@(KsSortUrl("deaths"))">Deaths@(KsMark("deaths"))</a></th>
-          <th style="text-align:right"><a href="@(KsSortUrl("dpercent"))">%@(KsMark("dpercent"))</a></th>
+          <th style="text-align:center"><a href="@(KsSortUrl("deaths"))">Deaths@(KsMark("deaths"))</a></th>
+          <th style="text-align:center"><a href="@(KsSortUrl("dpercent"))">%@(KsMark("dpercent"))</a></th>
           <th><a href="@(KsSortUrl("dpercent"))">Ratio@(KsMark("dpercent"))</a></th>
-          <th style="text-align:right"><a href="@(KsSortUrl("kpd"))">K:D@(KsMark("kpd"))</a></th>
-          <th style="text-align:right"><a href="@(KsSortUrl("headshots"))">Headshots@(KsMark("headshots"))</a></th>
-          <th style="text-align:right"><a href="@(KsSortUrl("hpercent"))">%@(KsMark("hpercent"))</a></th>
+          <th style="text-align:center"><a href="@(KsSortUrl("kpd"))">K:D@(KsMark("kpd"))</a></th>
+          <th style="text-align:center"><a href="@(KsSortUrl("headshots"))">Headshots@(KsMark("headshots"))</a></th>
+          <th style="text-align:center"><a href="@(KsSortUrl("hpercent"))">%@(KsMark("hpercent"))</a></th>
           <th><a href="@(KsSortUrl("hpercent"))">Ratio@(KsMark("hpercent"))</a></th>
           <th style="text-align:right"><a href="@(KsSortUrl("hpk"))">HS:K@(KsMark("hpk"))</a></th>
         </tr>
@@ -1084,15 +1084,15 @@
                 <a asp-action="Profile" asp-route-id="@k.VictimId">@k.VictimName</a>
               }
             </td>
-            <td style="text-align:right">@k.Kills.ToString("N0")</td>
-            <td style="text-align:right">@(ksKpct.ToString("F2"))%</td>
+            <td style="text-align:center">@k.Kills.ToString("N0")</td>
+            <td style="text-align:center">@(ksKpct.ToString("F2"))%</td>
             <td><activity-meter value="@ksKpct" /></td>
-            <td style="text-align:right">@k.Deaths.ToString("N0")</td>
-            <td style="text-align:right">@(ksDpct.ToString("F2"))%</td>
+            <td style="text-align:center">@k.Deaths.ToString("N0")</td>
+            <td style="text-align:center">@(ksDpct.ToString("F2"))%</td>
             <td><activity-meter value="@ksDpct" /></td>
-            <td style="text-align:right">@ksKpd.ToString("F2")</td>
-            <td style="text-align:right">@k.Headshots.ToString("N0")</td>
-            <td style="text-align:right">@(ksHpct.ToString("F2"))%</td>
+            <td style="text-align:center">@ksKpd.ToString("F2")</td>
+            <td style="text-align:center">@k.Headshots.ToString("N0")</td>
+            <td style="text-align:center">@(ksHpct.ToString("F2"))%</td>
             <td><activity-meter value="@ksHpct" /></td>
             <td style="text-align:right">@(k.Kills == 0 ? "-" : ksHpk.ToString("F2"))</td>
           </tr>

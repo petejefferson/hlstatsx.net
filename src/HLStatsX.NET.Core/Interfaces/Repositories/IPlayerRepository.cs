@@ -12,6 +12,9 @@ public interface IPlayerRepository
     /// <summary>Returns the player with the given ID including their clan and Steam IDs, or <c>null</c> if not found.</summary>
     Task<Player?> GetByIdAsync(int playerId, CancellationToken ct = default);
 
+    /// <summary>Returns the IDs of all game bots (Steam ID starting with "BOT"), excluding SourceTV.</summary>
+    Task<IReadOnlySet<int>> GetBotPlayerIdsAsync(CancellationToken ct = default);
+
     /// <summary>
     /// Returns a paged, sorted leaderboard for the given game.
     /// Hidden players (<c>HideRanking != 0</c>) and players with fewer than <paramref name="minKills"/>

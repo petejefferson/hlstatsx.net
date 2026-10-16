@@ -436,6 +436,7 @@ footer {
     box-shadow: var(--shadow);
 }
 .profile-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.profile-two-col > section { display: grid; }
 .profile-section { margin-top: 1.5rem; }
 
 .ribbons-list { display: flex; flex-wrap: wrap; gap: 4px; padding: 0.5rem 0; }

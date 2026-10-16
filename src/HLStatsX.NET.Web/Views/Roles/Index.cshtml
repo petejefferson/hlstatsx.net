@@ -22,15 +22,15 @@
     <thead>
         <tr class="data-table-head">
             <td class="rank-col">Rank</td>
-            <td><a href="@(SortUrl("role"))">Role@(Mark("role"))</a></td>
-            <td style="text-align:right;"><a href="@(SortUrl("picked"))">Picked@(Mark("picked"))</a></td>
-            <td style="text-align:right;"><a href="@(SortUrl("ppercent"))">%@(Mark("ppercent"))</a></td>
+            <td style="text-align:left;"><a href="@(SortUrl("role"))">Role@(Mark("role"))</a></td>
+            <td style="text-align:center;"><a href="@(SortUrl("picked"))">Picked@(Mark("picked"))</a></td>
+            <td style="text-align:center;"><a href="@(SortUrl("ppercent"))">%@(Mark("ppercent"))</a></td>
             <td>Ratio</td>
-            <td style="text-align:right;"><a href="@(SortUrl("kills"))">Kills@(Mark("kills"))</a></td>
-            <td style="text-align:right;"><a href="@(SortUrl("kpercent"))">%@(Mark("kpercent"))</a></td>
+            <td style="text-align:center;"><a href="@(SortUrl("kills"))">Kills@(Mark("kills"))</a></td>
+            <td style="text-align:center;"><a href="@(SortUrl("kpercent"))">%@(Mark("kpercent"))</a></td>
             <td>Ratio</td>
-            <td style="text-align:right;"><a href="@(SortUrl("deaths"))">Deaths@(Mark("deaths"))</a></td>
-            <td style="text-align:right;"><a href="@(SortUrl("dpercent"))">%@(Mark("dpercent"))</a></td>
+            <td style="text-align:center;"><a href="@(SortUrl("deaths"))">Deaths@(Mark("deaths"))</a></td>
+            <td style="text-align:center;"><a href="@(SortUrl("dpercent"))">%@(Mark("dpercent"))</a></td>
             <td>Ratio</td>
             <td style="text-align:right;"><a href="@(SortUrl("kd"))">K:D@(Mark("kd"))</a></td>
         </tr>
@@ -58,14 +58,14 @@
                         @r.Name
                     </a>
                 </td>
-                <td style="text-align:right;">@r.Picked.ToString("N0")</td>
-                <td style="text-align:right;">@(ppct.ToString("F2"))%</td>
+                <td style="text-align:center;">@r.Picked.ToString("N0")</td>
+                <td style="text-align:center;">@(ppct.ToString("F2"))%</td>
                 <td><meter min="0" max="100" low="25" high="50" optimum="75" value="@ppct"></meter></td>
-                <td style="text-align:right;">@r.Kills.ToString("N0")</td>
-                <td style="text-align:right;">@(kpct.ToString("F2"))%</td>
+                <td style="text-align:center;">@r.Kills.ToString("N0")</td>
+                <td style="text-align:center;">@(kpct.ToString("F2"))%</td>
                 <td><meter min="0" max="100" low="25" high="50" optimum="75" value="@kpct"></meter></td>
-                <td style="text-align:right;">@r.Deaths.ToString("N0")</td>
-                <td style="text-align:right;">@(dpct.ToString("F2"))%</td>
+                <td style="text-align:center;">@r.Deaths.ToString("N0")</td>
+                <td style="text-align:center;">@(dpct.ToString("F2"))%</td>
                 <td><meter min="0" max="100" low="25" high="50" optimum="75" value="@dpct"></meter></td>
                 <td style="text-align:right;">@kd.ToString("F2")</td>
             </tr>

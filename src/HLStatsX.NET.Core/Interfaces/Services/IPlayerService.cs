@@ -13,6 +13,9 @@ public interface IPlayerService
     /// <summary>Returns the player with the given ID, or <c>null</c> if not found.</summary>
     Task<Player?> GetPlayerAsync(int playerId, CancellationToken ct = default);
 
+    /// <summary>Returns the IDs of all game bots (Steam ID starting with "BOT"), excluding SourceTV.</summary>
+    Task<IReadOnlySet<int>> GetBotPlayerIdsAsync(CancellationToken ct = default);
+
     /// <summary>Returns the paged, sorted leaderboard for the given game, excluding bots and hidden players.</summary>
     Task<PagedResult<Player>> GetLeaderboardAsync(string game, int page, int pageSize, string sortBy = "skill", bool descending = true, int minKills = 1, CancellationToken ct = default);
 
